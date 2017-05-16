@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="root" xmlns:fx="http://javafx.com/fxml/1">
+   <HBox>
+      <RadioButton fx:id="noneChoice" selected="true" text="Keine Zweitprofession" onAction="#setNone" >
+         <toggleGroup>
+            <ToggleGroup fx:id="bgbVeteranGroup" />
+         </toggleGroup>
+      </RadioButton>
+      <RadioButton fx:id="bgbChoice" text="Breitgefächerte Bildung" toggleGroup="$bgbVeteranGroup" disable="true" onAction="#setBGB" />
+      <RadioButton fx:id="veteranChoice" text="Veteran" toggleGroup="$bgbVeteranGroup" disable="true" onAction="#setVeteran" />
+   </HBox>
+</VBox>

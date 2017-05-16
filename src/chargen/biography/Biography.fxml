@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.SplitMenuButton?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.text.Font?>
+<?import dsatool.util.ReactiveComboBox?>
+<?import dsatool.util.ReactiveSpinner?>
+
+<GridPane xmlns:fx="http://javafx.com/fxml/1" fx:id="pane" alignment="CENTER" hgap="5" vgap="4">
+   <children>
+      <Label text="Name: " />
+      <TextField fx:id="name" GridPane.columnIndex="1" GridPane.columnSpan="5" />
+      <SplitMenuButton fx:id="namesButton" GridPane.columnIndex="6" onAction="#randomName" text="&#xE028;" >
+         <padding><Insets top="0" right="0" bottom="0" left="0"/></padding>
+         <font>
+            <Font name="Material Icons" size="15.0" />
+         </font>
+         <tooltip>
+            <Tooltip text="Zufälliger Name" />
+         </tooltip>
+      </SplitMenuButton>
+      <Label text="Größe:" GridPane.rowIndex="1" />
+      <ReactiveSpinner fx:id="size" imin="0" imax="500" GridPane.rowIndex="1" GridPane.columnIndex="1" editable="true" />
+      <Button GridPane.rowIndex="1" GridPane.columnIndex="2" onAction="#randomSize" text="&#xE028;" >
+         <padding><Insets top="5" right="5" bottom="5" left="5"/></padding>
+         <font>
+            <Font name="Material Icons" size="15.0" />
+         </font>
+         <tooltip>
+            <Tooltip text="Zufällige Größe" />
+         </tooltip>
+      </Button>
+      <Button fx:id="weightTracksSizeButton" GridPane.rowIndex="1" GridPane.columnIndex="3" onAction="#toggleWeightTracksSize" text="&#xE157;" >
+         <padding><Insets top="5" right="5" bottom="5" left="5"/></padding>
+         <font>
+            <Font name="Material Icons" size="15.0" />
+         </font>
+         <tooltip>
+            <Tooltip text="Gewicht an Größe angleichen" />
+         </tooltip>
+      </Button>
+      <Label text="Gewicht:" GridPane.rowIndex="1" GridPane.columnIndex="4" />
+      <ReactiveSpinner fx:id="weight" imin="0" imax="500" GridPane.rowIndex="1" GridPane.columnIndex="5" editable="true" />
+      <Button GridPane.rowIndex="1" GridPane.columnIndex="6" onAction="#randomWeight" text="&#xE028;" >
+         <padding><Insets top="5" right="5" bottom="5" left="5"/></padding>
+         <font>
+            <Font name="Material Icons" size="15.0" />
+         </font>
+         <tooltip>
+            <Tooltip text="Zufälliges Gewicht" />
+         </tooltip>
+      </Button>
+      <Label text="Augenfarbe:" GridPane.rowIndex="2" />
+      <ReactiveComboBox fx:id="eyecolor" editable="true" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+      <Button GridPane.rowIndex="2" GridPane.columnIndex="2" onAction="#randomEyecolor" text="&#xE028;" >
+         <padding><Insets top="5" right="5" bottom="5" left="5"/></padding>
+         <font>
+            <Font name="Material Icons" size="15.0" />
+         </font>
+         <tooltip>
+            <Tooltip text="Zufällige Augenfarbe" />
+         </tooltip>
+      </Button>
+      <Label fx:id="haircolorLabel" text="Haarfarbe:" GridPane.rowIndex="3" />
+      <ReactiveComboBox fx:id="haircolor" editable="true" GridPane.rowIndex="3" GridPane.columnIndex="1" />
+      <Button GridPane.rowIndex="3" GridPane.columnIndex="2" onAction="#randomHaircolor" text="&#xE028;" >
+         <padding><Insets top="5" right="5" bottom="5" left="5"/></padding>
+         <font>
+            <Font name="Material Icons" size="15.0" />
+         </font>
+         <tooltip>
+            <Tooltip text="Zufällige Haarfarbe" />
+         </tooltip>
+      </Button>
+      <Label fx:id="skincolorLabel" text="Hautfarbe:" GridPane.rowIndex="3" GridPane.columnIndex="4" />
+      <ReactiveComboBox fx:id="skincolor" editable="true" GridPane.rowIndex="3" GridPane.columnIndex="5" />
+      <Button GridPane.rowIndex="3" GridPane.columnIndex="6" onAction="#randomSkincolor" text="&#xE028;" >
+         <padding><Insets top="5" right="5" bottom="5" left="5"/></padding>
+         <font>
+            <Font name="Material Icons" size="15.0" />
+         </font>
+         <tooltip>
+            <Tooltip text="Zufällige Hautfarbe" />
+         </tooltip>
+      </Button>
+      <Label text="Geschlecht:" GridPane.rowIndex="4" />
+      <fx:define>
+         <ToggleGroup fx:id="gender"/>
+      </fx:define>
+      <RadioButton text="männlich" fx:id="male" toggleGroup="$gender" GridPane.rowIndex="4" GridPane.columnIndex="1" GridPane.columnSpan="2"  />
+      <RadioButton text="weiblich" fx:id="female" toggleGroup="$gender" GridPane.rowIndex="4" GridPane.columnIndex="4" GridPane.columnSpan="2"  />
+   </children>
+</GridPane>

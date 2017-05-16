@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TreeItem?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" fx:id="pane">
+   <center>
+      <TreeView fx:id="tree" showRoot="false" >
+         <TreeItem fx:id="root" />
+      </TreeView>
+   </center>
+   <right>
+      <VBox fx:id="variantsBox" prefWidth="250" spacing="5">
+         <padding><Insets top="5" right="5" bottom="5" left="5"/></padding>
+      </VBox>
+   </right>
+</BorderPane>

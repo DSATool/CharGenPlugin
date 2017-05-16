@@ -1,0 +1,4 @@
+{
+	"releaseDate" : "@releaseDate@",
+	"releaseLink" : "https://raw.githubusercontent.com/DSATool/CharGenPlugin/master/release/CharGen_@releaseDate@.zip"
+}
