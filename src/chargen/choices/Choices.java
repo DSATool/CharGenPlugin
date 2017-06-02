@@ -76,18 +76,19 @@ public class Choices extends TabController {
 
 	public class ChoicePage {
 		private final StringProperty text;
-		private final BooleanExpression valid;
+		private final BooleanProperty valid;
 
-		public ChoicePage(String text, BooleanExpression valid) {
+		public ChoicePage(final String text, final BooleanExpression valid) {
 			this.text = new SimpleStringProperty(text);
-			this.valid = valid;
+			this.valid = new SimpleBooleanProperty();
+			this.valid.bind(valid);
 		}
 
 		public ReadOnlyStringProperty textProperty() {
 			return text;
 		}
 
-		public BooleanExpression validProperty() {
+		public BooleanProperty validProperty() {
 			return valid;
 		}
 	}
@@ -104,17 +105,17 @@ public class Choices extends TabController {
 
 	private final List<String> languageTypes = Arrays.asList("Muttersprache", "Zweitsprache", "Lehrsprache");
 
-	private final ObjectProperty<Talent> ml = new SimpleObjectProperty<>(null);
-	private final ObjectProperty<Talent> sl = new SimpleObjectProperty<>(null);
-	private final ObjectProperty<Talent> tl = new SimpleObjectProperty<>(null);
-	private final ObjectProperty<Talent> mlWriting = new SimpleObjectProperty<>(null);
+	private ObjectProperty<Talent> ml;
+	private ObjectProperty<Talent> sl;
+	private ObjectProperty<Talent> tl;
+	private ObjectProperty<Talent> mlWriting;
 	private final IntegerProperty languageBonus = new SimpleIntegerProperty(0);
 	private final IntegerProperty writingBonus = new SimpleIntegerProperty(0);
 
 	private JSONObject hero;
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Choices(JSONObject generationState, TabPane tabPane, VBox leftBox, IntegerProperty gp) {
+	public Choices(final JSONObject generationState, final TabPane tabPane, final VBox leftBox, final IntegerProperty gp) {
 		super(generationState, gp);
 		this.leftBox = leftBox;
 
@@ -134,7 +135,7 @@ public class Choices extends TabController {
 		choiceNames.autosize();
 		choiceNames.getColumns().get(1).setCellFactory(tableColumn -> (TableCell) new TableCell<ChoicePage, Boolean>() {
 			@Override
-			public void updateItem(Boolean valid, boolean empty) {
+			public void updateItem(final Boolean valid, final boolean empty) {
 				super.updateItem(valid, empty);
 				final TableRow<ChoicePage> row = getTableRow();
 				if (!empty && valid) {
@@ -157,7 +158,7 @@ public class Choices extends TabController {
 	}
 
 	@Override
-	public void activate(boolean forward) {
+	public void activate(final boolean forward) {
 		tab.setDisable(false);
 		tab.getTabPane().getSelectionModel().select(tab);
 
@@ -237,6 +238,11 @@ public class Choices extends TabController {
 		writingBonus
 				.set(race.getObj("Talente").getIntOrDefault("Muttersprache:Schrift", 0) + culture.getObj("Talente").getIntOrDefault("Muttersprache:Schrift", 0)
 						+ profession.getObj("Talente").getIntOrDefault("Muttersprache:Schrift", 0));
+
+		ml = new SimpleObjectProperty<>(null);
+		sl = new SimpleObjectProperty<>(null);
+		tl = new SimpleObjectProperty<>(null);
+		mlWriting = new SimpleObjectProperty<>(null);
 
 		ml.addListener((o, oldV, newV) -> {
 			if (oldV != null) {
@@ -335,7 +341,7 @@ public class Choices extends TabController {
 		recalculateCanContinue();
 	}
 
-	private void createLanguageChoice(JSONObject languages) {
+	private void createLanguageChoice(final JSONObject languages) {
 		final List<Tuple<String, JSONArray>> choices = new ArrayList<>(3);
 		final Set<String> actualLanguages = new LinkedHashSet<>();
 
@@ -489,7 +495,7 @@ public class Choices extends TabController {
 		pane.getChildren().add(scrollPane);
 	}
 
-	private void createPointChoiceInput(JSONObject choices, boolean spells, boolean primarySpells) {
+	private void createPointChoiceInput(final JSONObject choices, final boolean spells, final boolean primarySpells) {
 		final ScrollPane scrollPane = new ScrollPane();
 		final GridPane input = new GridPane();
 		scrollPane.setContent(input);
@@ -714,7 +720,7 @@ public class Choices extends TabController {
 		pane.getChildren().add(scrollPane);
 	}
 
-	private void createSingleChoiceInput(String targetName, JSONObject choices, JSONValue target, boolean isEquipment) {
+	private void createSingleChoiceInput(final String targetName, final JSONObject choices, final JSONValue target, final boolean isEquipment) {
 		final ScrollPane scrollPane = new ScrollPane();
 		final GridPane input = new GridPane();
 		scrollPane.setContent(input);
@@ -814,8 +820,8 @@ public class Choices extends TabController {
 		pane.getChildren().add(scrollPane);
 	}
 
-	private void createSingleInputs(String name, final JSONValue target, boolean isEquipment, final JSONObject race, final JSONObject culture,
-			final JSONObject profession, JSONObject bgb) {
+	private void createSingleInputs(final String name, final JSONValue target, final boolean isEquipment, final JSONObject race, final JSONObject culture,
+			final JSONObject profession, final JSONObject bgb) {
 		final List<JSONObject> choices = new ArrayList<>();
 		getChoices(name, choices, race, culture, profession, bgb);
 
@@ -824,7 +830,7 @@ public class Choices extends TabController {
 		}
 	}
 
-	private void createValueChoiceInput(JSONObject choice, boolean spells, boolean primarySpells) {
+	private void createValueChoiceInput(final JSONObject choice, final boolean spells, final boolean primarySpells) {
 		final ScrollPane scrollPane = new ScrollPane();
 		final GridPane input = new GridPane();
 		scrollPane.setContent(input);
@@ -1011,13 +1017,13 @@ public class Choices extends TabController {
 	}
 
 	@Override
-	public void deactivate(boolean forward) {
+	public void deactivate(final boolean forward) {
 		tab.setDisable(true);
 
 		leftBox.getChildren().remove(0);
 	}
 
-	private void getChoices(String choice, List<JSONObject> choices, JSONObject source) {
+	private void getChoices(final String choice, final List<JSONObject> choices, final JSONObject source) {
 		final JSONObject actual = source.getObjOrDefault(choice, null);
 		if (actual != null && actual.containsKey("Wahl")) {
 			final JSONArray currentChoices = actual.getArr("Wahl");
@@ -1027,7 +1033,8 @@ public class Choices extends TabController {
 		}
 	}
 
-	private void getChoices(String choice, List<JSONObject> singleChoices, JSONObject race, JSONObject culture, JSONObject profession, JSONObject bgb) {
+	private void getChoices(final String choice, final List<JSONObject> singleChoices, final JSONObject race, final JSONObject culture,
+			final JSONObject profession, final JSONObject bgb) {
 		getChoices(choice, singleChoices, race);
 		getChoices(choice, singleChoices, culture);
 		getChoices(choice, singleChoices, profession);
@@ -1036,7 +1043,7 @@ public class Choices extends TabController {
 		}
 	}
 
-	private Talent getTalent(String name, String representation) {
+	private Talent getTalent(final String name, final String representation) {
 		if (name == null) return null;
 		Talent actualTalent;
 		if (talents.containsKey(name))
@@ -1048,24 +1055,45 @@ public class Choices extends TabController {
 			actualTalent = new ProxyTalent("L/S Muttersprache", mlWriting.get() == null ? null : getTalent(mlWriting.get().getName(), null),
 					hero.getObj("Talente").getObj("Sprachen und Schriften"), writingBonus);
 		} else {
-			JSONObject talent = representation != null ? hero.getObj("Zauber").getObjOrDefault(name, null) : HeroUtil.findActualTalent(hero, name)._1;
-			if (talent == null) {
-				final JSONObject group = representation != null ? hero.getObj("Zauber") : hero.getObj("Talente").getObj(HeroUtil.findTalent(name)._2);
-				talent = new JSONObject(group);
+			final Tuple<JSONObject, String> talentAndGroup = HeroUtil.findTalent(name);
+			final JSONObject currentTalent = talentAndGroup._1;
+			final JSONObject group = representation != null ? hero.getObj("Zauber") : hero.getObj("Talente").getObj(talentAndGroup._2);
+			JSONValue actual = HeroUtil.findActualTalent(hero, name)._1;
+			if (actual == null) {
+				final JSONObject talent;
 				if (representation != null) {
-					final JSONObject spell = new JSONObject(talent);
-					spell.put("temporary:ChoiceOnly", true);
-					spell.put("aktiviert", false);
-					talent.put(representation, spell);
+					actual = new JSONObject(group);
+					if (currentTalent.containsKey("Auswahl") || currentTalent.containsKey("Freitext")) {
+						final JSONArray rep = new JSONArray(actual);
+						talent = new JSONObject(rep);
+						rep.add(talent);
+						((JSONObject) actual).put(representation, rep);
+					} else {
+						talent = new JSONObject(actual);
+						((JSONObject) actual).put(representation, talent);
+					}
+					actualTalent = new Spell(name, currentTalent, talent, (JSONObject) actual, group, representation);
+				} else if (currentTalent.containsKey("Auswahl") || currentTalent.containsKey("Freitext")) {
+					actual = new JSONArray(group);
+					talent = new JSONObject(group);
+					((JSONArray) actual).add(talent);
+					actualTalent = new Talent(name, null, currentTalent, talent, group);
 				} else {
-					talent.put("temporary:ChoiceOnly", true);
-					talent.put("aktiviert", false);
+					talent = new JSONObject(group);
+					group.put(name, talent);
+					actualTalent = new Talent(name, null, currentTalent, talent, group);
 				}
-				group.put(name, talent);
+				talent.put("temporary:ChoiceOnly", true);
+				talent.put("aktiviert", false);
+			} else if (currentTalent.containsKey("Auswahl") || currentTalent.containsKey("Freitext")) {
+				actualTalent = representation != null
+						? new Spell(name, currentTalent, ((JSONObject) actual).getArr(representation).getObj(0), (JSONObject) actual, group, representation)
+						: new Talent(name, null, currentTalent, ((JSONArray) actual).getObj(0), group);
+			} else {
+				actualTalent = representation != null
+						? new Spell(name, currentTalent, ((JSONObject) actual).getObj(representation), (JSONObject) actual, group, representation)
+						: new Talent(name, null, currentTalent, (JSONObject) actual, group);
 			}
-			actualTalent = representation != null
-					? new Spell(name, ResourceManager.getResource("data/Zauber").getObj(name), talent, hero.getObj("Zauber"), representation)
-					: new Talent(name, null, HeroUtil.findTalent(name)._1, talent, hero.getObj("Talente").getObj(HeroUtil.findTalent(name)._2));
 		}
 		talents.put(name, actualTalent);
 		return actualTalent;

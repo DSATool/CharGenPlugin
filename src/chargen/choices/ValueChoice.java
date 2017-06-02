@@ -29,7 +29,7 @@ public class ValueChoice extends Choice {
 	public Integer value = 0;
 	public final boolean primarySpell;
 
-	public ValueChoice(Talent actual, IntegerProperty points, boolean useComplexity, String rep, boolean primarySpell) {
+	public ValueChoice(final Talent actual, final IntegerProperty points, final boolean useComplexity, final String rep, final boolean primarySpell) {
 		talent = actual;
 		this.points = points;
 		this.useComplexity = useComplexity;
@@ -38,11 +38,11 @@ public class ValueChoice extends Choice {
 	}
 
 	@Override
-	public void apply(JSONObject hero, boolean alreadyApplied) {
+	public void apply(final JSONObject hero, final boolean alreadyApplied) {
 		applyInternally(hero, value, false, alreadyApplied);
 	}
 
-	protected void applyInternally(JSONObject hero, Integer value, boolean unapply, boolean alreadyApplied) {
+	protected void applyInternally(final JSONObject hero, final Integer value, final boolean unapply, final boolean alreadyApplied) {
 		if (value == null) return;
 		if (!alreadyApplied) {
 			talent.setValue((talent.getValue() == Integer.MIN_VALUE ? 0 : talent.getValue()) + value);
@@ -50,8 +50,7 @@ public class ValueChoice extends Choice {
 		points.setValue(points.getValue() - (value + (useComplexity ? unapply ? -1 : 1 : 0))
 				* (useComplexity ? rep != null ? HeroUtil.getSpellBaseComplexity(talent.getName(), rep) + (((Spell) talent).isPrimarySpell() ? -1 : 0)
 						: HeroUtil.getTalentBaseComplexity(talent.getName()) : 1));
-		final boolean choiceOnly = rep != null ? talent.getActual().getObj(rep).getBoolOrDefault("temporary:ChoiceOnly", false)
-				: talent.getActual().getBoolOrDefault("temporary:ChoiceOnly", false);
+		final boolean choiceOnly = talent.getActual().getBoolOrDefault("temporary:ChoiceOnly", false);
 		if (talent.getValue() == 0 && (value != 0 || unapply) && choiceOnly) {
 			talent.setValue(Integer.MIN_VALUE);
 		}
@@ -72,7 +71,7 @@ public class ValueChoice extends Choice {
 	}
 
 	@Override
-	public void unapply(JSONObject hero) {
+	public void unapply(final JSONObject hero) {
 		applyInternally(hero, value == null ? null : -value, true, false);
 	}
 }

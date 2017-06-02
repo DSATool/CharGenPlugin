@@ -15,7 +15,9 @@
  */
 package chargen.race_culture_profession;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,6 +31,7 @@ import chargen.util.ChargenUtil;
 import dsa41basis.util.HeroUtil;
 import dsatool.resources.ResourceManager;
 import dsatool.util.Tuple;
+import dsatool.util.Tuple3;
 import javafx.beans.property.IntegerProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
@@ -483,6 +486,10 @@ public class RKPSelectors extends TabController {
 											}
 										}
 										current.put("Verbilligungen", current.getIntOrDefault("Verbilligungen", 1) + 1);
+									} else if (proOrCon.getBoolOrDefault("Abgestuft", false)) {
+										HeroUtil.unapplyEffect(hero, name, proOrCon, match);
+										match.put("Stufe", match.getIntOrDefault("Stufe", 0) + currentCategory.getObj(name).getIntOrDefault("Stufe", 0));
+										HeroUtil.applyEffect(hero, name, proOrCon, match);
 									} else {
 										prosOrCons.put("temporary:Pool",
 												prosOrCons.getIntOrDefault("temporary:Pool", 0) + proOrCon.getIntOrDefault("Kosten", 0));
@@ -559,6 +566,11 @@ public class RKPSelectors extends TabController {
 										final JSONObject skill = prosOrCons.getObj(name);
 										skill.put("Verbilligungen", skill.getIntOrDefault("Verbilligungen", 1) + 1);
 									}
+								} else if (proOrCon.getBoolOrDefault("Abgestuft", false)) {
+									final JSONObject actual = prosOrCons.getObj(name);
+									HeroUtil.unapplyEffect(hero, name, proOrCon, actual);
+									actual.put("Stufe", actual.getIntOrDefault("Stufe", 0) + currentCategory.getObj(name).getIntOrDefault("Stufe", 0));
+									HeroUtil.applyEffect(hero, name, proOrCon, actual);
 								} else {
 									prosOrCons.put("temporary:Pool", prosOrCons.getIntOrDefault("temporary:Pool", 0) + proOrCon.getIntOrDefault("Kosten", 0));
 								}
@@ -577,7 +589,7 @@ public class RKPSelectors extends TabController {
 	}
 
 	private void collectSpells(final JSONObject hero) {
-		final Map<Tuple<String, String>, Tuple<Integer, Boolean>> spellList = new HashMap<>();
+		final Map<Tuple3<String, String, Boolean>, List<Integer>> spellList = new HashMap<>();
 		for (final String current : new String[] { "Rasse", "Kultur", "Profession" }) {
 			final JSONObject currentPrimarySpells = generationState.getObj(current).getObjOrDefault("Hauszauber", null);
 			if (currentPrimarySpells != null) {
@@ -585,11 +597,26 @@ public class RKPSelectors extends TabController {
 					if ("Wahl".equals(spellName)) {
 						continue;
 					}
+					final JSONObject currentSpell = HeroUtil.findTalent(spellName)._1;
 					final JSONObject spell = currentPrimarySpells.getObj(spellName);
 					for (final String representation : spell.keySet()) {
-						final Tuple<String, String> id = new Tuple<>(spellName, representation);
-						final Tuple<Integer, Boolean> old = spellList.getOrDefault(id, new Tuple<>(0, false));
-						spellList.put(id, new Tuple<>(old._1 + spell.getInt(representation), true));
+						final Tuple3<String, String, Boolean> id = new Tuple3<>(spellName, representation, true);
+						if (currentSpell.containsKey("Auswahl") || currentSpell.containsKey("Freitext")) {
+							final List<Integer> old = spellList.getOrDefault(id, new ArrayList<>());
+							final JSONArray modifications = spell.getArr(representation);
+							spellList.put(id, old);
+							for (int i = 0; i < modifications.size(); ++i) {
+								old.add(modifications.getInt(i));
+							}
+						} else {
+							List<Integer> old = spellList.getOrDefault(id, null);
+							if (old == null) {
+								final Tuple3<String, String, Boolean> nid = new Tuple3<>(spellName, representation, false);
+								old = spellList.getOrDefault(nid, Collections.singletonList(0));
+								spellList.remove(nid);
+							}
+							spellList.put(id, Collections.singletonList(old.get(0) + spell.getInt(representation)));
+						}
 					}
 				}
 			}
@@ -599,11 +626,30 @@ public class RKPSelectors extends TabController {
 					if ("Wahl".equals(spellName)) {
 						continue;
 					}
+					final JSONObject currentSpell = HeroUtil.findTalent(spellName)._1;
 					final JSONObject spell = currentSpells.getObj(spellName);
 					for (final String representation : spell.keySet()) {
-						final Tuple<String, String> id = new Tuple<>(spellName, representation);
-						final Tuple<Integer, Boolean> old = spellList.getOrDefault(id, new Tuple<>(0, false));
-						spellList.put(id, new Tuple<>(old._1 + spell.getInt(representation), old._2));
+						Tuple3<String, String, Boolean> id = new Tuple3<>(spellName, representation, false);
+						if (currentSpell.containsKey("Auswahl") || currentSpell.containsKey("Freitext")) {
+							final List<Integer> old = spellList.getOrDefault(id, new ArrayList<>());
+							final JSONArray modifications = spell.getArr(representation);
+							spellList.put(id, old);
+							for (int i = 0; i < modifications.size(); ++i) {
+								old.add(modifications.getInt(i));
+							}
+						} else {
+							List<Integer> old = spellList.getOrDefault(id, null);
+							if (old == null) {
+								final Tuple3<String, String, Boolean> nid = new Tuple3<>(spellName, representation, true);
+								old = spellList.getOrDefault(nid, null);
+								if (old != null) {
+									id = nid;
+								} else {
+									old = Collections.singletonList(0);
+								}
+							}
+							spellList.put(id, Collections.singletonList(old.get(0) + spell.getInt(representation)));
+						}
 					}
 				}
 			}
@@ -611,15 +657,28 @@ public class RKPSelectors extends TabController {
 
 		final JSONObject spells = new JSONObject(hero);
 		hero.put("Zauber", spells);
-		for (final Tuple<String, String> id : spellList.keySet()) {
-			final JSONObject spell = new JSONObject(spells);
-			final JSONObject rep = new JSONObject(spell);
-			rep.put("ZfW", spellList.get(id)._1);
-			if (spellList.get(id)._2) {
-				rep.put("Hauszauber", true);
+		for (final Tuple3<String, String, Boolean> id : spellList.keySet()) {
+			final JSONObject spell = spells.getObj(id._1);
+			final JSONObject currentSpell = HeroUtil.findTalent(id._1)._1;
+			if (currentSpell.containsKey("Auswahl") || currentSpell.containsKey("Freitext")) {
+				final JSONArray rep = spell.getArr(id._2);
+				final List<Integer> modifications = spellList.get(id);
+				for (final Integer mod : modifications) {
+					final JSONObject current = new JSONObject(rep);
+					current.put("ZfW", mod);
+					if (id._3) {
+						current.put("Hauszauber", true);
+					}
+					rep.add(current);
+				}
+			} else {
+				final JSONObject rep = new JSONObject(spell);
+				rep.put("ZfW", spellList.get(id).get(0));
+				if (id._3) {
+					rep.put("Hauszauber", true);
+				}
+				spell.put(id._2, rep);
 			}
-			spell.put(id._2, rep);
-			spells.put(id._1, spell);
 		}
 	}
 
@@ -627,7 +686,7 @@ public class RKPSelectors extends TabController {
 		final JSONObject talents = new JSONObject(hero);
 		hero.put("Talente", talents);
 
-		final Map<String, Integer> talentList = new HashMap<>();
+		final Map<String, List<Integer>> talentList = new HashMap<>();
 		for (final String current : new String[] { "Rasse", "Kultur", "Profession" }) {
 			final JSONObject currentTalents = generationState.getObj(current).getObjOrDefault("Talente", null);
 			final JSONArray primaryTalents = generationState.getObj(current).getArrOrDefault("Leittalente", null);
@@ -636,24 +695,43 @@ public class RKPSelectors extends TabController {
 					if ("Wahl".equals(talentName) || "Muttersprache".equals(talentName) || "Muttersprache:Schrift".equals(talentName)) {
 						continue;
 					}
-					talentList.put(talentName, talentList.getOrDefault(talentName, 0) + currentTalents.getInt(talentName));
-					if (primaryTalents != null && primaryTalents.contains(talentName)) {
-						final String groupName = HeroUtil.findTalent(talentName)._2;
-						final JSONObject talent = talents.getObj(groupName).getObj(talentName);
-						talent.put("Leittalent", true);
-						talent.put("temporary:RKPPrimaryTalent", true);
+					final Tuple<JSONObject, String> talentAndGroup = HeroUtil.findTalent(talentName);
+					if (talentAndGroup._1.containsKey("Auswahl") || talentAndGroup._1.containsKey("Freitext")) {
+						talentList.put(talentName, talentList.getOrDefault(talentName, new ArrayList<>()));
+						final JSONArray modifications = currentTalents.getArr(talentName);
+						for (int i = 0; i < modifications.size(); ++i) {
+							talentList.get(talentName).add(modifications.getInt(i));
+						}
+					} else {
+						talentList.put(talentName, Collections
+								.singletonList(talentList.getOrDefault(talentName, Collections.singletonList(0)).get(0) + currentTalents.getInt(talentName)));
+						if (primaryTalents != null && primaryTalents.contains(talentName)) {
+							final JSONObject talent = talents.getObj(talentAndGroup._2).getObj(talentName);
+							talent.put("Leittalent", true);
+							talent.put("temporary:RKPPrimaryTalent", true);
+						}
 					}
 				}
 			}
 		}
 
 		for (final String talentName : talentList.keySet()) {
-			final String groupName = HeroUtil.findTalent(talentName)._2;
+			final Tuple<JSONObject, String> talentAndGroup = HeroUtil.findTalent(talentName);
+			final String groupName = talentAndGroup._2;
 			if (groupName == null) {
 				continue;
 			}
-			final JSONObject talent = talents.getObj(groupName).getObj(talentName);
-			talent.put("TaW", talentList.get(talentName));
+			if (talentAndGroup._1.containsKey("Auswahl") || talentAndGroup._1.containsKey("Freitext")) {
+				final JSONArray talent = talents.getObj(groupName).getArr(talentName);
+				for (final int mod : talentList.get(talentName)) {
+					final JSONObject currentTalent = new JSONObject(talent);
+					currentTalent.put("TaW", mod);
+					talent.add(currentTalent);
+				}
+			} else {
+				final JSONObject talent = talents.getObj(groupName).getObj(talentName);
+				talent.put("TaW", talentList.get(talentName).get(0));
+			}
 		}
 
 		final JSONObject languages = talents.getObj("Sprachen und Schriften");

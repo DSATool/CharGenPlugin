@@ -46,6 +46,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import jsonant.value.JSONArray;
 import jsonant.value.JSONObject;
+import jsonant.value.JSONValue;
 
 public class CharGenController {
 
@@ -106,13 +107,26 @@ public class CharGenController {
 			for (int i = 0; i < pro.size(); ++i) {
 				final String talentName = pro.getObj(i).getString("Auswahl");
 				final Tuple<JSONObject, String> talentAndGroup = HeroUtil.findTalent(talentName);
-				final JSONObject talent = hero.getObj("Talente").getObj(talentAndGroup._2).getObj(talentName);
-				final int taw = talent.getIntOrDefault("TaW", 0);
-				if (taw == 0 && !talentAndGroup._1.getBoolOrDefault("Basis", false)) {
-					talent.put("TaW", 0);
-					talent.removeKey("aktiviert");
-				} else {
-					talent.put("TaW", taw + 1);
+				final Object talent = hero.getObj("Talente").getObj(talentAndGroup._2).getUnsafe(talentName);
+				if (talent instanceof JSONObject) {
+					final int taw = ((JSONObject) talent).getIntOrDefault("TaW", 0);
+					if (taw == 0 && !talentAndGroup._1.getBoolOrDefault("Basis", false)) {
+						((JSONObject) talent).put("TaW", 0);
+						((JSONObject) talent).removeKey("aktiviert");
+					} else {
+						((JSONObject) talent).put("TaW", taw + 1);
+					}
+				} else if (talent instanceof JSONArray) {
+					for (int j = 0; j < ((JSONArray) talent).size(); ++j) {
+						final JSONObject variant = ((JSONArray) talent).getObj(i);
+						final int taw = variant.getIntOrDefault("TaW", 0);
+						if (taw == 0 && !talentAndGroup._1.getBoolOrDefault("Basis", false)) {
+							variant.put("TaW", 0);
+							variant.removeKey("aktiviert");
+						} else {
+							variant.put("TaW", taw + 1);
+						}
+					}
 				}
 			}
 		}
@@ -120,11 +134,18 @@ public class CharGenController {
 			final JSONArray pro = pros.getArr("Begabung für Zauber");
 			for (int i = 0; i < pro.size(); ++i) {
 				final String spellName = pro.getObj(i).getString("Auswahl");
-				final JSONObject spell = HeroUtil.findActualTalent(hero, spellName)._1;
+				final JSONObject spell = (JSONObject) HeroUtil.findActualTalent(hero, spellName)._1;
 				if (spell != null) {
 					for (final String repName : spell.keySet()) {
-						final JSONObject rep = spell.getObj(repName);
-						rep.put("ZfW", rep.getIntOrDefault("ZfW", 0) + 1);
+						final Object rep = spell.getUnsafe(repName);
+						if (rep instanceof JSONObject) {
+							((JSONObject) rep).put("ZfW", ((JSONObject) rep).getIntOrDefault("ZfW", 0) + 1);
+						} else if (rep instanceof JSONArray) {
+							for (int j = 0; j < ((JSONArray) rep).size(); ++j) {
+								final JSONObject variant = ((JSONArray) rep).getObj(i);
+								variant.put("ZfW", variant.getIntOrDefault("ZfW", 0) + 1);
+							}
+						}
 					}
 				}
 			}
@@ -210,9 +231,21 @@ public class CharGenController {
 			final JSONObject group = talents.getObj(groupName);
 			final List<String> toRemove = new LinkedList<>();
 			for (final String talentName : group.keySet()) {
-				final JSONObject talent = group.getObj(talentName);
-				if (talent.size() == 1 && !talent.getBoolOrDefault("aktiviert", true)) {
-					toRemove.add(talentName);
+				final JSONValue talent = (JSONValue) group.getUnsafe(talentName);
+				if (talent instanceof JSONArray) {
+					for (int i = talent.size() - 1; i >= 0; --i) {
+						final JSONObject actual = ((JSONArray) talent).getObj(i);
+						if (actual.size() == 1 && !actual.getBoolOrDefault("aktiviert", true)) {
+							((JSONArray) talent).removeAt(i);
+						}
+					}
+					if (talent.size() == 0) {
+						toRemove.add(talentName);
+					}
+				} else {
+					if (talent.size() == 1 && !((JSONObject) talent).getBoolOrDefault("aktiviert", true)) {
+						toRemove.add(talentName);
+					}
 				}
 			}
 			for (final String key : toRemove) {
@@ -227,9 +260,21 @@ public class CharGenController {
 			final JSONObject spell = spells.getObj(spellName);
 			final List<String> repsToRemove = new LinkedList<>();
 			for (final String rep : spell.keySet()) {
-				final JSONObject actual = spell.getObj(rep);
-				if (actual.size() == 1 && !actual.getBoolOrDefault("aktiviert", true)) {
-					repsToRemove.add(rep);
+				final JSONValue representation = (JSONValue) spell.getUnsafe(rep);
+				if (representation instanceof JSONArray) {
+					for (int i = representation.size() - 1; i >= 0; --i) {
+						final JSONObject actual = ((JSONArray) representation).getObj(i);
+						if (actual.size() == 1 && !actual.getBoolOrDefault("aktiviert", true)) {
+							((JSONArray) representation).removeAt(i);
+						}
+					}
+					if (representation.size() == 0) {
+						repsToRemove.add(rep);
+					}
+				} else {
+					if (representation.size() == 1 && !((JSONObject) representation).getBoolOrDefault("aktiviert", true)) {
+						repsToRemove.add(rep);
+					}
 				}
 			}
 			for (final String key : repsToRemove) {

@@ -26,7 +26,7 @@ import jsonant.value.JSONObject;
 public class ChargenUtil {
 	public static final Collator comparator = Collator.getInstance(Locale.GERMANY);
 
-	public static void collectLanguages(JSONObject original, JSONObject modifications) {
+	public static void collectLanguages(final JSONObject original, final JSONObject modifications) {
 		if (original == null || modifications == null) return;
 
 		for (final String type : new String[] { "Muttersprache", "Zweitsprache", "Lehrsprache" }) {
@@ -40,7 +40,7 @@ public class ChargenUtil {
 		}
 	}
 
-	public static void collectModifications(JSONObject original, JSONObject modifications) {
+	public static void collectModifications(final JSONObject original, final JSONObject modifications) {
 		if (original == null || modifications == null) return;
 
 		final JSONArray choices = original.getArr("Wahl");
@@ -136,7 +136,13 @@ public class ChargenUtil {
 					}
 				}
 			} else {
-				original.put(item, original.getIntOrDefault(item, 0) + modifications.getInt(item));
+				if (modifications.getUnsafe(item) instanceof JSONArray) {
+					for (int i = 0; i < modifications.getArr(item).size(); ++i) {
+						original.getArr(item).add(modifications.getArr(item).getInt(i));
+					}
+				} else {
+					original.put(item, original.getIntOrDefault(item, 0) + modifications.getInt(item));
+				}
 			}
 		}
 		if (choices.size() == 0) {
@@ -148,7 +154,7 @@ public class ChargenUtil {
 			if ("Wahl".equals(item)) {
 				continue;
 			}
-			if (original.getInt(item) == 0) {
+			if (modifications.getUnsafe(item) instanceof Long && original.getInt(item) == 0) {
 				toRemove.add(item);
 			}
 		}
@@ -180,7 +186,7 @@ public class ChargenUtil {
 		}
 	}
 
-	public static void collectSpellModifications(JSONObject original, JSONObject modifications) {
+	public static void collectSpellModifications(final JSONObject original, final JSONObject modifications) {
 		if (original == null || modifications == null) return;
 
 		final JSONArray choices = original.getArr("Wahl");
@@ -232,7 +238,13 @@ public class ChargenUtil {
 				final JSONObject originalSpell = original.getObj(item);
 				final JSONObject modification = modifications.getObj(item);
 				for (final String rep : modification.keySet()) {
-					originalSpell.put(rep, originalSpell.getIntOrDefault(rep, 0) + modification.getInt(rep));
+					if (modification.getUnsafe(rep) instanceof JSONArray) {
+						for (int i = 0; i < modification.getArr(rep).size(); ++i) {
+							originalSpell.getArr(rep).add(modification.getArr(rep).getInt(i));
+						}
+					} else {
+						originalSpell.put(rep, originalSpell.getIntOrDefault(rep, 0) + modification.getInt(rep));
+					}
 				}
 			}
 		}
@@ -248,7 +260,7 @@ public class ChargenUtil {
 			final JSONObject originalSpell = original.getObj(item);
 			final List<String> repsToRemove = new LinkedList<>();
 			for (final String rep : originalSpell.keySet()) {
-				if (originalSpell.getInt(rep) == 0) {
+				if (originalSpell.getUnsafe(rep) instanceof Long && originalSpell.getInt(rep) == 0) {
 					repsToRemove.add(rep);
 				}
 			}
@@ -287,7 +299,7 @@ public class ChargenUtil {
 		}
 	}
 
-	public static JSONObject match(JSONArray target, JSONObject current, boolean hasChoice, boolean hasFreetext) {
+	public static JSONObject match(final JSONArray target, final JSONObject current, final boolean hasChoice, final boolean hasFreetext) {
 		if (target == null) return null;
 		for (int k = 0; k < target.size(); ++k) {
 			boolean matches = true;
