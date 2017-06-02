@@ -7,24 +7,28 @@
     	<copy todir="${DSATool.location}">
     		<fileset dir="." includes="${Includes}"/>        	
     	</copy>
-    	<mkdir dir="bin"/>
-    	<javac srcdir="src" destdir="bin" includeantruntime="false" debug="true" debuglevel="lines,vars,source" source="1.8" target="1.8"/>
-		<jar destfile="${PluginName}.jar">
+    	<path id="classpath">
+    		<fileset dir="${DSATool.location}"/>
+    	</path>
+		<mkdir dir="bin"/>
+		<javac srcdir="src" destdir="bin" classpathref="classpath" includeantruntime="false" debug="true" debuglevel="lines,vars,source" source="1.8" target="1.8"/>
+		<mkdir dir="plugins"/>
+		<jar destfile="plugins/${PluginName}.jar">
 			<fileset dir="bin"/>
 			<metainf file="LICENSE"/>
 			<metainf file="NOTICE"/>
 		</jar>
-    	<copy file="${PluginName}.jar" todir="${DSATool.location}/plugins"/>
+    	<copy file="plugins/${PluginName}.jar" todir="${DSATool.location}/plugins"/>
     </target>
 	<target name="update" description="Creates a zip file for release" depends="deploy">
 		<delete dir="release/current"/>
 		<mkdir dir="release/current"/>
 		<copy todir="release/current" includeEmptyDirs="false">
-			<fileset dir="." includes="${Includes},${PluginName}.jar">
+			<fileset dir="." includes="${Includes},plugins/${PluginName}.jar">
 			    <different targetdir="release/previous"/>
 			</fileset>
 		</copy>
-		<fileset id="deleted" dir="release/previous" includes="${Includes},${PluginName}.jar">
+		<fileset id="deleted" dir="release/previous" includes="${Includes},plugins/${PluginName}.jar">
 			<present present="srconly" targetdir="."/>
 		</fileset>
 		<resourcecount property="hasDeleted" refId="deleted" when="greater" count="0"/>
@@ -61,7 +65,7 @@
 		</zip>
 		<delete dir="release/previous"/>
 		<copy todir="release/previous" includeEmptyDirs="false">
-			<fileset dir="." includes="${Includes},${PluginName}.jar"/>
+			<fileset dir="." includes="${Includes},plugins/${PluginName}.jar"/>
 		</copy>
 		<copy file="release/current/release-info.json" todir="release/previous"/>
 		<delete dir="release/current"/>
@@ -72,7 +76,7 @@
 		<replace file="update/${PluginName}.json" token="@releaseDate@" value="${releaseDate}"/>
 		<replace file="update/${PluginName}.json" token="@previousReleaseDate@" value="${previousReleaseDate}"/>
 		<zip destfile="release/${PluginName}_${releaseDate}_full.zip">
-			<fileset dir="." includes="${Includes},${PluginName}.jar,update/${PluginName}.json"/>
+			<fileset dir="." includes="${Includes},plugins/${PluginName}.jar,update/${PluginName}.json"/>
 		</zip>
 		<delete dir="update"/>
 	</target>
