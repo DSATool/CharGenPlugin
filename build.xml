@@ -19,6 +19,7 @@
 			<metainf file="NOTICE"/>
 		</jar>
     	<copy file="plugins/${PluginName}.jar" todir="${DSATool.location}/plugins"/>
+		<copy file="release/previous/release-info.json" tofile="${DSATool.location}/update/${PluginName}.json"/>
     </target>
 	<target name="update" description="Creates a zip file for release" depends="deploy">
 		<delete dir="release/current"/>
