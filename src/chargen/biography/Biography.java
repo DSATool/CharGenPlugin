@@ -81,7 +81,7 @@ public class Biography extends TabController {
 
 	private final Tab tab;
 
-	public Biography(JSONObject generationState, TabPane tabPane, VBox leftBox, IntegerProperty gp) {
+	public Biography(final JSONObject generationState, final TabPane tabPane, final VBox leftBox, final IntegerProperty gp) {
 		super(generationState, gp);
 
 		final FXMLLoader fxmlLoader = new FXMLLoader();
@@ -145,7 +145,7 @@ public class Biography extends TabController {
 	}
 
 	@Override
-	public void activate(boolean forward) {
+	public void activate(final boolean forward) {
 		if (generationState.getObj("Rasse").containsKey("Schuppenfarbe")) {
 			haircolorLabel.setText("Schuppenfarbe 1:");
 			skincolorLabel.setText("Schuppenfarbe 2:");
@@ -180,7 +180,7 @@ public class Biography extends TabController {
 			female.setSelected(false);
 		}
 
-		if (weightTracksSize != bio.getBoolOrDefault("temporary:weightTracksSize", false)) {
+		if (weightTracksSize != bio.getBoolOrDefault("temporary:weightTracksSize", true)) {
 			toggleWeightTracksSize();
 		}
 
@@ -231,7 +231,7 @@ public class Biography extends TabController {
 	}
 
 	@Override
-	public void deactivate(boolean forward) {
+	public void deactivate(final boolean forward) {
 		tab.setDisable(true);
 	}
 
@@ -240,7 +240,7 @@ public class Biography extends TabController {
 		eyecolor.setValue(randomFrom(generationState.getObj("Rasse").getObj("Augenfarbe")));
 	}
 
-	private String randomFrom(JSONObject choices) {
+	private String randomFrom(final JSONObject choices) {
 		int roll = DSAUtil.diceRoll(20);
 		String choice = "";
 		for (final String current : choices.keySet()) {
@@ -306,10 +306,10 @@ public class Biography extends TabController {
 		weightTracksSize = !weightTracksSize;
 		weightTracksSizeButton.setTextFill(weightTracksSize ? Color.BLACK : Color.DARKGRAY);
 		if (weightTracksSize) {
-			generationState.getObj("Held").getObj("Biografie").put("temporary:weightTracksSize", true);
+			generationState.getObj("Held").getObj("Biografie").removeKey("temporary:weightTracksSize");
 			randomWeight();
 		} else {
-			generationState.getObj("Held").getObj("Biografie").removeKey("temporary:weightTracksSize");
+			generationState.getObj("Held").getObj("Biografie").put("temporary:weightTracksSize", false);
 		}
 	}
 }
