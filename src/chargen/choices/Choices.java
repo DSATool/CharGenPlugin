@@ -450,7 +450,8 @@ public class Choices extends TabController {
 			currentValue.setAlignment(Pos.CENTER);
 			input.add(currentValue, 1, i + 1);
 			currentValue.textProperty()
-					.bind(new When(actualTalent.valueProperty().isEqualTo(Integer.MIN_VALUE)).then("n.a.").otherwise(actualTalent.valueProperty().asString()));
+					.bind(new When(actualTalent.valueProperty().lessThan(Integer.MIN_VALUE + 1)).then("n.a.")
+							.otherwise(actualTalent.valueProperty().asString()));
 
 			for (int j = 0; j < choices.size(); ++j) {
 				final Tuple<String, JSONArray> choice = choices.get(j);
@@ -964,7 +965,7 @@ public class Choices extends TabController {
 						continue;
 					}
 
-					input.add(new Label(actualTalent.getName()), 0, current + 1 + additionalRows);
+					input.add(new Label(actualTalent.getDisplayName()), 0, current + 1 + additionalRows);
 					names.append(actualTalent.getName());
 					names.append(", ");
 
@@ -972,7 +973,7 @@ public class Choices extends TabController {
 					currentValue.setPrefWidth(20);
 					currentValue.setAlignment(Pos.CENTER);
 					input.add(currentValue, 1, current + 1 + additionalRows);
-					currentValue.textProperty().bind(new When(actualTalent.valueProperty().isEqualTo(Integer.MIN_VALUE)).then("n.a.")
+					currentValue.textProperty().bind(new When(actualTalent.valueProperty().lessThan(Integer.MIN_VALUE + 1)).then("n.a.")
 							.otherwise(actualTalent.valueProperty().asString()));
 
 					for (int k = 0; k < numValues; ++k) {
@@ -1063,6 +1064,7 @@ public class Choices extends TabController {
 				final JSONObject talent;
 				if (representation != null) {
 					actual = new JSONObject(group);
+					group.put(name, (JSONObject) actual);
 					if (currentTalent.containsKey("Auswahl") || currentTalent.containsKey("Freitext")) {
 						final JSONArray rep = new JSONArray(actual);
 						talent = new JSONObject(rep);
@@ -1072,19 +1074,26 @@ public class Choices extends TabController {
 						talent = new JSONObject(actual);
 						((JSONObject) actual).put(representation, talent);
 					}
+					talent.put("aktiviert", false);
 					actualTalent = new Spell(name, currentTalent, talent, (JSONObject) actual, group, representation);
 				} else if (currentTalent.containsKey("Auswahl") || currentTalent.containsKey("Freitext")) {
 					actual = new JSONArray(group);
-					talent = new JSONObject(group);
+					group.put(name, (JSONArray) actual);
+					talent = new JSONObject(actual);
 					((JSONArray) actual).add(talent);
+					if (!currentTalent.getBoolOrDefault("Basis", false)) {
+						talent.put("aktiviert", false);
+					}
 					actualTalent = new Talent(name, null, currentTalent, talent, group);
 				} else {
 					talent = new JSONObject(group);
 					group.put(name, talent);
+					if (!currentTalent.getBoolOrDefault("Basis", false)) {
+						talent.put("aktiviert", false);
+					}
 					actualTalent = new Talent(name, null, currentTalent, talent, group);
 				}
 				talent.put("temporary:ChoiceOnly", true);
-				talent.put("aktiviert", false);
 			} else if (currentTalent.containsKey("Auswahl") || currentTalent.containsKey("Freitext")) {
 				actualTalent = representation != null
 						? new Spell(name, currentTalent, ((JSONObject) actual).getArr(representation).getObj(0), (JSONObject) actual, group, representation)

@@ -24,22 +24,23 @@ public class TalentChoice extends Choice {
 	public final int value;
 	public final boolean primarySpell;
 
-	public TalentChoice(Talent talent, int value, boolean primarySpell) {
+	public TalentChoice(final Talent talent, final int value, final boolean primarySpell) {
 		this.talent = talent;
 		this.value = value;
 		this.primarySpell = primarySpell;
 	}
 
 	@Override
-	public void apply(JSONObject hero, boolean alreadyApplied) {
+	public void apply(final JSONObject hero, final boolean alreadyApplied) {
 		applyInternally(hero, value, false, alreadyApplied);
 	}
 
-	protected void applyInternally(JSONObject hero, int value, boolean unapply, boolean alreadyApplied) {
+	protected void applyInternally(final JSONObject hero, final int value, final boolean unapply, final boolean alreadyApplied) {
 		if (!alreadyApplied) {
 			talent.setValue((talent.getValue() == Integer.MIN_VALUE ? 0 : talent.getValue()) + value);
 		}
-		if (talent.getValue() == 0 && talent.getActual().getBoolOrDefault("temporary:ChoiceOnly", false)) {
+		if (talent.getValue() == 0 && talent.getActual().getBoolOrDefault("temporary:ChoiceOnly", false)
+				&& !talent.getTalent().getBoolOrDefault("Basis", false)) {
 			talent.setValue(Integer.MIN_VALUE);
 		}
 		if (primarySpell) {
@@ -59,7 +60,7 @@ public class TalentChoice extends Choice {
 	}
 
 	@Override
-	public void unapply(JSONObject hero) {
+	public void unapply(final JSONObject hero) {
 		applyInternally(hero, -value, true, false);
 	}
 }
