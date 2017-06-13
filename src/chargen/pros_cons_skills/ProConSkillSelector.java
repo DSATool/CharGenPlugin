@@ -228,8 +228,9 @@ public abstract class ProConSkillSelector {
 				if (actual.containsKey("temporary:Chosen")) {
 					current = proOrCon.getCost();
 					current += handleBalanceSpecialCase(proOrCon, actual);
+				} else {
+					current += Math.round(proOrCon.getCost() / (double) proOrCon.getValue() * additional);
 				}
-				current += Math.round(proOrCon.getCost() / (double) proOrCon.getValue() * additional);
 			}
 			cost += current;
 			if (proOrCon.getProOrCon().getBoolOrDefault("Schlechte Eigenschaft", false)) {
