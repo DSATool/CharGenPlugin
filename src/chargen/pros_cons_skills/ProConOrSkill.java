@@ -33,8 +33,9 @@ public class ProConOrSkill extends ProOrCon {
 
 	private final boolean suppressEffects;
 
-	public ProConOrSkill(String name, JSONObject hero, JSONObject proOrCon, JSONObject actual, boolean fixed, boolean fixedChoice, boolean fixedText,
-			boolean valid, boolean suggested, boolean suppressEffects) {
+	public ProConOrSkill(final String name, final JSONObject hero, final JSONObject proOrCon, final JSONObject actual, final boolean fixed,
+			final boolean fixedChoice, final boolean fixedText,
+			final boolean valid, final boolean suggested, final boolean suppressEffects) {
 		super(name, hero, proOrCon, actual);
 
 		this.fixed = fixed;
@@ -92,7 +93,7 @@ public class ProConOrSkill extends ProOrCon {
 	}
 
 	@Override
-	public void setDescription(String description) {
+	public void setDescription(final String description) {
 		if (!suppressEffects) {
 			HeroUtil.unapplyEffect(hero, name.get(), proOrCon, actual);
 		}
@@ -104,8 +105,8 @@ public class ProConOrSkill extends ProOrCon {
 		if (!suppressEffects) {
 			HeroUtil.applyEffect(hero, name.get(), proOrCon, actual);
 		}
-		updateCost(value.get(), actual.getString("Auswahl"), actual.getString("Freitext"));
 		this.description.set(description);
+		updateCost(value.get(), actual.getString("Auswahl"), actual.getString("Freitext"));
 		actual.notifyListeners(null);
 		if (getProOrCon().containsKey("Auswahl")) {
 			if (!fixedChoice) {
@@ -130,7 +131,7 @@ public class ProConOrSkill extends ProOrCon {
 	}
 
 	@Override
-	public void setValue(int value) {
+	public void setValue(final int value) {
 		actual.put("temporary:AdditionalLevels", actual.getIntOrDefault("temporary:AdditionalLevels", 0) + value - getValue());
 		if (!suppressEffects) {
 			HeroUtil.unapplyEffect(hero, name.get(), proOrCon, actual);
@@ -145,7 +146,7 @@ public class ProConOrSkill extends ProOrCon {
 	}
 
 	@Override
-	public void setVariant(String variant) {
+	public void setVariant(final String variant) {
 		if (!suppressEffects) {
 			HeroUtil.unapplyEffect(hero, name.get(), proOrCon, actual);
 		}
@@ -155,8 +156,8 @@ public class ProConOrSkill extends ProOrCon {
 		if (!suppressEffects) {
 			HeroUtil.applyEffect(hero, name.get(), proOrCon, actual);
 		}
-		updateCost(value.get(), actual.getString("Auswahl"), actual.getString("Freitext"));
 		this.variant.set(variant);
+		updateCost(value.get(), actual.getString("Auswahl"), actual.getString("Freitext"));
 		if (!fixedText) {
 			getActual().put("temporary:SetText", true);
 		}
