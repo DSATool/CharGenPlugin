@@ -363,8 +363,7 @@ public class RKPSelectors extends TabController {
 	}
 
 	private void collectBasicValues(final JSONObject hero) {
-		final JSONObject basicValues = new JSONObject(hero);
-		hero.put("Basiswerte", basicValues);
+		final JSONObject basicValues = hero.getObj("Basiswerte");
 
 		for (final String current : new String[] { "Rasse", "Kultur", "Profession" }) {
 			final JSONObject currentValues = generationState.getObj(current).getObjOrDefault("Basiswerte", null);
@@ -405,8 +404,7 @@ public class RKPSelectors extends TabController {
 	}
 
 	private void collectEquipment(final JSONObject hero) {
-		final JSONObject posessions = new JSONObject(hero);
-		hero.put("Besitz", posessions);
+		final JSONObject posessions = hero.getObj("Besitz");
 
 		final JSONArray inventory = new JSONArray(posessions);
 		posessions.put("Ausrüstung", inventory);
@@ -440,8 +438,7 @@ public class RKPSelectors extends TabController {
 	}
 
 	private void collectProsOrCons(String category, final JSONObject hero) {
-		JSONObject prosOrCons = new JSONObject(hero);
-		hero.put(category, prosOrCons);
+		JSONObject prosOrCons = hero.getObj(category);
 
 		for (final String currentType : new String[] { "Rasse", "Kultur", "Profession", "Breitgefächerte Bildung", "Veteran" }) {
 			if (!generationState.containsKey(currentType) || "Veteran".equals(currentType) && !"Sonderfertigkeiten".equals(category)) {
@@ -655,8 +652,8 @@ public class RKPSelectors extends TabController {
 			}
 		}
 
-		final JSONObject spells = new JSONObject(hero);
-		hero.put("Zauber", spells);
+		final JSONObject spells = hero.getObj("Zauber");
+
 		for (final Tuple3<String, String, Boolean> id : spellList.keySet()) {
 			final JSONObject spell = spells.getObj(id._1);
 			final JSONObject currentSpell = HeroUtil.findTalent(id._1)._1;
@@ -683,8 +680,7 @@ public class RKPSelectors extends TabController {
 	}
 
 	private void collectTalents(final JSONObject hero) {
-		final JSONObject talents = new JSONObject(hero);
-		hero.put("Talente", talents);
+		final JSONObject talents = hero.getObj("Talente");
 
 		final Map<String, List<Integer>> talentList = new HashMap<>();
 		for (final String current : new String[] { "Rasse", "Kultur", "Profession" }) {
@@ -832,6 +828,15 @@ public class RKPSelectors extends TabController {
 		}
 
 		if (changedRace || changedCulture || changedProfession || changedBgbVeteran) {
+			hero.removeKey("Basiswerte");
+			hero.removeKey("Vorteile");
+			hero.removeKey("Nachteile");
+			hero.removeKey("Sonderfertigkeiten");
+			hero.removeKey("Verbilligte Sonderfertigkeiten");
+			hero.removeKey("Talente");
+			hero.removeKey("Zauber");
+			hero.removeKey("Besitz");
+
 			collectBasicValues(hero);
 
 			handleGeodeSpecialCase(hero);
