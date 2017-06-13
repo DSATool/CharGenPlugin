@@ -59,7 +59,8 @@ public class GroupSelector {
 		initializePossibleTable();
 	};
 
-	public GroupSelector(JSONObject generationState, String type, ProConSkillSelector parent, JSONObject possibleProsOrCons, int additionalSpace) {
+	public GroupSelector(final JSONObject generationState, final String type, final ProConSkillSelector parent, final JSONObject possibleProsOrCons,
+			final int additionalSpace) {
 		this.generationState = generationState;
 		this.type = type;
 		this.possibleProsOrCons = possibleProsOrCons;
@@ -90,10 +91,12 @@ public class GroupSelector {
 				final JSONObject actual = skill.getActual().clone(target.getArr(name));
 				actual.put("temporary:Chosen", true);
 				if (!skill.hasFixedChoice()) {
-					actual.put("temporary:SetChoice", true);
+					skill.getActual().removeKey("Auswahl");
+					skill.getActual().removeKey("temporary:SetChoice");
 				}
 				if (!skill.hasFixedText()) {
-					actual.put("temporary:SetText", true);
+					skill.getActual().removeKey("Freitext");
+					skill.getActual().removeKey("temporary:SetText");
 				}
 				target.getArr(name).add(actual);
 			} else {
@@ -101,6 +104,7 @@ public class GroupSelector {
 				actual.put("temporary:Chosen", true);
 				target.put(name, actual);
 			}
+			skill.getActual().removeKey("Stufe");
 			if (!isCheaperSkills) {
 				HeroUtil.applyEffect(hero, name, skill.getProOrCon(), skill.getActual());
 			}
@@ -114,7 +118,7 @@ public class GroupSelector {
 				possibleValidColumn, possibleSuggestedColumn);
 	}
 
-	public void activate(JSONObject hero, JSONObject currentProsOrCons) {
+	public void activate(final JSONObject hero, final JSONObject currentProsOrCons) {
 		initializePossibleTable();
 		currentProsOrCons.addListener(listener);
 		if ("Sonderfertigkeiten".equals(type)) {
@@ -122,7 +126,7 @@ public class GroupSelector {
 		}
 	}
 
-	public void deactivate(JSONObject hero, JSONObject currentProsOrCons) {
+	public void deactivate(final JSONObject hero, final JSONObject currentProsOrCons) {
 		currentProsOrCons.removeListener(listener);
 		if ("Sonderfertigkeiten".equals(type)) {
 			hero.getObj("Verbilligte Sonderfertigkeiten").removeListener(listener);
