@@ -50,7 +50,7 @@ public class ProConSkillSelectors extends TabController {
 	private final IntegerProperty conGP = new SimpleIntegerProperty();
 	private final IntegerProperty seGP = new SimpleIntegerProperty();
 
-	public ProConSkillSelectors(JSONObject generationState, TabPane tabPane, VBox leftBox, IntegerProperty gp) {
+	public ProConSkillSelectors(final JSONObject generationState, final TabPane tabPane, final VBox leftBox, final IntegerProperty gp) {
 		super(generationState, gp);
 		this.leftBox = leftBox;
 
@@ -65,7 +65,7 @@ public class ProConSkillSelectors extends TabController {
 	}
 
 	@Override
-	public void activate(boolean forward) {
+	public void activate(final boolean forward) {
 		proTab.setDisable(false);
 		conTab.setDisable(false);
 		skillTab.setDisable(false);
@@ -157,7 +157,7 @@ public class ProConSkillSelectors extends TabController {
 				final JSONArray cheaperSkillsArray = cheaperSkills.getArr(name);
 				for (int i = 0; i < cheaperSkillsArray.size(); ++i) {
 					final JSONObject current = cheaperSkillsArray.getObj(i);
-					final JSONObject match = ChargenUtil.match(cheaperSkillsArray, current, skill.containsKey("Auswahl"), skill.containsKey("Freitext"));
+					final JSONObject match = ChargenUtil.match(actualSkills.getArr(name), current, skill.containsKey("Auswahl"), skill.containsKey("Freitext"));
 					if (match != null) {
 						temporary += skill.getIntOrDefault("Kosten", 0) * current.getIntOrDefault("Verbilligungen", 1);
 						cheaperSkillsArray.removeAt(i);
@@ -178,7 +178,7 @@ public class ProConSkillSelectors extends TabController {
 	}
 
 	@Override
-	public void deactivate(boolean forward) {
+	public void deactivate(final boolean forward) {
 		proTab.setDisable(true);
 		conTab.setDisable(true);
 		skillTab.setDisable(true);
