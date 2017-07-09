@@ -341,6 +341,7 @@ public class CharGenController {
 		applySpecialPros(hero);
 		setAP(hero);
 		setMoney(hero);
+		hero.getObj("Basiswerte").getObj("Geschwindigkeit").put("Wert", 8);
 		ResourceManager.moveResource(hero, "characters/" + hero.getObj("Biografie").getString("Vorname"));
 		generationState.clear();
 		init();
