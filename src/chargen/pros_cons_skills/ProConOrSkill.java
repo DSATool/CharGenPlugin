@@ -28,7 +28,6 @@ public class ProConOrSkill extends ProOrCon {
 	private final boolean fixedChoice;
 	private final boolean fixedText;
 
-	private final BooleanProperty valid;
 	private final BooleanProperty suggested;
 
 	private final boolean suppressEffects;
@@ -42,7 +41,7 @@ public class ProConOrSkill extends ProOrCon {
 		this.fixedChoice = fixedChoice;
 		this.fixedText = fixedText;
 
-		this.valid = new SimpleBooleanProperty(valid);
+		this.valid.set(valid);
 		this.suggested = new SimpleBooleanProperty(suggested);
 
 		this.suppressEffects = suppressEffects;
@@ -167,7 +166,6 @@ public class ProConOrSkill extends ProOrCon {
 		return suggested;
 	}
 
-	public ReadOnlyBooleanProperty validProperty() {
-		return valid;
-	}
+	@Override
+	protected void updateValid() {}
 }

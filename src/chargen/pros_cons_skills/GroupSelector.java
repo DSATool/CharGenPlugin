@@ -183,7 +183,7 @@ public class GroupSelector {
 			if (proOrCon.containsKey("Auswahl") || proOrCon.containsKey("Freitext")) {
 				boolean foundEmpty = false;
 				final boolean isValid = isCheaper
-						|| RequirementsUtil.isRequirementFulfilled(hero, proOrCon.getObjOrDefault("Voraussetzungen", null), null, null)
+						|| RequirementsUtil.isRequirementFulfilled(hero, proOrCon.getObjOrDefault("Voraussetzungen", null), null, null, false)
 								&& (isSkills ? proOrCon.getIntOrDefault("Verbreitung", 1) > 3 : true);
 				if (suggested.containsKey(name)) {
 					final JSONArray actual = suggested.getArr(name);
@@ -212,7 +212,7 @@ public class GroupSelector {
 				}
 			} else if (!currentProsOrCons.containsKey(name)) {
 				final boolean isValid = isCheaper
-						|| RequirementsUtil.isRequirementFulfilled(hero, proOrCon.getObjOrDefault("Voraussetzungen", null), null, null)
+						|| RequirementsUtil.isRequirementFulfilled(hero, proOrCon.getObjOrDefault("Voraussetzungen", null), null, null, false)
 								&& !invalid.containsKey(name) && (isSkills ? proOrCon.getIntOrDefault("Verbreitung", 1) > 3 : true);
 				final boolean isSuggested = suggested.containsKey(name);
 				items.add(new ProConOrSkill(name, hero, proOrCon, new JSONObject(null), false, false, false, isValid, isSuggested, false));
