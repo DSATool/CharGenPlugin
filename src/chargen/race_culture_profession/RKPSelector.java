@@ -57,7 +57,7 @@ public class RKPSelector {
 
 	private Runnable updateValue;
 
-	public RKPSelector(Runnable updateValue) {
+	public RKPSelector(final Runnable updateValue) {
 		final FXMLLoader fxmlLoader = new FXMLLoader();
 
 		fxmlLoader.setController(this);
@@ -77,7 +77,7 @@ public class RKPSelector {
 		tree.setCellFactory(tv -> {
 			final TreeCell<RKP> cell = new TreeCell<RKP>() {
 				@Override
-				public void updateItem(RKP item, boolean empty) {
+				public void updateItem(final RKP item, final boolean empty) {
 					super.updateItem(item, empty);
 					if (empty) {
 						setText(null);
@@ -122,7 +122,8 @@ public class RKPSelector {
 		});
 	}
 
-	private void addItem(TreeItem<RKP> parent, String name, JSONObject item, Function<Tuple3<String, JSONObject, RKP>, RKP> constructor) {
+	private void addItem(final TreeItem<RKP> parent, final String name, final JSONObject item,
+			final Function<Tuple3<String, JSONObject, RKP>, RKP> constructor) {
 		if (!item.getBoolOrDefault("kombinierbar", false)) {
 			final TreeItem<RKP> treeItem = new TreeItem<>(constructor.apply(new Tuple3<>(name, item, parent.getValue())));
 			parent.getChildren().add(treeItem);
@@ -136,7 +137,7 @@ public class RKPSelector {
 		}
 	}
 
-	private TreeItem<RKP> findChild(TreeItem<RKP> item, String child) {
+	private TreeItem<RKP> findChild(final TreeItem<RKP> item, final String child) {
 		for (int i = 0; i < item.getChildren().size(); ++i) {
 			if (child.equals(item.getChildren().get(i).getValue().name)) return item.getChildren().get(i);
 		}
@@ -155,7 +156,7 @@ public class RKPSelector {
 		return currentVariants;
 	}
 
-	public void select(String top, JSONArray modifications) {
+	public void select(final String top, final JSONArray modifications) {
 		TreeItem<RKP> current = findChild(root, top);
 		String old = top;
 
@@ -200,7 +201,7 @@ public class RKPSelector {
 		tree.getSelectionModel().select(current);
 	}
 
-	public void setData(JSONObject data, Function<Tuple3<String, JSONObject, RKP>, RKP> itemConstructor) {
+	public void setData(final JSONObject data, final Function<Tuple3<String, JSONObject, RKP>, RKP> itemConstructor) {
 		root.getChildren().clear();
 		root.setValue(null);
 		if (data != null) {
@@ -213,7 +214,7 @@ public class RKPSelector {
 		updateSelection(null);
 	}
 
-	public void setRoot(JSONObject data, Function<Tuple3<String, JSONObject, RKP>, RKP> itemConstructor) {
+	public void setRoot(final JSONObject data, final Function<Tuple3<String, JSONObject, RKP>, RKP> itemConstructor) {
 		root.getChildren().clear();
 		if (data != null) {
 			root.setValue(itemConstructor.apply(new Tuple3<>(((JSONObject) data.getParent()).keyOf(data), data, null)));
@@ -229,7 +230,7 @@ public class RKPSelector {
 		}
 	}
 
-	private void updateSelection(TreeItem<RKP> selected) {
+	private void updateSelection(final TreeItem<RKP> selected) {
 		variantNodes = variantsBox.getChildren();
 		variantNodes.clear();
 		for (final RKP variant : variants) {
@@ -293,11 +294,12 @@ public class RKPSelector {
 		}
 	}
 
-	public void updateSuggestedPossible(Function<RKP, Boolean> suggested, Function<RKP, Boolean> possible) {
+	public void updateSuggestedPossible(final Function<RKP, Boolean> suggested, final Function<RKP, Boolean> possible) {
 		updateSuggestedPossible(root, suggested, possible);
 	}
 
-	private Tuple<Boolean, Boolean> updateSuggestedPossible(TreeItem<RKP> treeItem, Function<RKP, Boolean> suggested, Function<RKP, Boolean> possible) {
+	private Tuple<Boolean, Boolean> updateSuggestedPossible(final TreeItem<RKP> treeItem, final Function<RKP, Boolean> suggested,
+			final Function<RKP, Boolean> possible) {
 		final RKP item = treeItem.getValue();
 		if (item != null) {
 			for (final RKP variant : item.getVariants()) {
@@ -316,10 +318,16 @@ public class RKPSelector {
 		if (item != null && suggested.apply(item)) {
 			item.valid.set(true);
 			item.suggested.set(true);
+			for (final TreeItem<RKP> variantItem : treeItem.getChildren()) {
+				updateSuggestedPossible(variantItem, rkp -> false, rkp -> true);
+			}
 			return new Tuple<>(true, true);
 		} else if (item != null && possible.apply(item)) {
 			item.valid.set(true);
 			item.suggested.set(false);
+			for (final TreeItem<RKP> variantItem : treeItem.getChildren()) {
+				updateSuggestedPossible(variantItem, rkp -> false, rkp -> true);
+			}
 			return new Tuple<>(true, false);
 		} else {
 			if (item != null && treeItem.getChildren().size() == 0) {
