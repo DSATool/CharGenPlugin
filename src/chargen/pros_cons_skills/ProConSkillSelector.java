@@ -303,6 +303,7 @@ public abstract class ProConSkillSelector {
 		sorted.setComparator((l, r) -> ChargenUtil.comparator.compare(l.getName(), r.getName()));
 		chosenTable.setItems(sorted);
 
+		final boolean isSkills = "Sonderfertigkeiten".equals(type);
 		final boolean isCheaper = "Verbilligte Sonderfertigkeiten".equals(type);
 
 		for (final String name : currentProsOrCons.keySet()) {
@@ -316,11 +317,12 @@ public abstract class ProConSkillSelector {
 					final JSONObject actual = current.getObj(i);
 					items.add(new ProConOrSkill(name, hero, proOrCon, actual, !actual.containsKey("temporary:Chosen"),
 							actual.containsKey("Auswahl") && !actual.containsKey("temporary:SetChoice"),
-							actual.containsKey("Freitext") && !actual.containsKey("temporary:SetText"), true, false, isCheaper));
+							actual.containsKey("Freitext") && !actual.containsKey("temporary:SetText"), isSkills, isCheaper, false, false, isCheaper));
 				}
 			} else {
 				final JSONObject actual = currentProsOrCons.getObj(name);
-				items.add(new ProConOrSkill(name, hero, proOrCon, actual, !actual.containsKey("temporary:Chosen"), false, false, true, false, isCheaper));
+				items.add(new ProConOrSkill(name, hero, proOrCon, actual, !actual.containsKey("temporary:Chosen"), false, false, isSkills, isCheaper, false,
+						false, isCheaper));
 			}
 		}
 

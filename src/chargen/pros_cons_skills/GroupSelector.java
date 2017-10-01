@@ -17,7 +17,6 @@ package chargen.pros_cons_skills;
 
 import chargen.util.ChargenUtil;
 import dsa41basis.util.HeroUtil;
-import dsa41basis.util.RequirementsUtil;
 import dsatool.util.ErrorLogger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -182,9 +181,6 @@ public class GroupSelector {
 			final JSONObject proOrCon = possibleProsOrCons.getObj(name);
 			if (proOrCon.containsKey("Auswahl") || proOrCon.containsKey("Freitext")) {
 				boolean foundEmpty = false;
-				final boolean isValid = isCheaper
-						|| RequirementsUtil.isRequirementFulfilled(hero, proOrCon.getObjOrDefault("Voraussetzungen", null), null, null, false)
-								&& (isSkills ? proOrCon.getIntOrDefault("Verbreitung", 1) > 3 : true);
 				if (suggested.containsKey(name)) {
 					final JSONArray actual = suggested.getArr(name);
 					for (int i = 0; i < actual.size(); ++i) {
@@ -193,7 +189,7 @@ public class GroupSelector {
 							foundEmpty = true;
 						}
 						items.add(new ProConOrSkill(name, hero, proOrCon, current, false, current.containsKey("Auswahl"), current.containsKey("Freitext"),
-								isValid, true, false));
+								isSkills, isCheaper, false, true, false));
 					}
 				}
 				if (invalid.containsKey(name)) {
@@ -204,18 +200,15 @@ public class GroupSelector {
 							foundEmpty = true;
 						}
 						items.add(new ProConOrSkill(name, hero, proOrCon, current, false, current.containsKey("Auswahl"), current.containsKey("Freitext"),
-								false, false, false));
+								isSkills, isCheaper, true, false, false));
 					}
 				}
 				if (!foundEmpty) {
-					items.add(new ProConOrSkill(name, hero, proOrCon, new JSONObject(null), false, false, false, isValid, false, false));
+					items.add(new ProConOrSkill(name, hero, proOrCon, new JSONObject(null), false, false, false, isSkills, isCheaper, false, false, false));
 				}
 			} else if (!currentProsOrCons.containsKey(name)) {
-				final boolean isValid = isCheaper
-						|| RequirementsUtil.isRequirementFulfilled(hero, proOrCon.getObjOrDefault("Voraussetzungen", null), null, null, false)
-								&& !invalid.containsKey(name) && (isSkills ? proOrCon.getIntOrDefault("Verbreitung", 1) > 3 : true);
 				final boolean isSuggested = suggested.containsKey(name);
-				items.add(new ProConOrSkill(name, hero, proOrCon, new JSONObject(null), false, false, false, isValid, isSuggested, false));
+				items.add(new ProConOrSkill(name, hero, proOrCon, new JSONObject(null), false, false, false, isSkills, isCheaper, false, isSuggested, false));
 			}
 		}
 
