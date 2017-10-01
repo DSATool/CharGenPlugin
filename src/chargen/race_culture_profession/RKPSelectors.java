@@ -680,7 +680,7 @@ public class RKPSelectors extends TabController {
 	}
 
 	private void collectTalents(final JSONObject hero) {
-		final JSONObject talents = hero.getObj("Talente");
+		final JSONObject actualTalents = hero.getObj("Talente");
 
 		final Map<String, List<Integer>> talentList = new HashMap<>();
 		for (final String current : new String[] { "Rasse", "Kultur", "Profession" }) {
@@ -702,7 +702,7 @@ public class RKPSelectors extends TabController {
 						talentList.put(talentName, Collections
 								.singletonList(talentList.getOrDefault(talentName, Collections.singletonList(0)).get(0) + currentTalents.getInt(talentName)));
 						if (primaryTalents != null && primaryTalents.contains(talentName)) {
-							final JSONObject talent = talents.getObj(talentAndGroup._2).getObj(talentName);
+							final JSONObject talent = actualTalents.getObj(talentAndGroup._2).getObj(talentName);
 							talent.put("Leittalent", true);
 							talent.put("temporary:RKPPrimaryTalent", true);
 						}
@@ -718,19 +718,19 @@ public class RKPSelectors extends TabController {
 				continue;
 			}
 			if (talentAndGroup._1.containsKey("Auswahl") || talentAndGroup._1.containsKey("Freitext")) {
-				final JSONArray talent = talents.getObj(groupName).getArr(talentName);
+				final JSONArray talent = actualTalents.getObj(groupName).getArr(talentName);
 				for (final int mod : talentList.get(talentName)) {
 					final JSONObject currentTalent = new JSONObject(talent);
 					currentTalent.put("TaW", mod);
 					talent.add(currentTalent);
 				}
 			} else {
-				final JSONObject talent = talents.getObj(groupName).getObj(talentName);
+				final JSONObject talent = actualTalents.getObj(groupName).getObj(talentName);
 				talent.put("TaW", talentList.get(talentName).get(0));
 			}
 		}
 
-		final JSONObject languages = talents.getObj("Sprachen und Schriften");
+		final JSONObject languages = actualTalents.getObj("Sprachen und Schriften");
 		for (final String current : new String[] { "Rasse", "Kultur", "Profession" }) {
 			final JSONObject actualLanguages = generationState.getObj(current).getObj("Sprachen");
 			if (actualLanguages == null) {
@@ -746,6 +746,20 @@ public class RKPSelectors extends TabController {
 							final JSONObject actualLanguage = languages.getObj(name);
 							actualLanguage.put(type, true);
 						}
+					}
+				}
+			}
+		}
+
+		final JSONObject talents = ResourceManager.getResource("data/Talente");
+		for (final String groupName : talents.keySet()) {
+			final JSONObject talentGroup = talents.getObj(groupName);
+			for (final String talentName : talentGroup.keySet()) {
+				final JSONObject talent = talentGroup.getObj(talentName);
+				if (talent.getBoolOrDefault("Basis", false)) {
+					final JSONObject actualTalent = actualTalents.getObj(groupName).getObj(talentName);
+					if (!actualTalent.containsKey("TaW")) {
+						actualTalent.put("TaW", 0);
 					}
 				}
 			}
