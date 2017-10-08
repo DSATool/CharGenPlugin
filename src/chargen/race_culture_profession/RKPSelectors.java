@@ -842,12 +842,12 @@ public class RKPSelectors extends TabController {
 		}
 
 		if (changedRace || changedCulture || changedProfession || changedBgbVeteran) {
-			hero.removeKey("Basiswerte");
-			hero.removeKey("Vorteile");
-			hero.removeKey("Nachteile");
-			hero.removeKey("Sonderfertigkeiten");
-			hero.removeKey("Verbilligte Sonderfertigkeiten");
-			hero.removeKey("Talente");
+			hero.getObj("Basiswerte").clear();
+			hero.getObj("Vorteile").clear();
+			hero.getObj("Nachteile").clear();
+			hero.getObj("Sonderfertigkeiten").clear();
+			hero.getObj("Verbilligte Sonderfertigkeiten").clear();
+			hero.getObj("Talente").clear();
 			hero.removeKey("Zauber");
 			hero.removeKey("Besitz");
 

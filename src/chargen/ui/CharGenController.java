@@ -182,6 +182,18 @@ public class CharGenController {
 
 		generationState = ResourceManager.getResource("chargen/Status");
 
+		// Ensure nice order of entries
+		final JSONObject hero = generationState.getObj("Held");
+		hero.put("Spieler", hero.getStringOrDefault("Spieler", ""));
+		hero.getObj("Biografie");
+		hero.getObj("Eigenschaften");
+		hero.getObj("Basiswerte");
+		hero.getObj("Vorteile");
+		hero.getObj("Nachteile");
+		hero.getObj("Sonderfertigkeiten");
+		hero.getObj("Verbilligte Sonderfertigkeiten");
+		hero.getObj("Talente");
+
 		final IntegerProperty gp = new SimpleIntegerProperty(
 				generationState.getIntOrDefault("GP", Settings.getSettingIntOrDefault(110, "Heldenerschaffung", "GP")));
 		gp.addListener((o, oldV, newV) -> generationState.put("GP", newV.intValue()));
