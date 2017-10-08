@@ -111,7 +111,7 @@ public class GroupSelector {
 		});
 		possibleTable.setContextMenu(possibleMenu);
 
-		possibleValueColumn.setOnEditCommit(t -> t.getTableView().getItems().get(t.getTablePosition().getRow()).setValue(t.getNewValue()));
+		possibleValueColumn.setOnEditCommit(t -> t.getRowValue().setValue(t.getNewValue()));
 
 		ProConSkillUtil.setupTable(type, additionalSpace, possibleTable, possibleNameColumn, possibleDescColumn, possibleVariantColumn, possibleValueColumn,
 				possibleValidColumn, possibleSuggestedColumn);

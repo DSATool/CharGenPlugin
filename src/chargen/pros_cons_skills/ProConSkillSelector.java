@@ -147,7 +147,7 @@ public abstract class ProConSkillSelector {
 		});
 
 		chosenValueColumn.setOnEditCommit(t -> {
-			final ProConOrSkill current = t.getTableView().getItems().get(t.getTablePosition().getRow());
+			final ProConOrSkill current = t.getRowValue();
 			if (isCheaperSkills) {
 				current.setNumCheaper(t.getNewValue());
 			} else {
