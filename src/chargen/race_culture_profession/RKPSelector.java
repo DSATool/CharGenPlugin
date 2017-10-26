@@ -214,10 +214,10 @@ public class RKPSelector {
 		updateSelection(null);
 	}
 
-	public void setRoot(final JSONObject data, final Function<Tuple3<String, JSONObject, RKP>, RKP> itemConstructor) {
+	public void setRoot(final String name, final JSONObject data, final Function<Tuple3<String, JSONObject, RKP>, RKP> itemConstructor) {
 		root.getChildren().clear();
 		if (data != null) {
-			root.setValue(itemConstructor.apply(new Tuple3<>(((JSONObject) data.getParent()).keyOf(data), data, null)));
+			root.setValue(itemConstructor.apply(new Tuple3<>(name, data, null)));
 			for (final String itemName : data.getObj("Varianten").keySet()) {
 				final JSONObject item = data.getObj("Varianten").getObj(itemName);
 				addItem(root, itemName, item, itemConstructor);

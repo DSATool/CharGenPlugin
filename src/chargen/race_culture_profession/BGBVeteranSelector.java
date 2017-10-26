@@ -52,7 +52,7 @@ public class BGBVeteranSelector {
 	private Function<RKP, Boolean> suggested;
 	private Function<RKP, Boolean> possible;
 
-	public BGBVeteranSelector(Runnable updateValue) {
+	public BGBVeteranSelector(final Runnable updateValue) {
 		this.updateValue = updateValue;
 
 		final FXMLLoader fxmlLoader = new FXMLLoader();
@@ -122,7 +122,7 @@ public class BGBVeteranSelector {
 		}
 	}
 
-	public void setProfession(RKP profession) {
+	public void setProfession(final RKP profession) {
 		if (profession == null) {
 			noneChoice.setSelected(true);
 			bgbChoice.setDisable(true);
@@ -145,13 +145,13 @@ public class BGBVeteranSelector {
 		}
 	}
 
-	public void setSuggestedPossible(Function<RKP, Boolean> suggested, Function<RKP, Boolean> possible) {
+	public void setSuggestedPossible(final Function<RKP, Boolean> suggested, final Function<RKP, Boolean> possible) {
 		this.suggested = suggested;
 		this.possible = possible;
 		updateSuggestedPossible();
 	}
 
-	public void setType(BGBVeteran type) {
+	public void setType(final BGBVeteran type) {
 		update = false;
 		switch (type) {
 		case VETERAN:
@@ -173,7 +173,7 @@ public class BGBVeteranSelector {
 	@FXML
 	public void setVeteran() {
 		final JSONObject professions = ResourceManager.getResource("data/Professionen");
-		selector.setRoot(professions.getObj(professionName), t -> new RKP(RKP.Type.Profession, t._1, t._2, t._3));
+		selector.setRoot(professionName, professions.getObj(professionName), t -> new RKP(RKP.Type.Profession, t._1, t._2, t._3));
 		updateSuggestedPossible();
 		if (update) {
 			updateValue.run();

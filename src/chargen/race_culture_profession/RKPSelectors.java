@@ -426,7 +426,9 @@ public class RKPSelectors extends TabController {
 					} else {
 						item = currentItem.clone(inventory);
 					}
-					item.put("Name", name);
+					if (!item.containsKey("Name")) {
+						item.put("Name", name);
+					}
 					inventory.add(item);
 				}
 			}

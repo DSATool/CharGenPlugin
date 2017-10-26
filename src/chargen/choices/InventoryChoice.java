@@ -24,13 +24,17 @@ public class InventoryChoice extends Choice {
 
 	public InventoryChoice(final String name, final JSONObject actual) {
 		final JSONObject items = ResourceManager.getResource("data/Ausruestung");
+		JSONObject item;
 		if (items.containsKey(name)) {
-			this.actual = items.getObj(name).clone(null);
-			this.actual.addAll(actual, true);
+			item = items.getObj(name).clone(null);
+			item.addAll(actual, true);
 		} else {
-			this.actual = actual.clone(null);
+			item = actual.clone(null);
 		}
-		this.actual.put("Name", name);
+		if (!item.containsKey("Name")) {
+			item.put("Name", name);
+		}
+		this.actual = item;
 	}
 
 	@Override
