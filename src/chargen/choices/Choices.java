@@ -1075,7 +1075,7 @@ public class Choices extends TabController {
 						((JSONObject) actual).put(representation, talent);
 					}
 					talent.put("aktiviert", false);
-					actualTalent = new Spell(name, currentTalent, talent, (JSONObject) actual, group, representation);
+					actualTalent = Spell.getSpell(name, currentTalent, talent, (JSONObject) actual, group, representation);
 				} else if (currentTalent.containsKey("Auswahl") || currentTalent.containsKey("Freitext")) {
 					actual = new JSONArray(group);
 					group.put(name, (JSONArray) actual);
@@ -1084,24 +1084,25 @@ public class Choices extends TabController {
 					if (!currentTalent.getBoolOrDefault("Basis", false)) {
 						talent.put("aktiviert", false);
 					}
-					actualTalent = new Talent(name, null, currentTalent, talent, group);
+					actualTalent = Talent.getTalent(name, null, currentTalent, talent, group);
 				} else {
 					talent = new JSONObject(group);
 					group.put(name, talent);
 					if (!currentTalent.getBoolOrDefault("Basis", false)) {
 						talent.put("aktiviert", false);
 					}
-					actualTalent = new Talent(name, null, currentTalent, talent, group);
+					actualTalent = Talent.getTalent(name, null, currentTalent, talent, group);
 				}
 				talent.put("temporary:ChoiceOnly", true);
 			} else if (currentTalent.containsKey("Auswahl") || currentTalent.containsKey("Freitext")) {
 				actualTalent = representation != null
-						? new Spell(name, currentTalent, ((JSONObject) actual).getArr(representation).getObj(0), (JSONObject) actual, group, representation)
-						: new Talent(name, null, currentTalent, ((JSONArray) actual).getObj(0), group);
+						? Spell.getSpell(name, currentTalent, ((JSONObject) actual).getArr(representation).getObj(0), (JSONObject) actual, group,
+								representation)
+						: Talent.getTalent(name, null, currentTalent, ((JSONArray) actual).getObj(0), group);
 			} else {
 				actualTalent = representation != null
-						? new Spell(name, currentTalent, ((JSONObject) actual).getObj(representation), (JSONObject) actual, group, representation)
-						: new Talent(name, null, currentTalent, (JSONObject) actual, group);
+						? Spell.getSpell(name, currentTalent, ((JSONObject) actual).getObj(representation), (JSONObject) actual, group, representation)
+						: Talent.getTalent(name, null, currentTalent, (JSONObject) actual, group);
 			}
 		}
 		talents.put(name, actualTalent);
