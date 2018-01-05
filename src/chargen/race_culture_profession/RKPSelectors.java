@@ -429,6 +429,14 @@ public class RKPSelectors extends TabController {
 					if (!item.containsKey("Name")) {
 						item.put("Name", name);
 					}
+
+					if (item.containsKey("Bannschwert") && item.getObj("Bannschwert").getObj("Rituale").containsKey("Bannschwert")) {
+						item.removeKey("Bruchfaktor");
+						if (item.containsKey("Nahkampfwaffe")) {
+							item.getObj("Nahkampfwaffe").removeKey("Bruchfaktor");
+						}
+					}
+
 					inventory.add(item);
 				}
 			}
