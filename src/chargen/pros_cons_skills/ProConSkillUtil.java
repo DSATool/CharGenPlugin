@@ -49,7 +49,7 @@ public class ProConSkillUtil {
 				if (getTableRow() != null) {
 					final ProConOrSkill proOrCon = (ProConOrSkill) getTableRow().getItem();
 					if (proOrCon != null) {
-						Util.addReference(this, proOrCon.getProOrCon(), 50);
+						Util.addReference(this, proOrCon.getProOrCon(), 15, nameColumn.widthProperty());
 					}
 				}
 			}
@@ -135,10 +135,10 @@ public class ProConSkillUtil {
 				super.updateItem(valid, empty);
 				@SuppressWarnings("all")
 				final TableRow<ProConOrSkill> row = getTableRow();
-				row.getStyleClass().remove("invalid");
 				if (!empty && !valid) {
-					row.getStyleClass().remove("valid");
-					row.getStyleClass().add("invalid");
+					row.getStyleClass().setAll("cell", "indexed-cell", "table-row-cell", "invalid");
+				} else {
+					row.getStyleClass().remove("invalid");
 				}
 			}
 		});
@@ -149,10 +149,10 @@ public class ProConSkillUtil {
 				@SuppressWarnings("all")
 				final TableRow<ProConOrSkill> row = getTableRow();
 				final ProConOrSkill item = row.getItem();
-				row.getStyleClass().remove("valid");
 				if (!empty && item != null && item.isValid() && cheaper) {
-					row.getStyleClass().remove("invalid");
-					row.getStyleClass().add("valid");
+					row.getStyleClass().setAll("cell", "indexed-cell", "table-row-cell", "valid");
+				} else {
+					row.getStyleClass().remove("valid");
 				}
 			}
 		});

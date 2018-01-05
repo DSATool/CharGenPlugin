@@ -84,7 +84,7 @@ public class RKPSelector {
 						setGraphic(null);
 					} else {
 						setText(item.toString());
-						Util.addReference(this, item.data, 50 + item.depth * 12);
+						Util.addReference(this, item.data, 45 + item.depth * 12, tree.widthProperty());
 					}
 				}
 			};
@@ -247,7 +247,7 @@ public class RKPSelector {
 			for (final RKP variant : value.getVariants()) {
 				final CheckBox variantCheckbox = new CheckBox(variant.name + " (" + Util.getSignedIntegerString(variant.getCost(0)) + ")");
 				variantCheckbox.setPrefWidth(500);
-				Util.addReference(variantCheckbox, variant.data, 60);
+				Util.addReference(variantCheckbox, variant.data, 60, variantCheckbox.widthProperty());
 				variantCheckbox.selectedProperty().addListener((o, oldV, newV) -> {
 					if (newV) {
 						currentVariants.add(variant);
