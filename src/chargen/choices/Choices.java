@@ -1084,25 +1084,25 @@ public class Choices extends TabController {
 					if (!currentTalent.getBoolOrDefault("Basis", false)) {
 						talent.put("aktiviert", false);
 					}
-					actualTalent = Talent.getTalent(name, null, currentTalent, talent, group);
+					actualTalent = Talent.getTalent(name, (JSONObject) currentTalent.getParent(), currentTalent, talent, group);
 				} else {
 					talent = new JSONObject(group);
 					group.put(name, talent);
 					if (!currentTalent.getBoolOrDefault("Basis", false)) {
 						talent.put("aktiviert", false);
 					}
-					actualTalent = Talent.getTalent(name, null, currentTalent, talent, group);
+					actualTalent = Talent.getTalent(name, (JSONObject) currentTalent.getParent(), currentTalent, talent, group);
 				}
 				talent.put("temporary:ChoiceOnly", true);
 			} else if (currentTalent.containsKey("Auswahl") || currentTalent.containsKey("Freitext")) {
 				actualTalent = representation != null
 						? Spell.getSpell(name, currentTalent, ((JSONObject) actual).getArr(representation).getObj(0), (JSONObject) actual, group,
 								representation)
-						: Talent.getTalent(name, null, currentTalent, ((JSONArray) actual).getObj(0), group);
+						: Talent.getTalent(name, (JSONObject) currentTalent.getParent(), currentTalent, ((JSONArray) actual).getObj(0), group);
 			} else {
 				actualTalent = representation != null
 						? Spell.getSpell(name, currentTalent, ((JSONObject) actual).getObj(representation), (JSONObject) actual, group, representation)
-						: Talent.getTalent(name, null, currentTalent, (JSONObject) actual, group);
+						: Talent.getTalent(name, (JSONObject) currentTalent.getParent(), currentTalent, (JSONObject) actual, group);
 			}
 		}
 		talents.put(name, actualTalent);
