@@ -26,6 +26,7 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -37,31 +38,29 @@ public class ProConSkillSelectors extends TabController {
 
 	private final ProConSkillSelector proSelector;
 	private final ProConSkillSelector conSelector;
-	private final ProConSkillSelector skillSelector;
-	private final ProConSkillSelector cheaperSkillSelector;
+	private final SkillSelector skillSelector;
 
 	private final Tab proTab;
 	private final Tab conTab;
 	private final Tab skillTab;
-	private final Tab cheaperSkillTab;
 
 	private final VBox leftBox;
 
 	private final IntegerProperty conGP = new SimpleIntegerProperty();
 	private final IntegerProperty seGP = new SimpleIntegerProperty();
 
+	private final CheckBox showAll = new CheckBox("Alle anzeigen");
+
 	public ProConSkillSelectors(final JSONObject generationState, final TabPane tabPane, final VBox leftBox, final IntegerProperty gp) {
 		super(generationState, gp);
 		this.leftBox = leftBox;
 
-		proSelector = new ProConSelector(generationState, gp, "Vorteile", null, null);
+		proSelector = new ProConSelector(generationState, gp, "Vorteile", null, null, showAll.selectedProperty());
 		proTab = addTab(tabPane, "Vorteile", proSelector.getControl());
-		conSelector = new ProConSelector(generationState, gp, "Nachteile", conGP, seGP);
+		conSelector = new ProConSelector(generationState, gp, "Nachteile", conGP, seGP, showAll.selectedProperty());
 		conTab = addTab(tabPane, "Nachteile", conSelector.getControl());
-		skillSelector = new SkillSelector(generationState, gp, "Sonderfertigkeiten");
+		skillSelector = new SkillSelector(generationState, gp, "Sonderfertigkeiten", showAll.selectedProperty());
 		skillTab = addTab(tabPane, "SFs", skillSelector.getControl());
-		cheaperSkillSelector = new SkillSelector(generationState, gp, "Verbilligte Sonderfertigkeiten");
-		cheaperSkillTab = addTab(tabPane, "Verb. SFs", cheaperSkillSelector.getControl());
 	}
 
 	@Override
@@ -69,14 +68,16 @@ public class ProConSkillSelectors extends TabController {
 		proTab.setDisable(false);
 		conTab.setDisable(false);
 		skillTab.setDisable(false);
-		cheaperSkillTab.setDisable(false);
 
 		final ObservableList<Node> items = leftBox.getChildren();
+
+		items.add(0, showAll);
+
 		final JSONObject hero = generationState.getObj("Held");
 
 		cleanupCheaperSkills(hero);
 
-		int pos = 1;
+		int pos = 2;
 		final JSONObject pros = hero.getObj("Vorteile");
 		final int proGPPool = pros.getIntOrDefault("temporary:Pool", 0);
 		if (proGPPool > 0) {
@@ -111,7 +112,7 @@ public class ProConSkillSelectors extends TabController {
 		final int cheaperSkillAPPool = cheaperSkills.getIntOrDefault("temporary:Pool", 0);
 		items.add(pos, new Label("AP aus doppelten verb. Sonderfertigkeiten: "));
 		final Label cheaperSkillAPLabel = new Label();
-		cheaperSkillAPLabel.textProperty().bind(cheaperSkillSelector.getPool().asString().concat("/" + cheaperSkillAPPool));
+		cheaperSkillAPLabel.textProperty().bind(skillSelector.getCheaperPool().negate().asString().concat("/" + cheaperSkillAPPool));
 		items.add(pos + 1, cheaperSkillAPLabel);
 		pos += 2;
 
@@ -134,12 +135,11 @@ public class ProConSkillSelectors extends TabController {
 		proSelector.activate(forward);
 		conSelector.activate(forward);
 		skillSelector.activate(forward);
-		cheaperSkillSelector.activate(forward);
 
 		proTab.getTabPane().getSelectionModel().select(proTab);
 
 		canContinue.bind(gp.isEqualTo(0).and(conGP.lessThanOrEqualTo(maxConGP)).and(seGP.lessThanOrEqualTo(maxSEGP)).and(proSelector.getPool().isEqualTo(0))
-				.and(conSelector.getPool().isEqualTo(0)).and(skillSelector.getPool().isEqualTo(0)).and(cheaperSkillSelector.getPool().greaterThanOrEqualTo(0)));
+				.and(conSelector.getPool().isEqualTo(0)).and(skillSelector.getPool().isEqualTo(0)).and(skillSelector.getCheaperPool().greaterThanOrEqualTo(0)));
 	}
 
 	private void cleanupCheaperSkills(final JSONObject hero) {
@@ -157,7 +157,8 @@ public class ProConSkillSelectors extends TabController {
 				final JSONArray cheaperSkillsArray = cheaperSkills.getArr(name);
 				for (int i = 0; i < cheaperSkillsArray.size(); ++i) {
 					final JSONObject current = cheaperSkillsArray.getObj(i);
-					final JSONObject match = ChargenUtil.match(actualSkills.getArr(name), current, skill.containsKey("Auswahl"), skill.containsKey("Freitext"));
+					final JSONObject match = ChargenUtil.match(actualSkills.getArr(name), current, skill.containsKey("Auswahl"),
+							skill.containsKey("Freitext"));
 					if (match != null) {
 						temporary += skill.getIntOrDefault("Kosten", 0) * current.getIntOrDefault("Verbilligungen", 1);
 						cheaperSkillsArray.removeAt(i);
@@ -182,14 +183,13 @@ public class ProConSkillSelectors extends TabController {
 		proTab.setDisable(true);
 		conTab.setDisable(true);
 		skillTab.setDisable(true);
-		cheaperSkillTab.setDisable(true);
 
 		proSelector.deactivate(forward);
 		conSelector.deactivate(forward);
 		skillSelector.deactivate(forward);
-		cheaperSkillSelector.deactivate(forward);
 
 		final ObservableList<Node> items = leftBox.getChildren();
+		items.remove(showAll);
 		items.remove(1, items.size() - 2);
 	}
 }

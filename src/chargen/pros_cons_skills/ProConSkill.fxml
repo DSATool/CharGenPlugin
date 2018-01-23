@@ -7,18 +7,18 @@
 <?import javafx.scene.layout.VBox?>
 
 <VBox xmlns:fx="http://javafx.com/fxml/1" fx:id="pane" spacing="5">
-   <ScrollPane fx:id="possiblePane" hbarPolicy="NEVER" vbarPolicy="ALWAYS" fitToWidth="true" prefHeight="100" VBox.vgrow="ALWAYS" />
-   <ScrollPane hbarPolicy="NEVER" vbarPolicy="ALWAYS" fitToWidth="true" prefHeight="100" VBox.vgrow="ALWAYS" >
+   <ScrollPane fx:id="possiblePane" hbarPolicy="NEVER" vbarPolicy="ALWAYS" fitToWidth="true" prefHeight="200" VBox.vgrow="ALWAYS" />
+   <ScrollPane fx:id="chosenPane" hbarPolicy="NEVER" vbarPolicy="ALWAYS" fitToWidth="true" prefHeight="200" VBox.vgrow="ALWAYS" >
       <TableView fx:id="chosenTable" editable="true" fixedCellSize="28" >
          <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
          <placeholder>
             <Label minHeight="0" />
          </placeholder>
          <columns>
-            <TableColumn fx:id="chosenNameColumn" minWidth="100" sortable="false" editable="false" />
+            <TableColumn fx:id="chosenNameColumn" minWidth="100" sortable="true" editable="false" />
          	<TableColumn fx:id="chosenDescColumn" text="Beschreibung" minWidth="100" prefWidth="150" sortable="false" />
          	<TableColumn fx:id="chosenVariantColumn" text="Variante" minWidth="100" sortable="false" />
-            <TableColumn fx:id="chosenValueColumn" text="Wert" prefWidth="75" resizable="false" sortable="false" style="-fx-alignment: CENTER;" />
+            <TableColumn fx:id="chosenValueColumn" text="Wert" prefWidth="70" resizable="false" sortable="false" style="-fx-alignment: CENTER;" />
             <TableColumn fx:id="chosenCostColumn" text="Kosten" prefWidth="75" resizable="false" sortable="false" style="-fx-alignment: CENTER;" />
         	<TableColumn fx:id="chosenValidColumn" minWidth="0" maxWidth="0" prefWidth="0" />
          	<TableColumn fx:id="chosenSuggestedColumn" minWidth="0" maxWidth="0" prefWidth="0" />

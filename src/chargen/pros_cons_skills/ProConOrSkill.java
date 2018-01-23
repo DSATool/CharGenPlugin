@@ -36,6 +36,8 @@ public class ProConOrSkill extends ProOrCon {
 
 	private final boolean suppressEffects;
 
+	private boolean initializing = true;
+
 	public ProConOrSkill(final String name, final JSONObject hero, final JSONObject proOrCon, final JSONObject actual, final boolean fixed,
 			final boolean fixedChoice, final boolean fixedText, final boolean isSkills, final boolean isCheaperSkills, final boolean isInvalid,
 			final boolean suggested, final boolean suppressEffects) {
@@ -52,6 +54,9 @@ public class ProConOrSkill extends ProOrCon {
 		this.suggested = new SimpleBooleanProperty(suggested);
 
 		this.suppressEffects = suppressEffects;
+
+		initializing = false;
+		updateValid();
 	}
 
 	@Override
@@ -177,7 +182,9 @@ public class ProConOrSkill extends ProOrCon {
 
 	@Override
 	protected void updateValid() {
-		super.updateValid();
-		valid.set(!isInvalid && (isCheaperSkills || valid.get() && (isSkills ? proOrCon.getIntOrDefault("Verbreitung", 1) > 3 : true)));
+		if (!initializing) {
+			super.updateValid();
+			valid.set(!isInvalid && (isCheaperSkills || valid.get() && (isSkills ? proOrCon.getIntOrDefault("Verbreitung", 1) > 3 : true)));
+		}
 	}
 }

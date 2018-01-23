@@ -15,15 +15,12 @@
  */
 package chargen.pros_cons_skills;
 
-import chargen.util.ChargenUtil;
 import dsa41basis.util.HeroUtil;
 import dsatool.util.ErrorLogger;
 import dsatool.util.Tuple;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -31,9 +28,8 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.VBox;
 import jsonant.event.JSONListener;
 import jsonant.value.JSONArray;
 import jsonant.value.JSONObject;
@@ -41,7 +37,7 @@ import jsonant.value.JSONObject;
 public abstract class ProConSkillSelector {
 
 	@FXML
-	private Node pane;
+	protected VBox pane;
 
 	@FXML
 	protected ScrollPane possiblePane;
@@ -75,7 +71,7 @@ public abstract class ProConSkillSelector {
 	private final IntegerProperty conGP;
 	private final IntegerProperty seGP;
 
-	private final JSONListener listener = o -> {
+	protected final JSONListener listener = o -> {
 		initializeChosenTable();
 		setCost();
 	};
@@ -87,8 +83,6 @@ public abstract class ProConSkillSelector {
 		this.type = type;
 		this.conGP = conGP;
 		this.seGP = seGP;
-
-		final boolean isCheaperSkills = "Verbilligte Sonderfertigkeiten".equals(type);
 
 		final FXMLLoader fxmlLoader = new FXMLLoader();
 
@@ -125,45 +119,26 @@ public abstract class ProConSkillSelector {
 				}
 				target.removeKey(current.getName());
 			}
-			if (!isCheaperSkills) {
-				HeroUtil.unapplyEffect(hero, current.getName(), current.getProOrCon(), current.getActual());
-			}
 			target.notifyListeners(null);
 		});
 
-		chosenTable.setRowFactory(tableView -> {
-			final TableRow<ProConOrSkill> row = new TableRow<ProConOrSkill>() {
-				@Override
-				protected void updateItem(final ProConOrSkill item, final boolean empty) {
-					super.updateItem(item, empty);
-					if (item != null && !item.isFixed()) {
-						setContextMenu(chosenMenu);
-					} else {
-						setContextMenu(null);
-					}
-				}
-			};
-			return row;
+		chosenMenu.setOnShowing(e -> {
+			final ProConOrSkill item = chosenTable.getSelectionModel().getSelectedItem();
+			removeItem.setVisible(item != null && !item.isFixed());
 		});
+
+		chosenTable.setContextMenu(chosenMenu);
 
 		chosenValueColumn.setOnEditCommit(t -> {
 			final ProConOrSkill current = t.getRowValue();
-			if (isCheaperSkills) {
-				current.setNumCheaper(t.getNewValue());
-			} else {
-				current.setValue(t.getNewValue());
-			}
+			current.setValue(t.getNewValue());
 			setCost();
 		});
 
 		ProConSkillUtil.setupTable(type, 2, chosenTable, chosenNameColumn, chosenDescColumn, chosenVariantColumn, chosenValueColumn, chosenValidColumn,
 				chosenSuggestedColumn);
 
-		if (isCheaperSkills) {
-			chosenValueColumn.setCellValueFactory(new PropertyValueFactory<>("numCheaper"));
-			chosenCostColumn.setCellValueFactory(
-					d -> new SimpleIntegerProperty((int) (d.getValue().getBaseCost() * (2 - 1 / Math.pow(2, d.getValue().getNumCheaper() - 1)))).asObject());
-		}
+		chosenTable.getSortOrder().add(chosenNameColumn);
 	}
 
 	public void activate(final boolean forward) {
@@ -185,7 +160,7 @@ public abstract class ProConSkillSelector {
 
 		pool.set(currentProsOrCons.getIntOrDefault("temporary:Pool", 0));
 
-		incurCost(cost._1, cost._2, false, forward);
+		incurCost(currentCost, currentSECost, false, forward);
 	}
 
 	protected abstract void activateGroupSelectors(JSONObject hero, JSONObject target);
@@ -209,28 +184,17 @@ public abstract class ProConSkillSelector {
 	}
 
 	private Tuple<Integer, Integer> getCost() {
-		final boolean isCheaperSkills = "Verbilligte Sonderfertigkeiten".equals(type);
-
 		int cost = 0;
 		int seCost = 0;
 		for (final ProConOrSkill proOrCon : chosenTable.getItems()) {
 			final JSONObject actual = proOrCon.getActual();
 			double current = 0;
 			final int additional = actual.getIntOrDefault("temporary:AdditionalLevels", 0);
-			if (isCheaperSkills) {
-				final int numCheaper = proOrCon.getNumCheaper();
-				if (actual.containsKey("temporary:Chosen")) {
-					current = proOrCon.getBaseCost() * (2 - 1 / Math.pow(2, numCheaper - 1));
-				} else {
-					current = proOrCon.getBaseCost() * (1 / Math.pow(2, numCheaper - additional - 1) - 1 / Math.pow(2, numCheaper - 1));
-				}
+			if (actual.containsKey("temporary:Chosen")) {
+				current = proOrCon.getCost();
+				current += handleBalanceSpecialCase(proOrCon, actual);
 			} else {
-				if (actual.containsKey("temporary:Chosen")) {
-					current = proOrCon.getCost();
-					current += handleBalanceSpecialCase(proOrCon, actual);
-				} else {
-					current += Math.round(proOrCon.getCost() / (double) proOrCon.getValue() * additional);
-				}
+				current += Math.round(proOrCon.getCost() / (double) proOrCon.getValue() * additional);
 			}
 			cost += current;
 			if (proOrCon.getProOrCon().getBoolOrDefault("Schlechte Eigenschaft", false)) {
@@ -266,31 +230,29 @@ public abstract class ProConSkillSelector {
 		final boolean negate = "Nachteile".equals(type);
 		final boolean reduce = "Sonderfertigkeiten".equals(type);
 		pool.set(pool.get() - (negative ? -1 : 1) * cost);
-		if (!"Verbilligte Sonderfertigkeiten".equals(type)) {
-			if (pool.get() < 0) {
-				final int value = (negate ? -1 : 1) * (int) Math.floor(pool.get() / (reduce ? 50.0 : 1));
+		if (pool.get() < 0) {
+			final int value = (negate ? -1 : 1) * (int) Math.floor(pool.get() / (reduce ? 50.0 : 1));
+			if (updateGP) {
+				gp.set(gp.get() + value);
+			}
+			if (conGP != null) {
+				conGP.set(conGP.get() + value);
+				seGP.set(seGP.get() + seCost - (cost - value));
+			}
+			pool.set(0);
+		} else {
+			final int maxPool = generationState.getObj("Held").getObj(type).getIntOrDefault("temporary:Pool", 0);
+			final int difference = maxPool - pool.get();
+			if (difference < 0) {
+				final int value = (negate ? -1 : 1) * (int) Math.floor(difference / (reduce ? 50.0 : 1));
 				if (updateGP) {
-					gp.set(gp.get() + value);
+					gp.set(gp.get() - value);
 				}
 				if (conGP != null) {
-					conGP.set(conGP.get() + value);
-					seGP.set(seGP.get() + seCost - (cost - value));
+					conGP.set(conGP.get() - value);
+					seGP.set(seGP.get() - seCost + cost - value);
 				}
-				pool.set(0);
-			} else {
-				final int maxPool = generationState.getObj("Held").getObj(type).getIntOrDefault("temporary:Pool", 0);
-				final int difference = maxPool - pool.get();
-				if (difference < 0) {
-					final int value = (negate ? -1 : 1) * (int) Math.floor(difference / (reduce ? 50.0 : 1));
-					if (updateGP) {
-						gp.set(gp.get() - value);
-					}
-					if (conGP != null) {
-						conGP.set(conGP.get() - value);
-						seGP.set(seGP.get() - seCost + cost - value);
-					}
-					pool.set(maxPool);
-				}
+				pool.set(maxPool);
 			}
 		}
 	}
@@ -298,13 +260,10 @@ public abstract class ProConSkillSelector {
 	protected void initializeChosenTable() {
 		final JSONObject hero = generationState.getObj("Held");
 		final JSONObject currentProsOrCons = hero.getObj(type);
-		final ObservableList<ProConOrSkill> items = FXCollections.observableArrayList();
-		final SortedList<ProConOrSkill> sorted = new SortedList<>(items);
-		sorted.setComparator((l, r) -> ChargenUtil.comparator.compare(l.getName(), r.getName()));
-		chosenTable.setItems(sorted);
+		final ObservableList<ProConOrSkill> items = chosenTable.getItems();
+		items.clear();
 
 		final boolean isSkills = "Sonderfertigkeiten".equals(type);
-		final boolean isCheaper = "Verbilligte Sonderfertigkeiten".equals(type);
 
 		for (final String name : currentProsOrCons.keySet()) {
 			if (name.startsWith("temporary:")) {
@@ -317,14 +276,16 @@ public abstract class ProConSkillSelector {
 					final JSONObject actual = current.getObj(i);
 					items.add(new ProConOrSkill(name, hero, proOrCon, actual, !actual.containsKey("temporary:Chosen"),
 							actual.containsKey("Auswahl") && !actual.containsKey("temporary:SetChoice"),
-							actual.containsKey("Freitext") && !actual.containsKey("temporary:SetText"), isSkills, isCheaper, false, false, isCheaper));
+							actual.containsKey("Freitext") && !actual.containsKey("temporary:SetText"), isSkills, false, false, false, false));
 				}
 			} else {
 				final JSONObject actual = currentProsOrCons.getObj(name);
-				items.add(new ProConOrSkill(name, hero, proOrCon, actual, !actual.containsKey("temporary:Chosen"), false, false, isSkills, isCheaper, false,
-						false, isCheaper));
+				items.add(new ProConOrSkill(name, hero, proOrCon, actual, !actual.containsKey("temporary:Chosen"), false, false, isSkills, false, false,
+						false, false));
 			}
 		}
+
+		chosenTable.sort();
 
 		chosenTable.setMinHeight((items.size() + 1) * 28 + 1);
 	}

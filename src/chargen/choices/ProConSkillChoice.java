@@ -31,7 +31,7 @@ public class ProConSkillChoice extends Choice {
 	private final boolean cheaperSkills;
 	private boolean pooled = false;
 
-	public ProConSkillChoice(String name, JSONObject actual, JSONObject target, boolean cheaperSkills) {
+	public ProConSkillChoice(final String name, final JSONObject actual, final JSONObject target, final boolean cheaperSkills) {
 		this.name = name;
 		this.actual = actual;
 		this.target = target;
@@ -43,7 +43,7 @@ public class ProConSkillChoice extends Choice {
 	}
 
 	@Override
-	public void apply(JSONObject hero, boolean alreadyApplied) {
+	public void apply(final JSONObject hero, final boolean alreadyApplied) {
 		if (alreadyApplied) return;
 		if (hasChoice || hasFreetext) {
 			final JSONArray targetArray = target.getArr(name);
@@ -86,7 +86,7 @@ public class ProConSkillChoice extends Choice {
 	}
 
 	@Override
-	public void unapply(JSONObject hero) {
+	public void unapply(final JSONObject hero) {
 		if (pooled) {
 			pooled = false;
 			target.put("temporary:Pool", target.getIntOrDefault("temporary:Pool", 0) - proConSkill.getIntOrDefault("Kosten", 0));

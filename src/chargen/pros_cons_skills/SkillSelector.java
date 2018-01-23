@@ -18,18 +18,60 @@ package chargen.pros_cons_skills;
 import java.util.ArrayList;
 import java.util.List;
 
+import dsa41basis.util.HeroUtil;
 import dsatool.resources.ResourceManager;
+import dsatool.util.ErrorLogger;
 import javafx.beans.binding.DoubleBinding;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TitledPane;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import jsonant.value.JSONArray;
 import jsonant.value.JSONObject;
 
 public class SkillSelector extends ProConSkillSelector {
 
+	/* This is the table for cheaper skills! */
+	@FXML
+	private TableView<ProConOrSkill> possibleTable;
+	@FXML
+	private TableColumn<ProConOrSkill, String> possibleNameColumn;
+	@FXML
+	private TableColumn<ProConOrSkill, String> possibleDescColumn;
+	@FXML
+	private TableColumn<ProConOrSkill, String> possibleVariantColumn;
+	@FXML
+	private TableColumn<ProConOrSkill, Integer> possibleCostColumn;
+	@FXML
+	private TableColumn<ProConOrSkill, Integer> possibleValueColumn;
+	@FXML
+	private TableColumn<ProConOrSkill, Boolean> possibleValidColumn;
+	@FXML
+	private TableColumn<ProConOrSkill, Boolean> possibleSuggestedColumn;
+
+	@FXML
+	private ScrollPane chosenPane;
+
 	private final List<GroupSelector> selectors = new ArrayList<>();
 
-	public SkillSelector(JSONObject generationState, IntegerProperty gp, String type) {
+	private int cheaperCost;
+
+	protected final IntegerProperty cheaperPool = new SimpleIntegerProperty();
+
+	public SkillSelector(final JSONObject generationState, final IntegerProperty gp, final String type, final BooleanProperty showAll) {
 		super(generationState, gp, type, null, null);
 		final VBox box = new VBox(2);
 		box.setMaxWidth(Double.POSITIVE_INFINITY);
@@ -38,42 +80,237 @@ public class SkillSelector extends ProConSkillSelector {
 
 		final JSONObject skills = ResourceManager.getResource("data/Sonderfertigkeiten");
 		for (final String groupName : skills.keySet()) {
-			final GroupSelector selector = new GroupSelector(generationState, type, this, skills.getObj(groupName), 0);
-			box.getChildren().add(new TitledPane(groupName, selector.getControl()));
+			final GroupSelector selector = new GroupSelector(generationState, type, this, skills.getObj(groupName), showAll, 0);
+			final Node titledPane = new TitledPane(groupName, selector.getControl());
+			selector.setParent(titledPane);
+			box.getChildren().add(titledPane);
 			selectors.add(selector);
 		}
 
 		final JSONObject liturgies = ResourceManager.getResource("data/Liturgien");
-		final GroupSelector liturgiesSelector = new GroupSelector(generationState, type, this, liturgies, 0);
-		box.getChildren().add(new TitledPane("Liturgien", liturgiesSelector.getControl()));
+		final GroupSelector liturgiesSelector = new GroupSelector(generationState, type, this, liturgies, showAll, 0);
+		final Node liturgiesTitledPane = new TitledPane("Liturgien", liturgiesSelector.getControl());
+		liturgiesSelector.setParent(liturgiesTitledPane);
+		box.getChildren().add(liturgiesTitledPane);
 		selectors.add(liturgiesSelector);
 
 		final JSONObject rituals = ResourceManager.getResource("data/Rituale");
 		for (final String groupName : rituals.keySet()) {
-			final GroupSelector selector = new GroupSelector(generationState, type, this, rituals.getObj(groupName), 0);
-			box.getChildren().add(new TitledPane(groupName, selector.getControl()));
+			final GroupSelector selector = new GroupSelector(generationState, type, this, rituals.getObj(groupName), showAll, 0);
+			final Node titledPane = new TitledPane(groupName, selector.getControl());
+			selector.setParent(titledPane);
+			box.getChildren().add(titledPane);
 			selectors.add(selector);
 		}
 
-		if (!"Verbilligte Sonderfertigkeiten".equals(type)) {
-			chosenValueColumn.setVisible(false);
-			DoubleBinding width = chosenTable.widthProperty().subtract(2);
-			width = width.subtract(chosenDescColumn.widthProperty()).subtract(chosenVariantColumn.widthProperty()).subtract(chosenCostColumn.widthProperty());
-			chosenNameColumn.prefWidthProperty().bind(width);
+		chosenValueColumn.setVisible(false);
+		DoubleBinding width = chosenTable.widthProperty().subtract(2);
+		width = width.subtract(chosenDescColumn.widthProperty()).subtract(chosenVariantColumn.widthProperty()).subtract(chosenCostColumn.widthProperty());
+		chosenNameColumn.prefWidthProperty().bind(width);
+
+		chosenPane.setPrefHeight(50);
+
+		final FXMLLoader fxmlLoader = new FXMLLoader();
+
+		fxmlLoader.setController(this);
+
+		try {
+			fxmlLoader.load(getClass().getResource("ProCon.fxml").openStream());
+		} catch (final Exception e) {
+			ErrorLogger.logError(e);
 		}
+
+		final ContextMenu cheaperMenu = new ContextMenu();
+
+		final MenuItem addItem = new MenuItem("Hinzufügen");
+		cheaperMenu.getItems().add(addItem);
+		addItem.setOnAction(o -> {
+			final JSONObject hero = generationState.getObj("Held");
+			final JSONObject target = hero.getObj("Sonderfertigkeiten");
+			final ProConOrSkill skill = possibleTable.getSelectionModel().getSelectedItem();
+			final String name = skill.getName();
+			final boolean hasChoice = skill.getProOrCon().containsKey("Auswahl");
+			final boolean hasText = skill.getProOrCon().containsKey("Freitext");
+			if (hasChoice || hasText) {
+				final JSONObject actual = skill.getActual().clone(target.getArr(name));
+				actual.put("temporary:Chosen", true);
+				if (!skill.hasFixedChoice()) {
+					skill.getActual().removeKey("Auswahl");
+					skill.getActual().removeKey("temporary:SetChoice");
+				}
+				if (!skill.hasFixedText()) {
+					skill.getActual().removeKey("Freitext");
+					skill.getActual().removeKey("temporary:SetText");
+				}
+				target.getArr(name).add(actual);
+			} else {
+				final JSONObject actual = skill.getActual().clone(target);
+				actual.put("temporary:Chosen", true);
+				target.put(name, actual);
+			}
+			skill.getActual().removeKey("Stufe");
+			HeroUtil.applyEffect(hero, name, skill.getProOrCon(), skill.getActual());
+			target.notifyListeners(null);
+		});
+
+		final MenuItem removeItem = new MenuItem("Entfernen");
+		cheaperMenu.getItems().add(removeItem);
+		removeItem.setOnAction(o -> {
+			final JSONObject hero = generationState.getObj("Held");
+			final JSONObject target = hero.getObj("Verbilligte Sonderfertigkeiten");
+			final ProConOrSkill current = possibleTable.getSelectionModel().getSelectedItem();
+			if (current.getProOrCon().containsKey("Auswahl") || current.getProOrCon().containsKey("Freitext")) {
+				target.getArr(current.getName()).remove(current.getActual());
+				if (target.getArr(current.getName()).size() == 0) {
+					target.removeKey(current.getName());
+				}
+			} else {
+				final JSONObject actual = target.getObj(current.getName());
+				if (actual.containsKey("temporary:Cheaper")) {
+					final JSONObject cheaperSkills = hero.getObj("Verbilligte Sonderfertigkeiten");
+					final JSONObject cheaper = new JSONObject(cheaperSkills);
+					final int numCheaper = actual.getInt("temporary:Cheaper");
+					if (numCheaper > 1) {
+						cheaper.put("Verbilligungen", numCheaper);
+					}
+					cheaperSkills.put(current.getName(), cheaper);
+				}
+				target.removeKey(current.getName());
+			}
+			target.notifyListeners(null);
+		});
+
+		cheaperMenu.setOnShowing(e -> {
+			final ProConOrSkill cheaperSkill = possibleTable.getSelectionModel().getSelectedItem();
+			removeItem.setVisible(cheaperSkill != null && !cheaperSkill.isFixed());
+		});
+		possibleTable.setContextMenu(cheaperMenu);
+
+		possibleValueColumn.setOnEditCommit(t -> t.getRowValue().setValue(t.getNewValue()));
+
+		ProConSkillUtil.setupTable("Verbilligte Sonderfertigkeiten", 0, possibleTable, possibleNameColumn, possibleDescColumn, possibleVariantColumn,
+				possibleValueColumn, possibleValidColumn, possibleSuggestedColumn);
+
+		possibleValueColumn.setText("Anzahl");
+
+		possibleTable.getSortOrder().add(possibleNameColumn);
+
+		possibleValueColumn.setOnEditCommit(t -> {
+			final ProConOrSkill current = t.getRowValue();
+			current.setNumCheaper(t.getNewValue());
+			setCost();
+		});
+
+		possibleValueColumn.setCellValueFactory(new PropertyValueFactory<>("numCheaper"));
+		possibleCostColumn.setCellValueFactory(
+				d -> new SimpleIntegerProperty((int) (d.getValue().getBaseCost() * (2 - 1 / Math.pow(2, d.getValue().getNumCheaper() - 1)))).asObject());
+
+		final ScrollPane cheaperPane = new ScrollPane(possibleTable);
+		cheaperPane.setHbarPolicy(ScrollBarPolicy.NEVER);
+		cheaperPane.setVbarPolicy(ScrollBarPolicy.ALWAYS);
+		cheaperPane.setFitToWidth(true);
+		cheaperPane.setPrefHeight(50);
+		VBox.setVgrow(cheaperPane, Priority.ALWAYS);
+
+		pane.getChildren().add(cheaperPane);
 	}
 
 	@Override
-	protected void activateGroupSelectors(JSONObject hero, JSONObject target) {
+	public void activate(final boolean forward) {
+		super.activate(forward);
+		final JSONObject currentProsOrCons = generationState.getObj("Held").getObj("Verbilligte Sonderfertigkeiten");
+
+		currentProsOrCons.addListener(listener);
+
+		cheaperCost = getCheaperCost();
+
+		cheaperPool.set(currentProsOrCons.getIntOrDefault("temporary:Pool", 0));
+
+		cheaperPool.set(cheaperPool.get() - cheaperCost);
+	}
+
+	@Override
+	protected void activateGroupSelectors(final JSONObject hero, final JSONObject target) {
 		for (final GroupSelector selector : selectors) {
 			selector.activate(hero, target);
 		}
 	}
 
 	@Override
-	protected void deactivateGroupSelectors(JSONObject hero, JSONObject target) {
+	public void deactivate(final boolean forward) {
+		super.deactivate(forward);
+		if (!forward) {
+			cheaperPool.set(cheaperPool.get() + cheaperCost);
+		}
+	}
+
+	@Override
+	protected void deactivateGroupSelectors(final JSONObject hero, final JSONObject target) {
 		for (final GroupSelector selector : selectors) {
 			selector.deactivate(hero, target);
 		}
+	}
+
+	private int getCheaperCost() {
+		int cost = 0;
+		for (final ProConOrSkill cheaperSkill : possibleTable.getItems()) {
+			final JSONObject actual = cheaperSkill.getActual();
+			double current = 0;
+			final int additional = actual.getIntOrDefault("temporary:AdditionalLevels", 0);
+			final int numCheaper = cheaperSkill.getNumCheaper();
+			if (actual.containsKey("temporary:Chosen")) {
+				current = cheaperSkill.getBaseCost() * (2 - 1 / Math.pow(2, numCheaper - 1));
+			} else {
+				current = cheaperSkill.getBaseCost() * (1 / Math.pow(2, numCheaper - additional - 1) - 1 / Math.pow(2, numCheaper - 1));
+			}
+			cost += current;
+		}
+		return cost;
+	}
+
+	public IntegerProperty getCheaperPool() {
+		return cheaperPool;
+	}
+
+	@Override
+	protected void initializeChosenTable() {
+		super.initializeChosenTable();
+
+		final JSONObject hero = generationState.getObj("Held");
+		final JSONObject currentProsOrCons = hero.getObj("Verbilligte Sonderfertigkeiten");
+		final ObservableList<ProConOrSkill> items = possibleTable.getItems();
+		items.clear();
+
+		for (final String name : currentProsOrCons.keySet()) {
+			if (name.startsWith("temporary:")) {
+				continue;
+			}
+			final JSONObject proOrCon = HeroUtil.findProConOrSkill(name)._1;
+			if (proOrCon.containsKey("Auswahl") || proOrCon.containsKey("Freitext")) {
+				final JSONArray current = currentProsOrCons.getArr(name);
+				for (int i = 0; i < current.size(); ++i) {
+					final JSONObject actual = current.getObj(i);
+					items.add(new ProConOrSkill(name, hero, proOrCon, actual, !actual.containsKey("temporary:Chosen"),
+							actual.containsKey("Auswahl") && !actual.containsKey("temporary:SetChoice"),
+							actual.containsKey("Freitext") && !actual.containsKey("temporary:SetText"), false, true, false, false, true));
+				}
+			} else {
+				final JSONObject actual = currentProsOrCons.getObj(name);
+				items.add(new ProConOrSkill(name, hero, proOrCon, actual, !actual.containsKey("temporary:Chosen"), false, false, false, true, false,
+						false, true));
+			}
+		}
+
+		possibleTable.sort();
+
+		possibleTable.setMinHeight((items.size() + 1) * 28 + 1);
+	}
+
+	@Override
+	public void setCost() {
+		super.setCost();
+		cheaperPool.set(cheaperPool.get() + cheaperCost);
+		cheaperCost = getCheaperCost();
+		cheaperPool.set(cheaperPool.get() - cheaperCost);
 	}
 }

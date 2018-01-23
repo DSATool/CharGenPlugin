@@ -4,16 +4,16 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 
-<TableView xmlns:fx="http://javafx.com/fxml/1" fx:id="possibleTable" editable="true" fixedCellSize="28">
+<TableView xmlns:fx="http://javafx.com/fxml" fx:id="possibleTable" editable="true" fixedCellSize="28" styleClass="remove-vertical-scrollbar,remove-horizontal-scrollbar" >
    <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
    <placeholder>
       <Label minHeight="0" />
    </placeholder>
    <columns>
-      <TableColumn fx:id="possibleNameColumn" minWidth="100" sortable="false" editable="false" />
+      <TableColumn fx:id="possibleNameColumn" minWidth="150" editable="false" />
       <TableColumn fx:id="possibleDescColumn" text="Beschreibung" minWidth="100" prefWidth="150" sortable="false" />
       <TableColumn fx:id="possibleVariantColumn" text="Variante" minWidth="100" sortable="false" />
-      <TableColumn fx:id="possibleValueColumn" text="Wert" prefWidth="75" resizable="false" sortable="false" style="-fx-alignment: CENTER;" />
+      <TableColumn fx:id="possibleValueColumn" text="Wert" prefWidth="70" resizable="false" sortable="false" style="-fx-alignment: CENTER;" />
       <TableColumn fx:id="possibleCostColumn" text="Kosten" prefWidth="75" resizable="false" sortable="false" style="-fx-alignment: CENTER;" />
       <TableColumn fx:id="possibleValidColumn" minWidth="0" maxWidth="0" prefWidth="0" />
       <TableColumn fx:id="possibleSuggestedColumn" minWidth="0" maxWidth="0" prefWidth="0" />

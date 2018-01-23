@@ -16,26 +16,29 @@
 package chargen.pros_cons_skills;
 
 import dsatool.resources.ResourceManager;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import jsonant.value.JSONObject;
 
 public class ProConSelector extends ProConSkillSelector {
 
 	private final JSONObject group = ResourceManager.getResource("data/" + type);
-	private final GroupSelector selector = new GroupSelector(generationState, type, this, group, 2);
+	private final GroupSelector selector;
 
-	public ProConSelector(JSONObject generationState, IntegerProperty gp, String type, IntegerProperty conGP, IntegerProperty seGP) {
+	public ProConSelector(final JSONObject generationState, final IntegerProperty gp, final String type, final IntegerProperty conGP,
+			final IntegerProperty seGP, final BooleanProperty showAll) {
 		super(generationState, gp, type, conGP, seGP);
+		selector = new GroupSelector(generationState, type, this, group, showAll, 2);
 		possiblePane.setContent(selector.getControl());
 	}
 
 	@Override
-	protected void activateGroupSelectors(JSONObject hero, JSONObject target) {
+	protected void activateGroupSelectors(final JSONObject hero, final JSONObject target) {
 		selector.activate(hero, target);
 	}
 
 	@Override
-	protected void deactivateGroupSelectors(JSONObject hero, JSONObject target) {
+	protected void deactivateGroupSelectors(final JSONObject hero, final JSONObject target) {
 		selector.deactivate(hero, target);
 	}
 }
