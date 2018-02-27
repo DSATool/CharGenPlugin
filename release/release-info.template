@@ -2,5 +2,9 @@
 	"releaseDate" : "@releaseDate@",
 	"previousReleaseDate" : "@previousReleaseDate@",
 	"previousReleaseLink" : "https://raw.githubusercontent.com/DSATool/CharGenPlugin/master/release/CharGen_@previousReleaseDate@.zip",
-	"updateInfo" : "https://raw.githubusercontent.com/DSATool/CharGenPlugin/master/release/update-info.json"
+	"updateInfo" : "https://raw.githubusercontent.com/DSATool/CharGenPlugin/master/release/update-info.json",
+	"signatureProviderName" : "SunEC",
+	"signatureKeyAlgorithm" : "EC",
+	"signatureAlgorithm" : "SHA512withECDSA",
+	"signatureKey" : "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE6ONDgSdt/2wQ/juK2CHec8jUYoB9UlA34e9GAsXSud5fQxlbLxi7jnBltBXdqD3DzKJb3TPPbv5ONvZaBG/9GA=="
 }
