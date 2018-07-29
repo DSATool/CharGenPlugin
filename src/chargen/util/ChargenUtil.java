@@ -24,6 +24,7 @@ import jsonant.value.JSONArray;
 import jsonant.value.JSONObject;
 
 public class ChargenUtil {
+
 	public static final Collator comparator = Collator.getInstance(Locale.GERMANY);
 
 	public static void collectLanguages(final JSONObject original, final JSONObject modifications) {
@@ -314,4 +315,6 @@ public class ChargenUtil {
 		}
 		return null;
 	}
+
+	private ChargenUtil() {}
 }
