@@ -15,15 +15,22 @@
  */
 package chargen.pros_cons_skills;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import dsa41basis.util.HeroUtil;
+import dsatool.resources.ResourceManager;
 import dsatool.util.ErrorLogger;
+import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -60,14 +67,28 @@ public class GroupSelector {
 	private Node parent;
 
 	private final BooleanProperty showAll;
-	private final List<ProConOrSkill> invalid = new ArrayList<>();
-	private final List<ProConOrSkill> neverValid = new ArrayList<>();
+	private final ObservableMap<ProConOrSkill, ChangeListener<Boolean>> valid = FXCollections.observableHashMap();
+	private final ObservableMap<ProConOrSkill, ChangeListener<Boolean>> invalid = FXCollections.observableHashMap();
+	private final ObservableList<ProConOrSkill> allItems = FXCollections.observableArrayList(item -> new Observable[] { valid });
 
 	private final JSONListener listener = o -> {
 		initializePossibleTable();
 	};
 
-	public GroupSelector(final JSONObject generationState, final String type, final ProConSkillSelector parent, final JSONObject possibleProsOrCons,
+	private final Set<String> specialHandledProsAndCons;
+	{
+		specialHandledProsAndCons = new HashSet<>();
+		specialHandledProsAndCons.add("Breitgefächerte Bildung");
+		specialHandledProsAndCons.add("Veteran");
+		final JSONObject attributes = ResourceManager.getResource("data/Eigenschaften");
+		for (final String attributeName : attributes.keySet()) {
+			final JSONObject attribute = attributes.getObj(attributeName);
+			specialHandledProsAndCons.add(attribute.getString("Herausragende Eigenschaft"));
+			specialHandledProsAndCons.add(attribute.getString("Miserable Eigenschaft"));
+		}
+	}
+
+	public GroupSelector(final JSONObject generationState, final String type, final JSONObject possibleProsOrCons,
 			final BooleanProperty showAll, final int additionalSpace) {
 		this.generationState = generationState;
 		this.type = type;
@@ -95,26 +116,19 @@ public class GroupSelector {
 			final String name = skill.getName();
 			final boolean hasChoice = skill.getProOrCon().containsKey("Auswahl");
 			final boolean hasText = skill.getProOrCon().containsKey("Freitext");
+			JSONObject actual;
 			if (hasChoice || hasText) {
-				final JSONObject actual = skill.getActual().clone(target.getArr(name));
-				actual.put("temporary:Chosen", true);
-				if (!skill.hasFixedChoice()) {
-					skill.getActual().removeKey("Auswahl");
-					skill.getActual().removeKey("temporary:SetChoice");
-				}
-				if (!skill.hasFixedText()) {
-					skill.getActual().removeKey("Freitext");
-					skill.getActual().removeKey("temporary:SetText");
-				}
+				actual = skill.getActual().clone(target.getArr(name));
 				target.getArr(name).add(actual);
 			} else {
-				final JSONObject actual = skill.getActual().clone(target);
-				actual.put("temporary:Chosen", true);
+				actual = skill.getActual().clone(target);
 				target.put(name, actual);
 			}
-			skill.getActual().removeKey("Stufe");
+			actual.removeKey("temporary:suppressEffects");
+			actual.put("temporary:Chosen", true);
 			HeroUtil.applyEffect(hero, name, skill.getProOrCon(), skill.getActual());
-			target.notifyListeners(null);
+			target.notifyListeners(listener);
+			initializePossibleTable();
 		});
 
 		if ("Sonderfertigkeiten".equals(type)) {
@@ -143,15 +157,29 @@ public class GroupSelector {
 					final JSONObject actual = skill.getActual().clone(target);
 					actual.put("temporary:Chosen", true);
 					target.put(name, actual);
+					allItems.remove(skill);
+					skill.validProperty().removeListener(valid.containsKey(skill) ? valid.get(skill) : invalid.get(skill));
 				}
 				skill.getActual().removeKey("Stufe");
-				target.notifyListeners(null);
+				target.notifyListeners(listener);
+				initializePossibleTable();
 			});
 		}
 
 		possibleTable.setContextMenu(possibleMenu);
 
 		possibleValueColumn.setOnEditCommit(t -> t.getRowValue().setValue(t.getNewValue()));
+
+		valid.addListener((final MapChangeListener.Change<?, ?> o) -> {
+			final int size = valid.size();
+			possibleTable.setMinHeight(size * 28 + 26);
+			possibleTable.setMaxHeight(size * 28 + 26);
+
+			if (parent != null) {
+				parent.setVisible(size != 0);
+				parent.setManaged(size != 0);
+			}
+		});
 
 		if (!"Vorteile".equals(type) && !"Nachteile".equals(type)) {
 			possibleValueColumn.setVisible(false);
@@ -163,6 +191,8 @@ public class GroupSelector {
 				possibleValidColumn, possibleSuggestedColumn);
 
 		possibleTable.getSortOrder().add(possibleNameColumn);
+
+		possibleTable.setItems(new FilteredList<>(allItems, (skill) -> valid.containsKey(skill)));
 
 		showAll.addListener((o, oldV, newV) -> initializePossibleTable());
 	}
@@ -189,10 +219,18 @@ public class GroupSelector {
 	private void initializePossibleTable() {
 		final JSONObject hero = generationState.getObj("Held");
 		final JSONObject currentProsOrCons = hero.getObj(type);
-		final ObservableList<ProConOrSkill> items = possibleTable.getItems();
-		items.clear();
+
+		for (final Map.Entry<ProConOrSkill, ChangeListener<Boolean>> item : valid.entrySet()) {
+			item.getKey().validProperty().removeListener(item.getValue());
+		}
+
+		for (final Map.Entry<ProConOrSkill, ChangeListener<Boolean>> item : invalid.entrySet()) {
+			item.getKey().validProperty().removeListener(item.getValue());
+		}
+
+		valid.clear();
 		invalid.clear();
-		neverValid.clear();
+		allItems.clear();
 
 		final boolean isSkills = "Sonderfertigkeiten".equals(type);
 		final boolean isCheaper = "Verbilligte Sonderfertigkeiten".equals(type);
@@ -227,139 +265,98 @@ public class GroupSelector {
 		}
 
 		for (final String name : possibleProsOrCons.keySet()) {
+			if (name.startsWith("temporary:") || specialHandledProsAndCons.contains(name)) {
+				continue;
+			}
 			final JSONObject proOrCon = possibleProsOrCons.getObj(name);
 			if (proOrCon.containsKey("Auswahl") || proOrCon.containsKey("Freitext")) {
 				boolean foundEmpty = false;
 				if (suggested.containsKey(name)) {
 					final JSONArray actual = suggested.getArr(name);
 					for (int i = 0; i < actual.size(); ++i) {
-						final JSONObject current = actual.getObj(i);
+						final JSONObject current = actual.getObj(i).clone(null);
 						if (!current.containsKey("Auswahl") && !current.containsKey("Freitext")) {
 							foundEmpty = true;
 						}
+						current.put("temporary:suppressEffects", true);
 						final ProConOrSkill newItem = new ProConOrSkill(name, hero, proOrCon, current, false, current.containsKey("Auswahl"),
-								current.containsKey("Freitext"), isSkills, isCheaper, false, true, false);
+								current.containsKey("Freitext"), isSkills, isCheaper, false, true);
 						if (newItem.isValid() || showAll.get()) {
-							items.add(newItem);
+							valid.put(newItem, validListener(newItem));
 						} else {
-							invalid.add(newItem);
+							invalid.put(newItem, validListener(newItem));
 						}
+						allItems.add(newItem);
 					}
 				}
 				if (actualInvalid.containsKey(name)) {
 					final JSONArray actual = actualInvalid.getArr(name);
 					for (int i = 0; i < actual.size(); ++i) {
-						final JSONObject current = actual.getObj(i);
+						final JSONObject current = actual.getObj(i).clone(null);
 						if (!current.containsKey("Auswahl") && !current.containsKey("Freitext")) {
 							foundEmpty = true;
 						}
+						current.put("temporary:suppressEffects", true);
 						final ProConOrSkill newItem = new ProConOrSkill(name, hero, proOrCon, current, false, current.containsKey("Auswahl"),
-								current.containsKey("Freitext"), isSkills, isCheaper, true, false, false);
+								current.containsKey("Freitext"), isSkills, isCheaper, true, false);
 						if (showAll.get()) {
-							items.add(newItem);
-						} else {
-							neverValid.add(newItem);
+							valid.put(newItem, validListener(newItem));
+							allItems.add(newItem);
 						}
 					}
 				}
 				if (!foundEmpty) {
-					final ProConOrSkill newItem = new ProConOrSkill(name, hero, proOrCon, new JSONObject(null), false, false, false, isSkills, isCheaper, false,
-							false, false);
+					final JSONObject actual = new JSONObject(null);
+					actual.put("temporary:suppressEffects", true);
+					final ProConOrSkill newItem = new ProConOrSkill(name, hero, proOrCon, actual, false, false, false, isSkills, isCheaper, false, false);
 					if (newItem.isValid() || showAll.get()) {
-						items.add(newItem);
+						valid.put(newItem, validListener(newItem));
 					} else {
-						invalid.add(newItem);
+						invalid.put(newItem, validListener(newItem));
 					}
+					allItems.add(newItem);
 				}
-			} else if (!currentProsOrCons.containsKey(name)) {
+			} else {
 				final boolean isSuggested = suggested.containsKey(name);
 				final boolean isInvalid = actualInvalid.containsKey(name);
-				final ProConOrSkill newItem = new ProConOrSkill(name, hero, proOrCon, new JSONObject(null), false, false, false, isSkills, isCheaper, isInvalid,
-						isSuggested, false);
-				if (newItem.isValid() || showAll.get()) {
-					items.add(newItem);
-				} else if (isInvalid) {
-					neverValid.add(newItem);
-				} else {
-					invalid.add(newItem);
+				final JSONObject actual = new JSONObject(null);
+				actual.put("temporary:suppressEffects", true);
+				final ProConOrSkill newItem = new ProConOrSkill(name, hero, proOrCon, actual, false, false, false, isSkills, isCheaper, isInvalid, isSuggested);
+				if (!currentProsOrCons.containsKey(name)) {
+					if (newItem.isValid() || showAll.get()) {
+						valid.put(newItem, validListener(newItem));
+						allItems.add(newItem);
+					} else if (!isInvalid) {
+						invalid.put(newItem, validListener(newItem));
+						allItems.add(newItem);
+					}
 				}
 			}
 		}
 
 		possibleTable.sort();
-
-		possibleTable.setMinHeight(items.size() * 28 + 26);
-		possibleTable.setMaxHeight(items.size() * 28 + 26);
-
-		if (parent != null) {
-			parent.setVisible(!possibleTable.getItems().isEmpty());
-			parent.setManaged(!possibleTable.getItems().isEmpty());
-		}
-
-		for (final ProConOrSkill item : possibleTable.getItems()) {
-			registerInvalidListener(item);
-		}
-
-		for (final ProConOrSkill item : invalid) {
-			registerValidListener(item);
-		}
-	}
-
-	private void registerInvalidListener(final ProConOrSkill item) {
-		final ChangeListener<Boolean> invalidListener = new ChangeListener<Boolean>() {
-			@Override
-			public void changed(final ObservableValue<? extends Boolean> observable, final Boolean oldValue, final Boolean newValue) {
-				if (!newValue && !showAll.get()) {
-					observable.removeListener(this);
-
-					possibleTable.setMinHeight(possibleTable.getItems().size() * 28 - 2);
-					possibleTable.setMaxHeight(possibleTable.getItems().size() * 28 - 2);
-
-					possibleTable.getItems().remove(item);
-
-					possibleTable.sort();
-
-					if (parent != null) {
-						parent.setVisible(!possibleTable.getItems().isEmpty());
-						parent.setManaged(!possibleTable.getItems().isEmpty());
-					}
-					invalid.add(item);
-
-					registerValidListener(item);
-				}
-			}
-		};
-		item.validProperty().addListener(invalidListener);
-	}
-
-	private void registerValidListener(final ProConOrSkill item) {
-		final ChangeListener<Boolean> validListener = new ChangeListener<Boolean>() {
-			@Override
-			public void changed(final ObservableValue<? extends Boolean> observable, final Boolean oldValue, final Boolean newValue) {
-				if (newValue) {
-					observable.removeListener(this);
-
-					possibleTable.setMinHeight(possibleTable.getItems().size() * 28 + 54);
-					possibleTable.setMaxHeight(possibleTable.getItems().size() * 28 + 54);
-
-					possibleTable.getItems().add(item);
-
-					possibleTable.sort();
-
-					if (parent != null) {
-						parent.setVisible(true);
-						parent.setManaged(true);
-					}
-					invalid.remove(item);
-
-					registerInvalidListener(item);
-				}
-			}
-		};
-		item.validProperty().addListener(validListener);
 	}
 
 	public void setParent(final Node parent) {
 		this.parent = parent;
+		parent.setVisible(!valid.isEmpty());
+		parent.setManaged(!valid.isEmpty());
+	}
+
+	private ChangeListener<Boolean> validListener(final ProConOrSkill item) {
+		final ChangeListener<Boolean> validListener = new ChangeListener<>() {
+			@Override
+			public void changed(final ObservableValue<? extends Boolean> observable, final Boolean oldValue, final Boolean newValue) {
+				if (showAll.get() || newValue) {
+					valid.put(item, this);
+					invalid.remove(item);
+				} else {
+					invalid.put(item, this);
+					valid.remove(item);
+				}
+			}
+		};
+		item.validProperty().addListener(validListener);
+		return validListener;
 	}
 }

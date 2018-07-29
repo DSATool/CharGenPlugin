@@ -80,7 +80,7 @@ public class SkillSelector extends ProConSkillSelector {
 
 		final JSONObject skills = ResourceManager.getResource("data/Sonderfertigkeiten");
 		for (final String groupName : skills.keySet()) {
-			final GroupSelector selector = new GroupSelector(generationState, type, this, skills.getObj(groupName), showAll, 0);
+			final GroupSelector selector = new GroupSelector(generationState, type, skills.getObj(groupName), showAll, 0);
 			final Node titledPane = new TitledPane(groupName, selector.getControl());
 			selector.setParent(titledPane);
 			box.getChildren().add(titledPane);
@@ -88,7 +88,7 @@ public class SkillSelector extends ProConSkillSelector {
 		}
 
 		final JSONObject liturgies = ResourceManager.getResource("data/Liturgien");
-		final GroupSelector liturgiesSelector = new GroupSelector(generationState, type, this, liturgies, showAll, 0);
+		final GroupSelector liturgiesSelector = new GroupSelector(generationState, type, liturgies, showAll, 0);
 		final Node liturgiesTitledPane = new TitledPane("Liturgien", liturgiesSelector.getControl());
 		liturgiesSelector.setParent(liturgiesTitledPane);
 		box.getChildren().add(liturgiesTitledPane);
@@ -96,7 +96,7 @@ public class SkillSelector extends ProConSkillSelector {
 
 		final JSONObject rituals = ResourceManager.getResource("data/Rituale");
 		for (final String groupName : rituals.keySet()) {
-			final GroupSelector selector = new GroupSelector(generationState, type, this, rituals.getObj(groupName), showAll, 0);
+			final GroupSelector selector = new GroupSelector(generationState, type, rituals.getObj(groupName), showAll, 0);
 			final Node titledPane = new TitledPane(groupName, selector.getControl());
 			selector.setParent(titledPane);
 			box.getChildren().add(titledPane);
@@ -131,24 +131,16 @@ public class SkillSelector extends ProConSkillSelector {
 			final String name = skill.getName();
 			final boolean hasChoice = skill.getProOrCon().containsKey("Auswahl");
 			final boolean hasText = skill.getProOrCon().containsKey("Freitext");
+			JSONObject actual;
 			if (hasChoice || hasText) {
-				final JSONObject actual = skill.getActual().clone(target.getArr(name));
-				actual.put("temporary:Chosen", true);
-				if (!skill.hasFixedChoice()) {
-					skill.getActual().removeKey("Auswahl");
-					skill.getActual().removeKey("temporary:SetChoice");
-				}
-				if (!skill.hasFixedText()) {
-					skill.getActual().removeKey("Freitext");
-					skill.getActual().removeKey("temporary:SetText");
-				}
+				actual = skill.getActual().clone(target.getArr(name));
 				target.getArr(name).add(actual);
 			} else {
-				final JSONObject actual = skill.getActual().clone(target);
-				actual.put("temporary:Chosen", true);
+				actual = skill.getActual().clone(target);
 				target.put(name, actual);
 			}
-			skill.getActual().removeKey("Stufe");
+			actual.removeKey("temporary:suppressEffects");
+			actual.put("temporary:Chosen", true);
 			HeroUtil.applyEffect(hero, name, skill.getProOrCon(), skill.getActual());
 			target.notifyListeners(null);
 		});
@@ -290,14 +282,15 @@ public class SkillSelector extends ProConSkillSelector {
 				final JSONArray current = currentProsOrCons.getArr(name);
 				for (int i = 0; i < current.size(); ++i) {
 					final JSONObject actual = current.getObj(i);
+					actual.put("temporary:suppressEffects", true);
 					items.add(new ProConOrSkill(name, hero, proOrCon, actual, !actual.containsKey("temporary:Chosen"),
 							actual.containsKey("Auswahl") && !actual.containsKey("temporary:SetChoice"),
-							actual.containsKey("Freitext") && !actual.containsKey("temporary:SetText"), false, true, false, false, true));
+							actual.containsKey("Freitext") && !actual.containsKey("temporary:SetText"), false, true, false, false));
 				}
 			} else {
 				final JSONObject actual = currentProsOrCons.getObj(name);
-				items.add(new ProConOrSkill(name, hero, proOrCon, actual, !actual.containsKey("temporary:Chosen"), false, false, false, true, false,
-						false, true));
+				actual.put("temporary:suppressEffects", true);
+				items.add(new ProConOrSkill(name, hero, proOrCon, actual, !actual.containsKey("temporary:Chosen"), false, false, false, true, false, false));
 			}
 		}
 

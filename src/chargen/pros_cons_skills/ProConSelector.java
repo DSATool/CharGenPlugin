@@ -28,7 +28,7 @@ public class ProConSelector extends ProConSkillSelector {
 	public ProConSelector(final JSONObject generationState, final IntegerProperty gp, final String type, final IntegerProperty conGP,
 			final IntegerProperty seGP, final BooleanProperty showAll) {
 		super(generationState, gp, type, conGP, seGP);
-		selector = new GroupSelector(generationState, type, this, group, showAll, 2);
+		selector = new GroupSelector(generationState, type, group, showAll, 2);
 		possiblePane.setContent(selector.getControl());
 	}
 

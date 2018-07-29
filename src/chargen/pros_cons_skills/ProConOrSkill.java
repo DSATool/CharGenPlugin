@@ -34,14 +34,17 @@ public class ProConOrSkill extends ProOrCon {
 
 	private final BooleanProperty suggested;
 
-	private final boolean suppressEffects;
-
-	private boolean initializing = true;
-
 	public ProConOrSkill(final String name, final JSONObject hero, final JSONObject proOrCon, final JSONObject actual, final boolean fixed,
 			final boolean fixedChoice, final boolean fixedText, final boolean isSkills, final boolean isCheaperSkills, final boolean isInvalid,
-			final boolean suggested, final boolean suppressEffects) {
+			final boolean suggested) {
 		super(name, hero, proOrCon, actual);
+
+		if (!fixedChoice && proOrCon.containsKey("Auswahl") && !actual.containsKey("temporary:SetChoice")) {
+			actual.put("temporary:SetChoice", true);
+		}
+		if (!fixedText && proOrCon.containsKey("Freitext") && !actual.containsKey("temporary:SetText")) {
+			actual.put("temporary:SetText", true);
+		}
 
 		this.fixed = fixed;
 		this.fixedChoice = fixedChoice;
@@ -53,9 +56,6 @@ public class ProConOrSkill extends ProOrCon {
 
 		this.suggested = new SimpleBooleanProperty(suggested);
 
-		this.suppressEffects = suppressEffects;
-
-		initializing = false;
 		updateValid();
 	}
 
@@ -105,7 +105,7 @@ public class ProConOrSkill extends ProOrCon {
 
 	@Override
 	public void setDescription(final String description) {
-		if (!suppressEffects) {
+		if (!actual.getBoolOrDefault("temporary:suppressEffects", false)) {
 			HeroUtil.unapplyEffect(hero, name.get(), proOrCon, actual);
 		}
 		if (proOrCon.containsKey("Auswahl")) {
@@ -113,7 +113,7 @@ public class ProConOrSkill extends ProOrCon {
 		} else if (proOrCon.containsKey("Freitext")) {
 			actual.put("Freitext", description);
 		}
-		if (!suppressEffects) {
+		if (!actual.getBoolOrDefault("temporary:suppressEffects", false)) {
 			HeroUtil.applyEffect(hero, name.get(), proOrCon, actual);
 		}
 		this.description.set(description);
@@ -145,11 +145,11 @@ public class ProConOrSkill extends ProOrCon {
 	@Override
 	public void setValue(final int value) {
 		actual.put("temporary:AdditionalLevels", actual.getIntOrDefault("temporary:AdditionalLevels", 0) + value - getValue());
-		if (!suppressEffects) {
+		if (!actual.getBoolOrDefault("temporary:suppressEffects", false)) {
 			HeroUtil.unapplyEffect(hero, name.get(), proOrCon, actual);
 		}
 		actual.put("Stufe", value);
-		if (!suppressEffects) {
+		if (!actual.getBoolOrDefault("temporary:suppressEffects", false)) {
 			HeroUtil.applyEffect(hero, name.get(), proOrCon, actual);
 		}
 		updateCost(value, actual.getString("Auswahl"), actual.getString("Freitext"));
@@ -159,13 +159,13 @@ public class ProConOrSkill extends ProOrCon {
 
 	@Override
 	public void setVariant(final String variant) {
-		if (!suppressEffects) {
+		if (!actual.getBoolOrDefault("temporary:suppressEffects", false)) {
 			HeroUtil.unapplyEffect(hero, name.get(), proOrCon, actual);
 		}
 		if (proOrCon.containsKey("Auswahl") && proOrCon.containsKey("Freitext")) {
 			actual.put("Freitext", variant);
 		}
-		if (!suppressEffects) {
+		if (!actual.getBoolOrDefault("temporary:suppressEffects", false)) {
 			HeroUtil.applyEffect(hero, name.get(), proOrCon, actual);
 		}
 		this.variant.set(variant);
@@ -182,9 +182,7 @@ public class ProConOrSkill extends ProOrCon {
 
 	@Override
 	protected void updateValid() {
-		if (!initializing) {
-			super.updateValid();
-			valid.set(!isInvalid && (isCheaperSkills || valid.get() && (isSkills ? proOrCon.getIntOrDefault("Verbreitung", 1) > 3 : true)));
-		}
+		super.updateValid();
+		valid.set(!isInvalid && (isCheaperSkills || valid.get() && (isSkills ? proOrCon.getIntOrDefault("Verbreitung", 1) > 3 : true)));
 	}
 }

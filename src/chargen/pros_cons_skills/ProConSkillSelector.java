@@ -119,6 +119,7 @@ public abstract class ProConSkillSelector {
 				}
 				target.removeKey(current.getName());
 			}
+			HeroUtil.unapplyEffect(hero, current.getName(), current.getProOrCon(), current.getActual());
 			target.notifyListeners(null);
 		});
 
@@ -276,12 +277,12 @@ public abstract class ProConSkillSelector {
 					final JSONObject actual = current.getObj(i);
 					items.add(new ProConOrSkill(name, hero, proOrCon, actual, !actual.containsKey("temporary:Chosen"),
 							actual.containsKey("Auswahl") && !actual.containsKey("temporary:SetChoice"),
-							actual.containsKey("Freitext") && !actual.containsKey("temporary:SetText"), isSkills, false, false, false, false));
+							actual.containsKey("Freitext") && !actual.containsKey("temporary:SetText"), isSkills, false, false, false));
 				}
 			} else {
 				final JSONObject actual = currentProsOrCons.getObj(name);
-				items.add(new ProConOrSkill(name, hero, proOrCon, actual, !actual.containsKey("temporary:Chosen"), false, false, isSkills, false, false,
-						false, false));
+				items.add(
+						new ProConOrSkill(name, hero, proOrCon, actual, !actual.containsKey("temporary:Chosen"), false, false, isSkills, false, false, false));
 			}
 		}
 

@@ -112,7 +112,7 @@ public class ProConSkillSelectors extends TabController {
 		final int cheaperSkillAPPool = cheaperSkills.getIntOrDefault("temporary:Pool", 0);
 		items.add(pos, new Label("AP aus doppelten verb. Sonderfertigkeiten: "));
 		final Label cheaperSkillAPLabel = new Label();
-		cheaperSkillAPLabel.textProperty().bind(skillSelector.getCheaperPool().negate().asString().concat("/" + cheaperSkillAPPool));
+		cheaperSkillAPLabel.textProperty().bind(skillSelector.getCheaperPool().negate().add(cheaperSkillAPPool).asString().concat("/" + cheaperSkillAPPool));
 		items.add(pos + 1, cheaperSkillAPLabel);
 		pos += 2;
 

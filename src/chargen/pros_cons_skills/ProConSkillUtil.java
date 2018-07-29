@@ -42,12 +42,12 @@ public class ProConSkillUtil {
 		final boolean isCheaperSkills = "Verbilligte Sonderfertigkeiten".equals(type);
 
 		nameColumn.setText(type);
-		nameColumn.setCellFactory(c -> new TextFieldTableCell<ProConOrSkill, String>() {
+		nameColumn.setCellFactory(c -> new TextFieldTableCell<>() {
 			@Override
 			public void updateItem(final String item, final boolean empty) {
 				super.updateItem(item, empty);
 				if (getTableRow() != null) {
-					final ProConOrSkill proOrCon = (ProConOrSkill) getTableRow().getItem();
+					final ProConOrSkill proOrCon = getTableRow().getItem();
 					if (proOrCon != null) {
 						Util.addReference(this, proOrCon.getProOrCon(), 15, nameColumn.widthProperty());
 					}
@@ -55,7 +55,7 @@ public class ProConSkillUtil {
 			}
 		});
 
-		descColumn.setCellFactory(c -> new GraphicTableCell<ProConOrSkill, String>(false) {
+		descColumn.setCellFactory(c -> new GraphicTableCell<>(false) {
 			@Override
 			protected void createGraphic() {
 				final ObservableList<String> items = FXCollections
@@ -83,7 +83,7 @@ public class ProConSkillUtil {
 			}
 		});
 		descColumn.setOnEditCommit(t -> t.getRowValue().setDescription(t.getNewValue()));
-		variantColumn.setCellFactory(c -> new GraphicTableCell<ProConOrSkill, String>(false) {
+		variantColumn.setCellFactory(c -> new GraphicTableCell<>(false) {
 			@Override
 			protected void createGraphic() {
 				final ObservableList<String> items = FXCollections
@@ -111,10 +111,10 @@ public class ProConSkillUtil {
 			}
 		});
 		variantColumn.setOnEditCommit(t -> t.getRowValue().setVariant(t.getNewValue()));
-		valueColumn.setCellFactory(o -> new IntegerSpinnerTableCell<ProConOrSkill>(1, 999, 1, false) {
+		valueColumn.setCellFactory(o -> new IntegerSpinnerTableCell<>(1, 999, 1, false) {
 			@Override
 			public void updateItem(final Integer item, final boolean empty) {
-				final ProConOrSkill proOrCon = (ProConOrSkill) getTableRow().getItem();
+				final ProConOrSkill proOrCon = getTableRow().getItem();
 				if (empty || item.intValue() == Integer.MIN_VALUE || proOrCon == null) {
 					setText("");
 					setGraphic(null);
@@ -129,7 +129,7 @@ public class ProConSkillUtil {
 				}
 			}
 		});
-		validColumn.setCellFactory(tableColumn -> new TextFieldTableCell<ProConOrSkill, Boolean>() {
+		validColumn.setCellFactory(tableColumn -> new TextFieldTableCell<>() {
 			@Override
 			public void updateItem(final Boolean valid, final boolean empty) {
 				super.updateItem(valid, empty);
@@ -142,7 +142,7 @@ public class ProConSkillUtil {
 				}
 			}
 		});
-		suggestedColumn.setCellFactory(tableColumn -> new TextFieldTableCell<ProConOrSkill, Boolean>() {
+		suggestedColumn.setCellFactory(tableColumn -> new TextFieldTableCell<>() {
 			@Override
 			public void updateItem(final Boolean cheaper, final boolean empty) {
 				super.updateItem(cheaper, empty);
