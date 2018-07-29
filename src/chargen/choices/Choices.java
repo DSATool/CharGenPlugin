@@ -243,6 +243,7 @@ public class Choices extends TabController {
 		sl = new SimpleObjectProperty<>(null);
 		tl = new SimpleObjectProperty<>(null);
 		mlWriting = new SimpleObjectProperty<>(null);
+		final boolean[] addLanguageBoni = new boolean[] { forward, forward, forward, forward };
 
 		ml.addListener((o, oldV, newV) -> {
 			if (oldV != null) {
@@ -254,12 +255,15 @@ public class Choices extends TabController {
 				}
 			}
 			if (newV != null) {
-				newV.getActual().put("Muttersprache", true);
-				if (newV == tl.get()) {
-					newV.setValue((newV.getValue() == Integer.MIN_VALUE ? 0 : newV.getValue()) + 4 + languageBonus.get());
-				} else {
-					newV.setValue((newV.getValue() == Integer.MIN_VALUE ? 0 : newV.getValue()) + KL - 2 + languageBonus.get());
+				if (addLanguageBoni[0]) {
+					if (newV == tl.get()) {
+						newV.setValue((newV.getValue() == Integer.MIN_VALUE ? 0 : newV.getValue()) + 4 + languageBonus.get());
+					} else {
+						newV.setValue((newV.getValue() == Integer.MIN_VALUE ? 0 : newV.getValue()) + KL - 2 + languageBonus.get());
+					}
 				}
+				addLanguageBoni[0] = true;
+				newV.getActual().put("Muttersprache", true);
 				if (talents.containsKey("Muttersprache")) {
 					((ProxyTalent) talents.get("Muttersprache")).changeTalent(newV, hero.getObj("Talente").getObj("Sprachen und Schriften"));
 				}
@@ -273,10 +277,13 @@ public class Choices extends TabController {
 				}
 			}
 			if (newV != null) {
-				newV.getActual().put("Zweitsprache", true);
-				if (newV != tl.get()) {
-					newV.setValue((newV.getValue() == Integer.MIN_VALUE ? 0 : newV.getValue()) + KL - 4);
+				if (addLanguageBoni[1]) {
+					if (newV != tl.get()) {
+						newV.setValue((newV.getValue() == Integer.MIN_VALUE ? 0 : newV.getValue()) + KL - 4);
+					}
 				}
+				addLanguageBoni[1] = true;
+				newV.getActual().put("Zweitsprache", true);
 			}
 		});
 		tl.addListener((o, oldV, newV) -> {
@@ -289,12 +296,15 @@ public class Choices extends TabController {
 				}
 			}
 			if (newV != null) {
-				newV.getActual().put("Lehrsprache", true);
-				if (newV == ml.get()) {
-					newV.setValue((newV.getValue() == Integer.MIN_VALUE ? 0 : newV.getValue()) + 4);
-				} else if (newV != sl.get()) {
-					newV.setValue((newV.getValue() == Integer.MIN_VALUE ? 0 : newV.getValue()) + KL - 4);
+				if (addLanguageBoni[2]) {
+					if (newV == ml.get()) {
+						newV.setValue((newV.getValue() == Integer.MIN_VALUE ? 0 : newV.getValue()) + 4);
+					} else if (newV != sl.get()) {
+						newV.setValue((newV.getValue() == Integer.MIN_VALUE ? 0 : newV.getValue()) + KL - 4);
+					}
 				}
+				addLanguageBoni[2] = true;
+				newV.getActual().put("Lehrsprache", true);
 			}
 		});
 		mlWriting.addListener((o, oldV, newV) -> {
@@ -303,8 +313,11 @@ public class Choices extends TabController {
 				oldV.setValue(oldV.getValue() - writingBonus.get());
 			}
 			if (newV != null) {
+				if (addLanguageBoni[3]) {
+					newV.setValue((newV.getValue() == Integer.MIN_VALUE ? 0 : newV.getValue()) + writingBonus.get());
+				}
+				addLanguageBoni[3] = true;
 				newV.getActual().put("Muttersprache", true);
-				newV.setValue((newV.getValue() == Integer.MIN_VALUE ? 0 : newV.getValue()) + writingBonus.get());
 				if (talents.containsKey("Muttersprache:Schrift")) {
 					((ProxyTalent) talents.get("Muttersprache:Schrift")).changeTalent(newV, hero.getObj("Talente").getObj("Sprachen und Schriften"));
 				}
@@ -988,6 +1001,10 @@ public class Choices extends TabController {
 
 						final TalentChoice actualChoice = new TalentChoice(actualTalent, value,
 								primarySpells || choices.getArrOrDefault("Hauszauber", new JSONArray(null)).contains(k));
+						if (chosen.getInt(k).equals(current)) {
+							check.setSelected(true);
+							actualChoice.apply(hero, true);
+						}
 						check.selectedProperty().addListener((o, oldV, newV) -> {
 							if (choices.getBoolOrDefault("Leittalent", false)) {
 								actualTalent.setPrimaryTalent(newV);
@@ -998,10 +1015,6 @@ public class Choices extends TabController {
 								actualChoice.unapply(hero);
 							}
 						});
-						if (chosen.getInt(k).equals(current)) {
-							check.setSelected(true);
-							actualChoice.apply(hero, true);
-						}
 					}
 					++current;
 				}
@@ -1020,6 +1033,13 @@ public class Choices extends TabController {
 	@Override
 	public void deactivate(final boolean forward) {
 		tab.setDisable(true);
+
+		if (!forward) {
+			ml.set(null);
+			sl.set(null);
+			tl.set(null);
+			mlWriting.set(null);
+		}
 
 		leftBox.getChildren().remove(0);
 	}
@@ -1060,8 +1080,14 @@ public class Choices extends TabController {
 			final JSONObject currentTalent = talentAndGroup._1;
 			final JSONObject group = representation != null ? hero.getObj("Zauber") : hero.getObj("Talente").getObj(talentAndGroup._2);
 			JSONValue actual = HeroUtil.findActualTalent(hero, name)._1;
+			JSONObject talentGroup = ResourceManager.getResource("data/Talentgruppen").getObj(talentAndGroup._2);
+			if ("Sprachen und Schriften".equals(talentAndGroup._2)) {
+				talentGroup = talentGroup
+						.getObj(ResourceManager.getResource("data/Talente").getObj(name).getBoolOrDefault("Schrift", false) ? "Schriften" : "Sprachen");
+			}
 			if (actual == null) {
 				final JSONObject talent;
+
 				if (representation != null) {
 					actual = new JSONObject(group);
 					group.put(name, (JSONObject) actual);
@@ -1084,25 +1110,25 @@ public class Choices extends TabController {
 					if (!currentTalent.getBoolOrDefault("Basis", false)) {
 						talent.put("aktiviert", false);
 					}
-					actualTalent = Talent.getTalent(name, (JSONObject) currentTalent.getParent(), currentTalent, talent, group);
+					actualTalent = Talent.getTalent(name, talentGroup, currentTalent, talent, group);
 				} else {
 					talent = new JSONObject(group);
 					group.put(name, talent);
 					if (!currentTalent.getBoolOrDefault("Basis", false)) {
 						talent.put("aktiviert", false);
 					}
-					actualTalent = Talent.getTalent(name, (JSONObject) currentTalent.getParent(), currentTalent, talent, group);
+					actualTalent = Talent.getTalent(name, talentGroup, currentTalent, talent, group);
 				}
 				talent.put("temporary:ChoiceOnly", true);
 			} else if (currentTalent.containsKey("Auswahl") || currentTalent.containsKey("Freitext")) {
 				actualTalent = representation != null
 						? Spell.getSpell(name, currentTalent, ((JSONObject) actual).getArr(representation).getObj(0), (JSONObject) actual, group,
 								representation)
-						: Talent.getTalent(name, (JSONObject) currentTalent.getParent(), currentTalent, ((JSONArray) actual).getObj(0), group);
+						: Talent.getTalent(name, talentGroup, currentTalent, ((JSONArray) actual).getObj(0), group);
 			} else {
 				actualTalent = representation != null
 						? Spell.getSpell(name, currentTalent, ((JSONObject) actual).getObj(representation), (JSONObject) actual, group, representation)
-						: Talent.getTalent(name, (JSONObject) currentTalent.getParent(), currentTalent, (JSONObject) actual, group);
+						: Talent.getTalent(name, talentGroup, currentTalent, (JSONObject) actual, group);
 			}
 		}
 		talents.put(name, actualTalent);
