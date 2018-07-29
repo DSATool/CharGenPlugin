@@ -274,9 +274,6 @@ public class Attributes extends TabController {
 		return result;
 	}
 
-	/**
-	 *
-	 */
 	private void updateInfo() {
 		final StringBuilder newInfo = new StringBuilder("\n");
 		final JSONObject attributes = ResourceManager.getResource("data/Eigenschaften");
