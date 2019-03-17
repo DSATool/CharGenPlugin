@@ -16,7 +16,6 @@
 package chargen.choices;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -33,7 +32,7 @@ import dsa41basis.util.DSAUtil;
 import dsa41basis.util.HeroUtil;
 import dsatool.gui.GUIUtil;
 import dsatool.resources.ResourceManager;
-import dsatool.util.ReactiveSpinner;
+import dsatool.ui.ReactiveSpinner;
 import dsatool.util.Tuple;
 import dsatool.util.Util;
 import javafx.beans.binding.BooleanExpression;
@@ -103,7 +102,7 @@ public class Choices extends TabController {
 
 	private final Map<String, Talent> talents = new HashMap<>();
 
-	private final List<String> languageTypes = Arrays.asList("Muttersprache", "Zweitsprache", "Lehrsprache");
+	private final List<String> languageTypes = List.of("Muttersprache", "Zweitsprache", "Lehrsprache");
 
 	private ObjectProperty<Talent> ml;
 	private ObjectProperty<Talent> sl;

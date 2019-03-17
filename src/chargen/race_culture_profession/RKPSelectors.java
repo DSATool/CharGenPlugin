@@ -16,12 +16,12 @@
 package chargen.race_culture_profession;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.function.Consumer;
 
@@ -1001,8 +1001,8 @@ public class RKPSelectors extends TabController {
 				final JSONObject pros = generationState.getObj("Rasse").getObj("Vorteile");
 				pros.removeKey("Viertelzauberer");
 			}
-		} else if (Arrays.asList("Kasknuk", "Brenoch-Dûn").contains(hero.getObj("Biografie").getString("Profession"))
-				&& Arrays.asList("Nivesenstämme", "Gjalskerland").contains(hero.getObj("Biografie").getString("Kultur"))) {
+		} else if (Set.of("Kasknuk", "Brenoch-Dûn").contains(hero.getObj("Biografie").getString("Profession"))
+				&& Set.of("Nivesenstämme", "Gjalskerland").contains(hero.getObj("Biografie").getString("Kultur"))) {
 			final JSONObject cons = generationState.getObj("Kultur").getObj("Nachteile");
 			cons.removeKey("Totenangst");
 		} else if ("Goblin-Schamanin".equals(hero.getObj("Biografie").getString("Profession"))

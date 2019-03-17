@@ -16,7 +16,6 @@
 package chargen.ui;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -50,8 +49,8 @@ import jsonant.value.JSONValue;
 
 public class CharGenController {
 
-	public static List<Class<? extends TabController>> tabControllers = Arrays.asList(RKPSelectors.class, Attributes.class, Choices.class,
-			ProConSkillSelectors.class, Biography.class);
+	public static List<Class<? extends TabController>> tabControllers = new ArrayList<>(List.of(RKPSelectors.class, Attributes.class, Choices.class,
+			ProConSkillSelectors.class, Biography.class));
 
 	private final List<TabController> controllers = new ArrayList<>(tabControllers.size());
 
