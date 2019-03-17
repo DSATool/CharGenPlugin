@@ -21,7 +21,7 @@ import java.util.Map;
 import chargen.ui.TabController;
 import dsatool.resources.ResourceManager;
 import dsatool.resources.Settings;
-import dsatool.util.ReactiveSpinner;
+import dsatool.ui.ReactiveSpinner;
 import dsatool.util.Util;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;

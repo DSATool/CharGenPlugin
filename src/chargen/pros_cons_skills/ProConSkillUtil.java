@@ -16,9 +16,9 @@
 package chargen.pros_cons_skills;
 
 import dsatool.gui.GUIUtil;
-import dsatool.util.GraphicTableCell;
-import dsatool.util.IntegerSpinnerTableCell;
-import dsatool.util.ReactiveComboBox;
+import dsatool.ui.GraphicTableCell;
+import dsatool.ui.IntegerSpinnerTableCell;
+import dsatool.ui.ReactiveComboBox;
 import dsatool.util.Util;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

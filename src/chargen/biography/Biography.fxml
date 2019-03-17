@@ -10,8 +10,8 @@
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.text.Font?>
-<?import dsatool.util.ReactiveComboBox?>
-<?import dsatool.util.ReactiveSpinner?>
+<?import dsatool.ui.ReactiveComboBox?>
+<?import dsatool.ui.ReactiveSpinner?>
 
 <GridPane xmlns:fx="http://javafx.com/fxml/1" fx:id="pane" alignment="CENTER" hgap="5" vgap="4">
    <children>
