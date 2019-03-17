@@ -11,12 +11,13 @@
     		<fileset dir="${DSATool.location}"/>
     	</path>
 		<mkdir dir="bin"/>
-		<javac srcdir="src" destdir="bin" classpathref="classpath" includeantruntime="false" debug="true" debuglevel="lines,vars,source" source="1.8" target="1.8"/>
+		<javac srcdir="src" destdir="bin" classpathref="classpath" includeantruntime="false" debug="true" debuglevel="lines,vars,source" source="11" target="9"/>
 		<mkdir dir="plugins"/>
 		<jar destfile="plugins/${PluginName}.jar">
 			<fileset dir="bin"/>
 			<metainf file="LICENSE"/>
 			<metainf file="NOTICE"/>
+			<service type="dsatool.plugins.Plugin" provider="chargen.CharGen"/>
 		</jar>
     	<copy file="plugins/${PluginName}.jar" todir="${DSATool.location}/plugins"/>
 		<copy file="release/previous/release-info.json" tofile="${DSATool.location}/update/${PluginName}.json"/>
@@ -32,7 +33,6 @@
 		<fileset id="deleted" dir="release/previous" includes="${Includes},plugins/${PluginName}.jar">
 			<present present="srconly" targetdir="."/>
 		</fileset>
-		<resourcecount property="hasDeleted" refId="deleted" when="greater" count="0"/>
 		<echo file="release/current/deleted.txt">${toString:deleted}</echo>
 		<delete>
 			<fileset file="release/current/deleted.txt">

@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2017 DSATool team
  *
@@ -14,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package chargen;
+
 import chargen.ui.CharGenController;
 import dsatool.gui.Main;
 import dsatool.plugins.Plugin;
@@ -29,7 +30,7 @@ public class CharGen extends Plugin {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see plugins.Plugin#getPluginName()
 	 */
 	@Override
@@ -39,7 +40,7 @@ public class CharGen extends Plugin {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see plugins.Plugin#initialize()
 	 */
 	@Override
@@ -58,7 +59,7 @@ public class CharGen extends Plugin {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see plugins.Plugin#load()
 	 */
 	@Override
