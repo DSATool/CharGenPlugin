@@ -1082,7 +1082,8 @@ public class Choices extends TabController {
 			JSONObject talentGroup = ResourceManager.getResource("data/Talentgruppen").getObj(talentAndGroup._2);
 			if ("Sprachen und Schriften".equals(talentAndGroup._2)) {
 				talentGroup = talentGroup
-						.getObj(ResourceManager.getResource("data/Talente").getObj(name).getBoolOrDefault("Schrift", false) ? "Schriften" : "Sprachen");
+						.getObj(ResourceManager.getResource("data/Talente").getObj("Sprachen und Schriften").getObj(name).getBoolOrDefault("Schrift", false)
+								? "Schriften" : "Sprachen");
 			}
 			if (actual == null) {
 				final JSONObject talent;
