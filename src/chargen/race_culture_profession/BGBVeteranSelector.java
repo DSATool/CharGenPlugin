@@ -154,18 +154,18 @@ public class BGBVeteranSelector {
 	public void setType(final BGBVeteran type) {
 		update = false;
 		switch (type) {
-		case VETERAN:
-			veteranChoice.setSelected(true);
-			setVeteran();
-			break;
-		case BGB:
-			bgbChoice.setSelected(true);
-			setBGB();
-			break;
-		default:
-			noneChoice.setSelected(true);
-			setNone();
-			break;
+			case VETERAN:
+				veteranChoice.setSelected(true);
+				setVeteran();
+				break;
+			case BGB:
+				bgbChoice.setSelected(true);
+				setBGB();
+				break;
+			default:
+				noneChoice.setSelected(true);
+				setNone();
+				break;
 		}
 		update = true;
 	}

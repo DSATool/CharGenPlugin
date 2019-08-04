@@ -11,7 +11,7 @@
     		<fileset dir="${DSATool.location}"/>
     	</path>
 		<mkdir dir="bin"/>
-		<javac srcdir="src" destdir="bin" classpathref="classpath" includeantruntime="false" debug="true" debuglevel="lines,vars,source" source="11" target="9"/>
+		<javac srcdir="src" destdir="bin" classpathref="classpath" includeantruntime="false" debug="true" debuglevel="lines,vars,source" source="12" target="9"/>
 		<mkdir dir="plugins"/>
 		<jar destfile="plugins/${PluginName}.jar">
 			<fileset dir="bin"/>

@@ -40,7 +40,7 @@ public class RKP {
 
 	final int depth;
 
-	public RKP(Type type, String name, JSONObject data, RKP parent) {
+	public RKP(final Type type, final String name, final JSONObject data, final RKP parent) {
 		this.type = type;
 		this.name = name;
 		this.data = data;
@@ -63,19 +63,16 @@ public class RKP {
 		}
 	}
 
-	public Integer getCost(Integer defaultValue) {
+	public Integer getCost(final Integer defaultValue) {
 		return RKPSelectors.getInt(this, "Kosten", defaultValue);
 	}
 
 	public Tuple<JSONArray, JSONArray> getSuggestedOrPossible() {
-		switch (type) {
-		case Race:
-			return new Tuple<>(data.getArrOrDefault("Übliche Kulturen", null), data.getArrOrDefault("Mögliche Kulturen", null));
-		case Culture:
-			return new Tuple<>(null, data.getArrOrDefault("Professionen", null));
-		default:
-			return new Tuple<>(null, null);
-		}
+		return switch (type) {
+			case Race -> new Tuple<>(data.getArrOrDefault("Übliche Kulturen", null), data.getArrOrDefault("Mögliche Kulturen", null));
+			case Culture -> new Tuple<>(null, data.getArrOrDefault("Professionen", null));
+			default -> new Tuple<>(null, null);
+		};
 	}
 
 	public List<RKP> getVariants() {

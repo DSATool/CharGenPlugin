@@ -61,24 +61,24 @@ public class ProConSkillUtil {
 				final ObservableList<String> items = FXCollections
 						.<String> observableArrayList(getTableView().getItems().get(getIndex()).getFirstChoiceItems(false));
 				switch (getTableView().getItems().get(getIndex()).firstChoiceOrText()) {
-				case TEXT:
-					if (items.size() > 0) {
+					case TEXT:
+						if (items.size() > 0) {
+							final ComboBox<String> c = new ReactiveComboBox<>(items);
+							c.setEditable(true);
+							createGraphic(c, () -> c.getSelectionModel().getSelectedItem(), s -> c.getSelectionModel().select(s));
+						} else {
+							final TextField t = new TextField();
+							createGraphic(t, () -> t.getText(), s -> t.setText(s));
+						}
+						break;
+					case CHOICE:
 						final ComboBox<String> c = new ReactiveComboBox<>(items);
-						c.setEditable(true);
 						createGraphic(c, () -> c.getSelectionModel().getSelectedItem(), s -> c.getSelectionModel().select(s));
-					} else {
-						final TextField t = new TextField();
-						createGraphic(t, () -> t.getText(), s -> t.setText(s));
-					}
-					break;
-				case CHOICE:
-					final ComboBox<String> c = new ReactiveComboBox<>(items);
-					createGraphic(c, () -> c.getSelectionModel().getSelectedItem(), s -> c.getSelectionModel().select(s));
-					break;
-				case NONE:
-					final Label l = new Label();
-					createGraphic(l, () -> l.getText(), s -> l.setText(s));
-					break;
+						break;
+					case NONE:
+						final Label l = new Label();
+						createGraphic(l, () -> l.getText(), s -> l.setText(s));
+						break;
 				}
 			}
 		});
@@ -89,24 +89,24 @@ public class ProConSkillUtil {
 				final ObservableList<String> items = FXCollections
 						.<String> observableArrayList(getTableView().getItems().get(getIndex()).getSecondChoiceItems(false));
 				switch (getTableView().getItems().get(getIndex()).secondChoiceOrText()) {
-				case TEXT:
-					if (items.size() > 0) {
+					case TEXT:
+						if (items.size() > 0) {
+							final ComboBox<String> c = new ReactiveComboBox<>(items);
+							c.setEditable(true);
+							createGraphic(c, () -> c.getSelectionModel().getSelectedItem(), s -> c.getSelectionModel().select(s));
+						} else {
+							final TextField t = new TextField();
+							createGraphic(t, () -> t.getText(), s -> t.setText(s));
+						}
+						break;
+					case CHOICE:
 						final ComboBox<String> c = new ReactiveComboBox<>(items);
-						c.setEditable(true);
 						createGraphic(c, () -> c.getSelectionModel().getSelectedItem(), s -> c.getSelectionModel().select(s));
-					} else {
-						final TextField t = new TextField();
-						createGraphic(t, () -> t.getText(), s -> t.setText(s));
-					}
-					break;
-				case CHOICE:
-					final ComboBox<String> c = new ReactiveComboBox<>(items);
-					createGraphic(c, () -> c.getSelectionModel().getSelectedItem(), s -> c.getSelectionModel().select(s));
-					break;
-				case NONE:
-					final Label l = new Label();
-					createGraphic(l, () -> l.getText(), s -> l.setText(s));
-					break;
+						break;
+					case NONE:
+						final Label l = new Label();
+						createGraphic(l, () -> l.getText(), s -> l.setText(s));
+						break;
 				}
 			}
 		});

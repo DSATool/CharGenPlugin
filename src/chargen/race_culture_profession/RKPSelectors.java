@@ -49,15 +49,11 @@ public class RKPSelectors extends TabController {
 	private static final JSONArray dummyArr = new JSONArray(null);
 
 	private static String basicValueKey(final String value) {
-		switch (value) {
-		case "Sozialstatus":
-		case "Geschwindigkeit":
-			return "Wert";
-		case "Karmaenergie":
-			return "Permanent";
-		default:
-			return "Modifikator";
-		}
+		return switch (value) {
+			case "Sozialstatus", "Geschwindigkeit" -> "Wert";
+			case "Karmaenergie" -> "Permanent";
+			default -> "Modifikator";
+		};
 	}
 
 	static Integer getInt(final RKP source, final String name, final Integer defaultValue) {
@@ -519,75 +515,77 @@ public class RKPSelectors extends TabController {
 						}
 					} else {
 						switch (name) {
-						case "Vollzauberer":
-							if (prosOrCons.containsKey("Vollzauberer")) {
-								gp.set(gp.get() + (int) Math.round(proOrCon.getIntOrDefault("Kosten", 0) * 0.3));
-								break;
-							} else if (prosOrCons.containsKey("Halbzauberer")) {
-								gp.set(gp.get() + (int) Math
-										.round(ResourceManager.getResource("data/Vorteile").getObj("Halbzauberer").getIntOrDefault("Kosten", 0) * 0.3));
-								HeroUtil.unapplyEffect(hero, "Halbzauberer", ResourceManager.getResource("data/Vorteile").getObj("Halbzauberer"),
-										prosOrCons.getObj("Halbzauberer"));
-								prosOrCons.removeKey("Halbzauberer");
-								prosOrCons.put(name, currentCategory.getObj(name).clone(prosOrCons));
-							} else if (prosOrCons.containsKey("Viertelzauberer")) {
-								gp.set(gp.get() + (int) Math
-										.round(ResourceManager.getResource("data/Vorteile").getObj("Viertelzauberer").getIntOrDefault("Kosten", 0) * 0.3));
-								HeroUtil.unapplyEffect(hero, "Viertelzauberer", ResourceManager.getResource("data/Vorteile").getObj("Viertelzauberer"),
-										prosOrCons.getObj("Viertelzauberer"));
-								prosOrCons.removeKey("Viertelzauberer");
-								prosOrCons.put(name, currentCategory.getObj(name).clone(prosOrCons));
-							} else {
-								prosOrCons.put(name, currentCategory.getObj(name).clone(prosOrCons));
-							}
-							HeroUtil.applyEffect(hero, name, proOrCon, prosOrCons.getObj(name));
-							break;
-						case "Halbzauberer":
-							if (prosOrCons.containsKey("Vollzauberer") || prosOrCons.containsKey("Halbzauberer")) {
-								gp.set(gp.get() + (int) Math.round(proOrCon.getIntOrDefault("Kosten", 0) * 0.3));
-								break;
-							} else if (prosOrCons.containsKey("Viertelzauberer")) {
-								gp.set(gp.get() + (int) Math
-										.round(ResourceManager.getResource("data/Vorteile").getObj("Viertelzauberer").getIntOrDefault("Kosten", 0) * 0.3));
-								HeroUtil.unapplyEffect(hero, "Viertelzauberer", ResourceManager.getResource("data/Vorteile").getObj("Viertelzauberer"),
-										prosOrCons.getObj("Viertelzauberer"));
-								prosOrCons.removeKey("Viertelzauberer");
-								prosOrCons.put(name, currentCategory.getObj(name).clone(prosOrCons));
-							} else {
-								prosOrCons.put(name, currentCategory.getObj(name).clone(prosOrCons));
-							}
-							HeroUtil.applyEffect(hero, name, proOrCon, prosOrCons.getObj(name));
-							break;
-						case "Viertelzauberer":
-							if (prosOrCons.containsKey("Vollzauberer") || prosOrCons.containsKey("Halbzauberer") || prosOrCons.containsKey("Viertelzauberer")) {
-								gp.set(gp.get() + (int) Math.round(proOrCon.getIntOrDefault("Kosten", 0) * 0.3));
-							} else {
-								prosOrCons.put(name, currentCategory.getObj(name).clone(prosOrCons));
-								HeroUtil.applyEffect(hero, name, proOrCon, prosOrCons.getObj(name));
-							}
-							break;
-						default:
-							if (prosOrCons.containsKey(name)) {
-								if ("Verbilligte Sonderfertigkeiten".equals(category)) {
-									if (!onlyNew || !generationState.getObj("Profession").getObj("Sonderfertigkeiten").containsKey(name)) {
-										final JSONObject skill = prosOrCons.getObj(name);
-										skill.put("Verbilligungen", skill.getIntOrDefault("Verbilligungen", 1) + 1);
-									}
-								} else if (proOrCon.getBoolOrDefault("Abgestuft", false)) {
-									final JSONObject actual = prosOrCons.getObj(name);
-									HeroUtil.unapplyEffect(hero, name, proOrCon, actual);
-									actual.put("Stufe", actual.getIntOrDefault("Stufe", 0) + currentCategory.getObj(name).getIntOrDefault("Stufe", 0));
-									HeroUtil.applyEffect(hero, name, proOrCon, actual);
+							case "Vollzauberer":
+								if (prosOrCons.containsKey("Vollzauberer")) {
+									gp.set(gp.get() + (int) Math.round(proOrCon.getIntOrDefault("Kosten", 0) * 0.3));
+									break;
+								} else if (prosOrCons.containsKey("Halbzauberer")) {
+									gp.set(gp.get() + (int) Math
+											.round(ResourceManager.getResource("data/Vorteile").getObj("Halbzauberer").getIntOrDefault("Kosten", 0) * 0.3));
+									HeroUtil.unapplyEffect(hero, "Halbzauberer", ResourceManager.getResource("data/Vorteile").getObj("Halbzauberer"),
+											prosOrCons.getObj("Halbzauberer"));
+									prosOrCons.removeKey("Halbzauberer");
+									prosOrCons.put(name, currentCategory.getObj(name).clone(prosOrCons));
+								} else if (prosOrCons.containsKey("Viertelzauberer")) {
+									gp.set(gp.get() + (int) Math
+											.round(ResourceManager.getResource("data/Vorteile").getObj("Viertelzauberer").getIntOrDefault("Kosten", 0) * 0.3));
+									HeroUtil.unapplyEffect(hero, "Viertelzauberer", ResourceManager.getResource("data/Vorteile").getObj("Viertelzauberer"),
+											prosOrCons.getObj("Viertelzauberer"));
+									prosOrCons.removeKey("Viertelzauberer");
+									prosOrCons.put(name, currentCategory.getObj(name).clone(prosOrCons));
 								} else {
-									prosOrCons.put("temporary:Pool", prosOrCons.getIntOrDefault("temporary:Pool", 0) + proOrCon.getIntOrDefault("Kosten", 0));
+									prosOrCons.put(name, currentCategory.getObj(name).clone(prosOrCons));
 								}
-							} else {
-								prosOrCons.put(name, currentCategory.getObj(name).clone(prosOrCons));
-								if (!"Verbilligte Sonderfertigkeiten".equals(category)) {
+								HeroUtil.applyEffect(hero, name, proOrCon, prosOrCons.getObj(name));
+								break;
+							case "Halbzauberer":
+								if (prosOrCons.containsKey("Vollzauberer") || prosOrCons.containsKey("Halbzauberer")) {
+									gp.set(gp.get() + (int) Math.round(proOrCon.getIntOrDefault("Kosten", 0) * 0.3));
+									break;
+								} else if (prosOrCons.containsKey("Viertelzauberer")) {
+									gp.set(gp.get() + (int) Math
+											.round(ResourceManager.getResource("data/Vorteile").getObj("Viertelzauberer").getIntOrDefault("Kosten", 0) * 0.3));
+									HeroUtil.unapplyEffect(hero, "Viertelzauberer", ResourceManager.getResource("data/Vorteile").getObj("Viertelzauberer"),
+											prosOrCons.getObj("Viertelzauberer"));
+									prosOrCons.removeKey("Viertelzauberer");
+									prosOrCons.put(name, currentCategory.getObj(name).clone(prosOrCons));
+								} else {
+									prosOrCons.put(name, currentCategory.getObj(name).clone(prosOrCons));
+								}
+								HeroUtil.applyEffect(hero, name, proOrCon, prosOrCons.getObj(name));
+								break;
+							case "Viertelzauberer":
+								if (prosOrCons.containsKey("Vollzauberer") || prosOrCons.containsKey("Halbzauberer")
+										|| prosOrCons.containsKey("Viertelzauberer")) {
+									gp.set(gp.get() + (int) Math.round(proOrCon.getIntOrDefault("Kosten", 0) * 0.3));
+								} else {
+									prosOrCons.put(name, currentCategory.getObj(name).clone(prosOrCons));
 									HeroUtil.applyEffect(hero, name, proOrCon, prosOrCons.getObj(name));
 								}
-							}
-							break;
+								break;
+							default:
+								if (prosOrCons.containsKey(name)) {
+									if ("Verbilligte Sonderfertigkeiten".equals(category)) {
+										if (!onlyNew || !generationState.getObj("Profession").getObj("Sonderfertigkeiten").containsKey(name)) {
+											final JSONObject skill = prosOrCons.getObj(name);
+											skill.put("Verbilligungen", skill.getIntOrDefault("Verbilligungen", 1) + 1);
+										}
+									} else if (proOrCon.getBoolOrDefault("Abgestuft", false)) {
+										final JSONObject actual = prosOrCons.getObj(name);
+										HeroUtil.unapplyEffect(hero, name, proOrCon, actual);
+										actual.put("Stufe", actual.getIntOrDefault("Stufe", 0) + currentCategory.getObj(name).getIntOrDefault("Stufe", 0));
+										HeroUtil.applyEffect(hero, name, proOrCon, actual);
+									} else {
+										prosOrCons.put("temporary:Pool",
+												prosOrCons.getIntOrDefault("temporary:Pool", 0) + proOrCon.getIntOrDefault("Kosten", 0));
+									}
+								} else {
+									prosOrCons.put(name, currentCategory.getObj(name).clone(prosOrCons));
+									if (!"Verbilligte Sonderfertigkeiten".equals(category)) {
+										HeroUtil.applyEffect(hero, name, proOrCon, prosOrCons.getObj(name));
+									}
+								}
+								break;
 						}
 					}
 				}
@@ -883,33 +881,33 @@ public class RKPSelectors extends TabController {
 		final List<RKP> professionVariants = professionSelector.getCurrentVariants();
 
 		switch (bgbVeteranSelector.getType()) {
-		case VETERAN:
-			final JSONObject veteran = new JSONObject(pros);
-			final JSONArray veternModifications = getModifications(veteran, profession, professionVariants);
-			if (veternModifications.size() != 0) {
-				veteran.put("Profession:Modifikation", veternModifications);
-			} else {
-				veteran.removeKey("Profession:Modifikation");
-			}
-			pros.put("Veteran", veteran);
-			pros.removeKey("Breitgefächerte Bildung");
-			break;
-		case BGB:
-			final JSONObject bgb = new JSONObject(pros);
-			bgb.put("Profession", getName(profession));
-			final JSONArray bgbModifications = getModifications(bgb, profession, professionVariants);
-			if (bgbModifications.size() != 0) {
-				bgb.put("Profession:Modifikation", bgbModifications);
-			} else {
-				bgb.removeKey("Profession:Modifikation");
-			}
-			pros.put("Breitgefächerte Bildung", bgb);
-			pros.removeKey("Veteran");
-			break;
-		default:
-			pros.removeKey("Breitgefächerte Bildung");
-			pros.removeKey("Veteran");
-			break;
+			case VETERAN:
+				final JSONObject veteran = new JSONObject(pros);
+				final JSONArray veternModifications = getModifications(veteran, profession, professionVariants);
+				if (veternModifications.size() != 0) {
+					veteran.put("Profession:Modifikation", veternModifications);
+				} else {
+					veteran.removeKey("Profession:Modifikation");
+				}
+				pros.put("Veteran", veteran);
+				pros.removeKey("Breitgefächerte Bildung");
+				break;
+			case BGB:
+				final JSONObject bgb = new JSONObject(pros);
+				bgb.put("Profession", getName(profession));
+				final JSONArray bgbModifications = getModifications(bgb, profession, professionVariants);
+				if (bgbModifications.size() != 0) {
+					bgb.put("Profession:Modifikation", bgbModifications);
+				} else {
+					bgb.removeKey("Profession:Modifikation");
+				}
+				pros.put("Breitgefächerte Bildung", bgb);
+				pros.removeKey("Veteran");
+				break;
+			default:
+				pros.removeKey("Breitgefächerte Bildung");
+				pros.removeKey("Veteran");
+				break;
 		}
 	}
 
@@ -1080,40 +1078,33 @@ public class RKPSelectors extends TabController {
 			generationState.removeKey("Veteran");
 		} else {
 			switch (type) {
-			case VETERAN:
-				final String variantString = RKPString(profession, variants, true);
-				bgbVeteranLabel.setText(variantString.length() != 0 ? "Veteran:" : "Veteran");
-				bgbVeteranProfessionLabel.setText(variantString);
-				generationState.put("Veteran", buildProfession(profession, variants));
-				break;
-			case BGB:
-				bgbVeteranLabel.setText("Breitgefächerte Bildung:");
-				bgbVeteranProfessionLabel.setText(RKPString(profession, variants, false));
-				generationState.put("Breitgefächerte Bildung", buildProfession(profession, variants));
-				break;
-			default:
-				bgbVeteranLabel.setText("");
-				bgbVeteranProfessionLabel.setText("");
-				generationState.removeKey("Breitgefächerte Bildung");
-				generationState.removeKey("Veteran");
+				case VETERAN:
+					final String variantString = RKPString(profession, variants, true);
+					bgbVeteranLabel.setText(variantString.length() != 0 ? "Veteran:" : "Veteran");
+					bgbVeteranProfessionLabel.setText(variantString);
+					generationState.put("Veteran", buildProfession(profession, variants));
+					break;
+				case BGB:
+					bgbVeteranLabel.setText("Breitgefächerte Bildung:");
+					bgbVeteranProfessionLabel.setText(RKPString(profession, variants, false));
+					generationState.put("Breitgefächerte Bildung", buildProfession(profession, variants));
+					break;
+				default:
+					bgbVeteranLabel.setText("");
+					bgbVeteranProfessionLabel.setText("");
+					generationState.removeKey("Breitgefächerte Bildung");
+					generationState.removeKey("Veteran");
 			}
 		}
 
 		updateCultureSuggestedOrPossible();
 		updateCanContinue();
 
-		int cost;
-		switch (type) {
-		case BGB:
-			cost = ResourceManager.getResource("data/Vorteile").getObj("Breitgefächerte Bildung").getIntOrDefault("Kosten", 7);
-			break;
-		case VETERAN:
-			cost = ResourceManager.getResource("data/Vorteile").getObj("Veteran").getIntOrDefault("Kosten", 3);
-			break;
-		default:
-			cost = 0;
-			break;
-		}
+		final int cost = switch (type) {
+			case BGB -> ResourceManager.getResource("data/Vorteile").getObj("Breitgefächerte Bildung").getIntOrDefault("Kosten", 7);
+			case VETERAN -> ResourceManager.getResource("data/Vorteile").getObj("Veteran").getIntOrDefault("Kosten", 3);
+			default -> 0;
+		};
 
 		gp.set(gp.get() + bgbVeteranCost);
 		bgbVeteranCost = (type != BGBVeteran.NONE ? getCost(profession, variants) : 0) + cost;

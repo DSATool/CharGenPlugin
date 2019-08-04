@@ -366,22 +366,22 @@ public class Choices extends TabController {
 						final String language = currentLanguages.getString(0);
 						final Talent actualTalent = getTalent(language, null);
 						switch (type) {
-						case "Muttersprache":
-							ml.set(actualTalent);
-							mlWriting.set(getTalent(languages.getObj("Muttersprache:Schrift").getStringOrDefault(language, null), null));
-							break;
-						case "Zweitsprache":
-							if (languages.getBoolOrDefault("Leittalent", false)) {
-								actualTalent.setPrimaryTalent(true);
-							}
-							sl.set(actualTalent);
-							break;
-						case "Lehrsprache":
-							if (languages.getBoolOrDefault("Leittalent", false)) {
-								actualTalent.setPrimaryTalent(true);
-							}
-							tl.set(actualTalent);
-							break;
+							case "Muttersprache":
+								ml.set(actualTalent);
+								mlWriting.set(getTalent(languages.getObj("Muttersprache:Schrift").getStringOrDefault(language, null), null));
+								break;
+							case "Zweitsprache":
+								if (languages.getBoolOrDefault("Leittalent", false)) {
+									actualTalent.setPrimaryTalent(true);
+								}
+								sl.set(actualTalent);
+								break;
+							case "Lehrsprache":
+								if (languages.getBoolOrDefault("Leittalent", false)) {
+									actualTalent.setPrimaryTalent(true);
+								}
+								tl.set(actualTalent);
+								break;
 						}
 					}
 					continue;
@@ -477,22 +477,22 @@ public class Choices extends TabController {
 						actualTalent.setPrimaryTalent(false);
 						if (newV) {
 							switch (choice._1) {
-							case "Muttersprache":
-								ml.set(actualTalent);
-								mlWriting.set(getTalent(languages.getObj("Muttersprache:Schrift").getStringOrDefault(language, null), null));
-								break;
-							case "Zweitsprache":
-								if (languages.getBoolOrDefault("Leittalent", false)) {
-									actualTalent.setPrimaryTalent(newV);
-								}
-								sl.set(actualTalent);
-								break;
-							case "Lehrsprache":
-								if (languages.getBoolOrDefault("Leittalent", false)) {
-									actualTalent.setPrimaryTalent(newV);
-								}
-								tl.set(actualTalent);
-								break;
+								case "Muttersprache":
+									ml.set(actualTalent);
+									mlWriting.set(getTalent(languages.getObj("Muttersprache:Schrift").getStringOrDefault(language, null), null));
+									break;
+								case "Zweitsprache":
+									if (languages.getBoolOrDefault("Leittalent", false)) {
+										actualTalent.setPrimaryTalent(newV);
+									}
+									sl.set(actualTalent);
+									break;
+								case "Lehrsprache":
+									if (languages.getBoolOrDefault("Leittalent", false)) {
+										actualTalent.setPrimaryTalent(newV);
+									}
+									tl.set(actualTalent);
+									break;
 							}
 						}
 					});
@@ -557,7 +557,8 @@ public class Choices extends TabController {
 		final boolean needsPrimarySpells = spells && choices.getIntOrDefault("Hauszauber", 0) > 0;
 		final IntegerProperty availablePrimarySpells = new SimpleIntegerProperty(choices.getIntOrDefault("Hauszauber", 0));
 		if (spells) {
-			spellNames = ((JSONObject) actualChoices).keySet().toArray(new String[0]);
+			final Set<String> keySet = ((JSONObject) actualChoices).keySet();
+			spellNames = keySet.toArray(new String[keySet.size()]);
 			if (needsPrimarySpells) {
 				input.add(new Label("Hauszauber"), 3, 0);
 			}
@@ -744,24 +745,13 @@ public class Choices extends TabController {
 		input.setHgap(5);
 		input.setVgap(5);
 
-		String modifiedTargetName;
-		switch (targetName) {
-		case "Vorteile":
-			modifiedTargetName = "n Vorteil";
-			break;
-		case "Nachteile":
-			modifiedTargetName = "n Nachteil";
-			break;
-		case "Sonderfertigkeiten":
-			modifiedTargetName = " Sonderfertigkeit";
-			break;
-		case "Verbilligte Sonderfertigkeiten":
-			modifiedTargetName = " verbilligte Sonderfertigkeit";
-			break;
-		default:
-			modifiedTargetName = "n Ausrüstungsgegenstand";
-			break;
-		}
+		final String modifiedTargetName = switch (targetName) {
+			case "Vorteile" -> "n Vorteil";
+			case "Nachteile" -> "n Nachteil";
+			case "Sonderfertigkeiten" -> " Sonderfertigkeit";
+			case "Verbilligte Sonderfertigkeiten" -> " verbilligte Sonderfertigkeit";
+			default -> "n Ausrüstungsgegenstand";
+		};
 		input.add(new Label("Wähle eine" + modifiedTargetName + " aus:"), 0, 0, 2, 1);
 
 		final StringBuilder names = new StringBuilder();
@@ -944,7 +934,8 @@ public class Choices extends TabController {
 			String[] spellNames = null;
 			String rep = null;
 			if (spells) {
-				spellNames = ((JSONObject) actualChoices).keySet().toArray(new String[0]);
+				final Set<String> keySet = ((JSONObject) actualChoices).keySet();
+				spellNames = keySet.toArray(new String[keySet.size()]);
 			}
 			int current = 0;
 			for (int j = 0; j < actualChoices.size(); ++j) {
