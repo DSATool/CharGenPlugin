@@ -347,7 +347,7 @@ public class GroupSelector {
 		final ChangeListener<Boolean> validListener = new ChangeListener<>() {
 			@Override
 			public void changed(final ObservableValue<? extends Boolean> observable, final Boolean oldValue, final Boolean newValue) {
-				if (showAll.get() || newValue) {
+				if (showAll.get() || newValue || item.getProOrCon().containsKey("Auswahl") || item.getProOrCon().containsKey("Freitext")) {
 					valid.put(item, this);
 					invalid.remove(item);
 				} else {
