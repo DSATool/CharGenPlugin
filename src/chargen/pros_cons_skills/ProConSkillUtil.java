@@ -82,7 +82,10 @@ public class ProConSkillUtil {
 				}
 			}
 		});
-		descColumn.setOnEditCommit(t -> t.getRowValue().setDescription(t.getNewValue()));
+		descColumn.setOnEditCommit(t -> {
+			final ProConOrSkill value = t.getRowValue();
+			value.setDescription(t.getNewValue(), !value.getActual().getBoolOrDefault("temporary:suppressEffects", false));
+		});
 		variantColumn.setCellFactory(c -> new GraphicTableCell<>(false) {
 			@Override
 			protected void createGraphic() {
@@ -110,7 +113,10 @@ public class ProConSkillUtil {
 				}
 			}
 		});
-		variantColumn.setOnEditCommit(t -> t.getRowValue().setVariant(t.getNewValue()));
+		variantColumn.setOnEditCommit(t -> {
+			final ProConOrSkill value = t.getRowValue();
+			value.setVariant(t.getNewValue(), !value.getActual().getBoolOrDefault("temporary:suppressEffects", false));
+		});
 		valueColumn.setCellFactory(o -> new IntegerSpinnerTableCell<>(1, 999, 1, false) {
 			@Override
 			public void updateItem(final Integer item, final boolean empty) {
