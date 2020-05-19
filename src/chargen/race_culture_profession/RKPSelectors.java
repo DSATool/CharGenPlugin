@@ -120,7 +120,7 @@ public class RKPSelectors extends TabController {
 		professionSelector = new RKPSelector(() -> updateProfession());
 		professionSelector.setData(ResourceManager.getResource("data/Professionen"), t -> new RKP(RKP.Type.Profession, t._1, t._2, t._3));
 		professionTab = addTab(tabPane, "Profession", professionSelector.getControl());
-		bgbVeteranSelector = new BGBVeteranSelector(() -> updateBGBVeteran());
+		bgbVeteranSelector = new BGBVeteranSelector(() -> updateBGBVeteran(), generationState);
 		bgbVeteranTab = addTab(tabPane, "BGB/Veteran", bgbVeteranSelector.getControl());
 	}
 
@@ -1194,6 +1194,7 @@ public class RKPSelectors extends TabController {
 		}
 
 		updateCanContinue();
+		bgbVeteranSelector.updateValid();
 
 		gp.set(gp.get() + cultureCost);
 		cultureCost = getCost(culture, variants);
@@ -1330,6 +1331,7 @@ public class RKPSelectors extends TabController {
 
 		updateCultureSuggestedOrPossible();
 		updateCanContinue();
+		bgbVeteranSelector.updateValid();
 
 		gp.set(gp.get() + raceCost);
 		raceCost = getCost(race, variants);

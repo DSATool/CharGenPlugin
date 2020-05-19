@@ -44,6 +44,7 @@ public class BGBVeteranSelector {
 	private RadioButton veteranChoice;
 
 	private final Runnable updateValue;
+	private final JSONObject generationState;
 
 	private final RKPSelector selector;
 
@@ -52,8 +53,9 @@ public class BGBVeteranSelector {
 	private Function<RKP, Boolean> suggested;
 	private Function<RKP, Boolean> possible;
 
-	public BGBVeteranSelector(final Runnable updateValue) {
+	public BGBVeteranSelector(final Runnable updateValue, final JSONObject generationState) {
 		this.updateValue = updateValue;
+		this.generationState = generationState;
 
 		final FXMLLoader fxmlLoader = new FXMLLoader();
 
@@ -123,6 +125,7 @@ public class BGBVeteranSelector {
 	}
 
 	public void setProfession(final RKP profession) {
+		updateValid();
 		if (profession == null) {
 			noneChoice.setSelected(true);
 			bgbChoice.setDisable(true);
@@ -185,6 +188,19 @@ public class BGBVeteranSelector {
 			selector.updateSuggestedPossible(suggested, possible);
 		} else {
 			selector.updateSuggestedPossible(profession -> false, profession -> true);
+		}
+	}
+
+	public void updateValid() {
+		bgbChoice.getStyleClass().remove("invalid");
+		veteranChoice.getStyleClass().remove("invalid");
+		for (final String type : new String[] { "Rasse", "Kultur", "Profession" }) {
+			if (generationState.getObj(type).getObj("Ungeeignete Vorteile").containsKey("Breitgefächerte Bildung")) {
+				bgbChoice.getStyleClass().add("invalid");
+			}
+			if (generationState.getObj(type).getObj("Ungeeignete Vorteile").containsKey("Veteran")) {
+				veteranChoice.getStyleClass().add("invalid");
+			}
 		}
 	}
 }
