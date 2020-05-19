@@ -35,6 +35,7 @@ import dsatool.resources.ResourceManager;
 import dsatool.ui.ReactiveSpinner;
 import dsatool.util.Tuple;
 import dsatool.util.Util;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.BooleanExpression;
 import javafx.beans.binding.When;
 import javafx.beans.property.BooleanProperty;
@@ -509,19 +510,13 @@ public class Choices extends TabController {
 	}
 
 	private void createPointChoiceInput(final JSONObject choices, final boolean spells, final boolean primarySpells) {
-		final ScrollPane scrollPane = new ScrollPane();
-		final GridPane input = new GridPane();
-		scrollPane.setContent(input);
-		scrollPane.setVisible(false);
-		scrollPane.setFitToHeight(true);
-		scrollPane.setFitToWidth(true);
-		input.setAlignment(Pos.CENTER);
-		input.setHgap(5);
-		input.setVgap(5);
-
 		final boolean useComplexity = choices.getBoolOrDefault("Verrechnungspunkte", false);
-
 		final IntegerProperty points = new SimpleIntegerProperty(choices.getIntOrDefault("Punkte", 0));
+
+		final VBox box = new VBox();
+		box.setVisible(false);
+		box.setFillWidth(true);
+
 		final Label pointsLabel = new Label();
 		pointsLabel.textProperty().bind(points.asString());
 		final HBox panel = new HBox();
@@ -529,7 +524,15 @@ public class Choices extends TabController {
 		panel.getChildren().add(pointsLabel);
 		panel.getChildren().add(new Label((useComplexity ? " Verrechnungspunkte" : " Punkte")
 				+ (choices.containsKey("Anzahl:Maximum") ? " auf maximal " + choices.getInt("Anzahl:Maximum") + (spells ? " Zauber" : " Talente") : "")));
-		input.add(panel, 0, 0, 2, 1);
+		box.getChildren().add(panel);
+
+		final ScrollPane scrollPane = new ScrollPane();
+		final GridPane input = new GridPane();
+		scrollPane.setContent(input);
+		scrollPane.setFitToWidth(true);
+		input.setAlignment(Pos.CENTER);
+		input.setHgap(5);
+		input.setVgap(5);
 
 		final JSONValue actualChoices = spells ? choices.getObj("Wahl") : choices.getArr("Wahl");
 
@@ -546,29 +549,80 @@ public class Choices extends TabController {
 
 		final StringBuilder names = new StringBuilder();
 
-		final SimpleBooleanProperty isValid = new SimpleBooleanProperty(false);
-		toSelect.add(isValid);
-		isValid.bind(points.isEqualTo(0));
-
 		final IntegerProperty canSelect = new SimpleIntegerProperty(choices.getIntOrDefault("Anzahl:Maximum", actualChoices.size()));
 
 		String[] spellNames = null;
 		String rep = null;
 		final boolean needsPrimarySpells = spells && choices.getIntOrDefault("Hauszauber", 0) > 0;
 		final IntegerProperty availablePrimarySpells = new SimpleIntegerProperty(choices.getIntOrDefault("Hauszauber", 0));
+		JSONArray chosenPrimarySpells;
 		if (spells) {
 			final Set<String> keySet = ((JSONObject) actualChoices).keySet();
 			spellNames = keySet.toArray(new String[keySet.size()]);
 			if (needsPrimarySpells) {
+				final Label primarySpellsLabel = new Label();
+				primarySpellsLabel.textProperty().bind(availablePrimarySpells.asString());
+				final HBox primarySpellsPanel = new HBox();
+				primarySpellsPanel.getChildren().add(new Label("Wähle "));
+				primarySpellsPanel.getChildren().add(primarySpellsLabel);
+				primarySpellsPanel.getChildren().add(new Label(" Hauszauber"));
+				box.getChildren().add(primarySpellsPanel);
+
 				input.add(new Label("Hauszauber"), 3, 0);
+
+				if (choices.containsKey("Ausgewählt:Hauszauber")) {
+					chosenPrimarySpells = choices.getArr("Ausgewählt:Hauszauber");
+				} else {
+					chosenPrimarySpells = new JSONArray(choices);
+					for (int i = 0; i < actualChoices.size(); ++i) {
+						chosenPrimarySpells.add(false);
+					}
+					choices.put("Ausgewählt:Hauszauber", chosenPrimarySpells);
+				}
+			} else {
+				chosenPrimarySpells = null;
 			}
+		} else {
+			chosenPrimarySpells = null;
 		}
 
 		final boolean needsPrimaryTalents = choices.getIntOrDefault("Leittalente", 0) > 0 && hero.getObj("Nachteile").containsKey("Elfische Weltsicht");
 		final IntegerProperty availablePrimaryTalents = new SimpleIntegerProperty(choices.getIntOrDefault("Leittalente", 0));
+		JSONArray chosenPrimaryTalents;
 		if (needsPrimaryTalents) {
+			final Label primaryTalentsLabel = new Label();
+			primaryTalentsLabel.textProperty().bind(availablePrimaryTalents.asString());
+			final HBox primaryTalentsPanel = new HBox();
+			primaryTalentsPanel.getChildren().add(new Label("Wähle "));
+			primaryTalentsPanel.getChildren().add(primaryTalentsLabel);
+			primaryTalentsPanel.getChildren().add(new Label(" Leittalente"));
+			box.getChildren().add(primaryTalentsPanel);
+
 			input.add(new Label("Leittalent"), needsPrimarySpells ? 4 : 3, 0);
+
+			if (choices.containsKey("Ausgewählt:Leittalente")) {
+				chosenPrimaryTalents = choices.getArr("Ausgewählt:Leittalente");
+			} else {
+				chosenPrimaryTalents = new JSONArray(choices);
+				for (int i = 0; i < actualChoices.size(); ++i) {
+					chosenPrimaryTalents.add(false);
+				}
+				choices.put("Ausgewählt:Leittalente", chosenPrimaryTalents);
+			}
+		} else {
+			chosenPrimaryTalents = null;
 		}
+
+		final SimpleBooleanProperty isValid = new SimpleBooleanProperty(false);
+		toSelect.add(isValid);
+		BooleanBinding valid = points.isEqualTo(0);
+		if (needsPrimarySpells) {
+			valid = valid.and(availablePrimarySpells.isEqualTo(0));
+		}
+		if (needsPrimaryTalents) {
+			valid = valid.and(availablePrimaryTalents.isEqualTo(0));
+		}
+		isValid.bind(valid);
 
 		int current = 0;
 		for (int i = 0; i < actualChoices.size(); ++i) {
@@ -649,6 +703,7 @@ public class Choices extends TabController {
 					} else if ("n.a.".equals(oldV) && !"n.a.".equals(newV)) {
 						canSelect.set(canSelect.get() - 1);
 					}
+					recalculateCanContinue();
 				});
 				actualTalent.valueProperty().addListener((o, oldV, newV) -> {
 					if (newV.intValue() == Integer.MIN_VALUE && "0".equals(value.getValue())) {
@@ -663,8 +718,10 @@ public class Choices extends TabController {
 					input.add(primarySpell, 3, current + 1);
 					GridPane.setHalignment(primarySpell, HPos.CENTER);
 
+					final SimpleBooleanProperty isExternallySet = new SimpleBooleanProperty(false);
+
 					availablePrimarySpells.addListener((o, oldV, newV) -> {
-						if (newV.intValue() <= 0 && !primarySpell.isSelected() || needsPrimaryTalents && primaryTalent.isSelected()) {
+						if (isExternallySet.get() || newV.intValue() <= 0 && !primarySpell.isSelected() || needsPrimaryTalents && primaryTalent.isSelected()) {
 							primarySpell.setDisable(true);
 						} else {
 							primarySpell.setDisable(false);
@@ -672,31 +729,61 @@ public class Choices extends TabController {
 					});
 
 					primarySpell.selectedProperty().addListener((o, oldV, newV) -> {
-						((Spell) actualTalent).setPrimarySpell(newV);
-						if (needsPrimaryTalents) {
-							actualTalent.setPrimaryTalent(newV);
-							primaryTalent.setDisable(newV);
-						}
-						availablePrimarySpells.set(availablePrimarySpells.get() - (newV ? 1 : -1));
-						if (!"n.a.".equals(value.getValue())) {
-							points.set(points.get() + (Integer.parseInt(value.getValue()) + 1) * (newV ? 1 : -1));
+						if (!isExternallySet.get()) {
+							chosenPrimarySpells.set(finalC, newV);
+							((Spell) actualTalent).setPrimarySpell(newV);
+							if (needsPrimaryTalents) {
+								primaryTalent.setDisable(newV);
+							}
+							availablePrimarySpells.set(availablePrimarySpells.get() - (newV ? 1 : -1));
+							if (!"n.a.".equals(value.getValue())) {
+								points.set(points.get() + (Integer.parseInt(value.getValue()) + 1) * (newV ? 1 : -1));
+							}
+							recalculateCanContinue();
 						}
 					});
 
 					if (((Spell) actualTalent).isPrimarySpell()) {
+						if (!chosenPrimarySpells.getBool(finalC)) {
+							isExternallySet.set(true);
+							primarySpell.setDisable(true);
+						}
 						primarySpell.setSelected(true);
 					}
+
+					((Spell) actualTalent).primarySpellProperty().addListener((o, oldV, newV) -> {
+						if (newV && !chosenPrimarySpells.getBool(finalC)) {
+							isExternallySet.set(true);
+							primarySpell.setDisable(true);
+							if (needsPrimaryTalents) {
+								primaryTalent.setDisable(true);
+							}
+						}
+						primarySpell.setSelected(newV);
+						if (!newV) {
+							isExternallySet.set(false);
+							if (availablePrimarySpells.get() > 0 && (!needsPrimaryTalents || !primaryTalent.isSelected())) {
+								primarySpell.setDisable(false);
+							}
+							if (needsPrimaryTalents && availablePrimaryTalents.get() > 0) {
+								primaryTalent.setDisable(false);
+							}
+						}
+					});
 				}
 
 				if (needsPrimaryTalents) {
 					input.add(primaryTalent, needsPrimarySpells ? 4 : 3, current + 1);
 					GridPane.setHalignment(primaryTalent, HPos.CENTER);
 
+					final SimpleBooleanProperty isExternallySet = new SimpleBooleanProperty(false);
+
 					if (actualTalent.getActual().getBoolOrDefault("temporary:RKPPrimaryTalent", false)) {
 						primaryTalent.setDisable(true);
 					} else {
 						availablePrimaryTalents.addListener((o, oldV, newV) -> {
-							if (newV.intValue() <= 0 && !primaryTalent.isSelected() || needsPrimarySpells && primarySpell.isSelected()) {
+							if (isExternallySet.get() || newV.intValue() <= 0 && !primaryTalent.isSelected()
+									|| needsPrimarySpells && primarySpell.isSelected()) {
 								primaryTalent.setDisable(true);
 							} else {
 								primaryTalent.setDisable(false);
@@ -704,17 +791,45 @@ public class Choices extends TabController {
 						});
 
 						primaryTalent.selectedProperty().addListener((o, oldV, newV) -> {
-							actualTalent.setPrimaryTalent(newV);
-							if (needsPrimarySpells) {
-								primarySpell.setDisable(newV);
+							if (!isExternallySet.get()) {
+								chosenPrimaryTalents.set(finalC, newV);
+								actualTalent.setPrimaryTalent(newV);
+								if (needsPrimarySpells) {
+									primarySpell.setDisable(newV);
+								}
+								availablePrimaryTalents.set(availablePrimaryTalents.get() - (newV ? 1 : -1));
+								recalculateCanContinue();
 							}
-							availablePrimaryTalents.set(availablePrimaryTalents.get() - (newV ? 1 : -1));
 						});
 					}
 
 					if (actualTalent.isPrimaryTalent()) {
+						if (!chosenPrimaryTalents.getBool(finalC)) {
+							isExternallySet.set(true);
+							primaryTalent.setDisable(true);
+						}
 						primaryTalent.setSelected(true);
 					}
+
+					actualTalent.primaryTalentProperty().addListener((o, oldV, newV) -> {
+						if (newV && !chosenPrimaryTalents.getBool(finalC)) {
+							isExternallySet.set(true);
+							primaryTalent.setDisable(true);
+							if (needsPrimarySpells) {
+								primarySpell.setDisable(true);
+							}
+						}
+						primaryTalent.setSelected(newV);
+						if (!newV) {
+							isExternallySet.set(false);
+							if (availablePrimaryTalents.get() > 0 && (!needsPrimarySpells || !primarySpell.isSelected())) {
+								primaryTalent.setDisable(false);
+							}
+							if (needsPrimarySpells && availablePrimarySpells.get() > 0) {
+								primarySpell.setDisable(false);
+							}
+						}
+					});
 				}
 			}
 			++current;
@@ -730,8 +845,9 @@ public class Choices extends TabController {
 
 		names.delete(names.length() - 2, names.length());
 
+		box.getChildren().add(scrollPane);
 		choiceNames.getItems().add(new ChoicePage(names.toString(), isValid));
-		pane.getChildren().add(scrollPane);
+		pane.getChildren().add(box);
 	}
 
 	private void createSingleChoiceInput(final String targetName, final JSONObject choices, final JSONValue target, final boolean isEquipment) {
