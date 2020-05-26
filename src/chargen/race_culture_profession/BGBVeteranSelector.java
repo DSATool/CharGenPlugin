@@ -195,10 +195,15 @@ public class BGBVeteranSelector {
 		bgbChoice.getStyleClass().remove("invalid");
 		veteranChoice.getStyleClass().remove("invalid");
 		for (final String type : new String[] { "Rasse", "Kultur", "Profession" }) {
-			if (generationState.getObj(type).getObj("Ungeeignete Vorteile").containsKey("Breitgefächerte Bildung")) {
+			final JSONObject current = generationState.getObjOrDefault(type, null);
+			if (current == null) {
+				continue;
+			}
+			final JSONObject invalidPros = current.getObj("Ungeeignete Vorteile");
+			if (invalidPros.containsKey("Breitgefächerte Bildung")) {
 				bgbChoice.getStyleClass().add("invalid");
 			}
-			if (generationState.getObj(type).getObj("Ungeeignete Vorteile").containsKey("Veteran")) {
+			if (invalidPros.containsKey("Veteran")) {
 				veteranChoice.getStyleClass().add("invalid");
 			}
 		}
