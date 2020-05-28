@@ -184,10 +184,19 @@ public class BGBVeteranSelector {
 	}
 
 	private void updateSuggestedPossible() {
+		final Function<RKP, Boolean> isPossible = profession -> {
+			if (possible != null && !possible.apply(profession)) return false;
+			JSONObject invalidPros = null;
+			do {
+				invalidPros = profession.data.getObjOrDefault("Ungeeignete Vorteile", null);
+				profession = profession.parent;
+			} while (invalidPros == null && profession != null);
+			return invalidPros == null || !invalidPros.containsKey(bgbChoice.isSelected() ? "Breitgefächerte Bildung" : "Veteran");
+		};
 		if (!noneChoice.isSelected() && suggested != null && possible != null) {
-			selector.updateSuggestedPossible(suggested, possible);
+			selector.updateSuggestedPossible(suggested, isPossible);
 		} else {
-			selector.updateSuggestedPossible(profession -> false, profession -> true);
+			selector.updateSuggestedPossible(profession -> false, isPossible);
 		}
 	}
 
