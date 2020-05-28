@@ -63,6 +63,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -651,9 +652,17 @@ public class Choices extends TabController {
 			for (final String actualName : actualNames) {
 				final Talent actualTalent = getTalent(actualName, rep);
 
-				input.add(new Label(actualTalent.getName()), 0, current + 1);
-				names.append(actualTalent.getName());
+				final String talentName = actualTalent.getName();
+				names.append(talentName);
 				names.append(", ");
+				final Label nameLabel = new Label(talentName);
+				input.add(nameLabel, 0, current + 1);
+				if (spells) {
+					nameLabel.setText(talentName + " (" + ((Spell) actualTalent).getComplexity() + ")");
+					final JSONArray traits = actualTalent.getTalent().getArrOrDefault("Merkmale",
+							((JSONObject) actualTalent.getTalent().getParent()).getArr("Merkmale"));
+					nameLabel.setTooltip(new Tooltip("(" + String.join(", ", traits.getStrings()) + ")"));
+				}
 
 				final Label currentValue = new Label(actualTalent.getValue() == Integer.MIN_VALUE ? "n.a." : Integer.toString(actualTalent.getValue()));
 				currentValue.setPrefWidth(20);
@@ -721,7 +730,7 @@ public class Choices extends TabController {
 					final SimpleBooleanProperty isExternallySet = new SimpleBooleanProperty(false);
 
 					availablePrimarySpells.addListener((o, oldV, newV) -> {
-						if (isExternallySet.get() || newV.intValue() <= 0 && !primarySpell.isSelected() || needsPrimaryTalents && primaryTalent.isSelected()) {
+						if (isExternallySet.get() || newV.intValue() <= 0 && !primarySpell.isSelected()) {
 							primarySpell.setDisable(true);
 						} else {
 							primarySpell.setDisable(false);
@@ -732,7 +741,7 @@ public class Choices extends TabController {
 						if (!isExternallySet.get()) {
 							chosenPrimarySpells.set(finalC, newV);
 							((Spell) actualTalent).setPrimarySpell(newV);
-							if (needsPrimaryTalents) {
+							if (needsPrimaryTalents && !primaryTalent.isSelected()) {
 								primaryTalent.setDisable(newV);
 							}
 							availablePrimarySpells.set(availablePrimarySpells.get() - (newV ? 1 : -1));
@@ -765,7 +774,7 @@ public class Choices extends TabController {
 							if (availablePrimarySpells.get() > 0 && (!needsPrimaryTalents || !primaryTalent.isSelected())) {
 								primarySpell.setDisable(false);
 							}
-							if (needsPrimaryTalents && availablePrimaryTalents.get() > 0) {
+							if (needsPrimaryTalents && !primaryTalent.isSelected() && availablePrimaryTalents.get() > 0) {
 								primaryTalent.setDisable(false);
 							}
 						}
@@ -778,30 +787,26 @@ public class Choices extends TabController {
 
 					final SimpleBooleanProperty isExternallySet = new SimpleBooleanProperty(false);
 
-					if (actualTalent.getActual().getBoolOrDefault("temporary:RKPPrimaryTalent", false)) {
-						primaryTalent.setDisable(true);
-					} else {
-						availablePrimaryTalents.addListener((o, oldV, newV) -> {
-							if (isExternallySet.get() || newV.intValue() <= 0 && !primaryTalent.isSelected()
-									|| needsPrimarySpells && primarySpell.isSelected()) {
-								primaryTalent.setDisable(true);
-							} else {
-								primaryTalent.setDisable(false);
-							}
-						});
+					availablePrimaryTalents.addListener((o, oldV, newV) -> {
+						if (isExternallySet.get() || newV.intValue() <= 0 && !primaryTalent.isSelected()
+								|| needsPrimarySpells && primarySpell.isSelected()) {
+							primaryTalent.setDisable(true);
+						} else {
+							primaryTalent.setDisable(false);
+						}
+					});
 
-						primaryTalent.selectedProperty().addListener((o, oldV, newV) -> {
-							if (!isExternallySet.get()) {
-								chosenPrimaryTalents.set(finalC, newV);
-								actualTalent.setPrimaryTalent(newV);
-								if (needsPrimarySpells) {
-									primarySpell.setDisable(newV);
-								}
-								availablePrimaryTalents.set(availablePrimaryTalents.get() - (newV ? 1 : -1));
-								recalculateCanContinue();
+					primaryTalent.selectedProperty().addListener((o, oldV, newV) -> {
+						if (!isExternallySet.get()) {
+							chosenPrimaryTalents.set(finalC, newV);
+							actualTalent.setPrimaryTalent(newV);
+							if (needsPrimarySpells) {
+								primarySpell.setDisable(newV);
 							}
-						});
-					}
+							availablePrimaryTalents.set(availablePrimaryTalents.get() - (newV ? 1 : -1));
+							recalculateCanContinue();
+						}
+					});
 
 					if (actualTalent.isPrimaryTalent()) {
 						if (!chosenPrimaryTalents.getBool(finalC)) {
@@ -815,9 +820,6 @@ public class Choices extends TabController {
 						if (newV && !chosenPrimaryTalents.getBool(finalC)) {
 							isExternallySet.set(true);
 							primaryTalent.setDisable(true);
-							if (needsPrimarySpells) {
-								primarySpell.setDisable(true);
-							}
 						}
 						primaryTalent.setSelected(newV);
 						if (!newV) {
