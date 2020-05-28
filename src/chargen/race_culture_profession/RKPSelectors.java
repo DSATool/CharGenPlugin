@@ -16,14 +16,16 @@
 package chargen.race_culture_profession;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Stack;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import chargen.race_culture_profession.BGBVeteranSelector.BGBVeteran;
 import chargen.ui.TabController;
@@ -32,6 +34,7 @@ import dsa41basis.util.HeroUtil;
 import dsatool.resources.ResourceManager;
 import dsatool.util.Tuple;
 import dsatool.util.Tuple3;
+import dsatool.util.Tuple5;
 import javafx.beans.property.IntegerProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
@@ -107,6 +110,189 @@ public class RKPSelectors extends TabController {
 	private int professionCost = 0;
 	private int bgbVeteranCost = 0;
 
+	private final List<Tuple5<String, String, Predicate<JSONObject>, Consumer<JSONObject>, BiConsumer<JSONObject, JSONObject>>> specialCases = Arrays.asList(
+			new Tuple5<String, String, Predicate<JSONObject>, Consumer<JSONObject>, BiConsumer<JSONObject, JSONObject>>(
+					"Geode", "Rasse",
+					hero -> "Geode".equals(hero.getObj("Biografie").getString("Profession")),
+					(race) -> {
+						race.getObj("Vorteile").removeKey("Schwer zu verzaubern");
+						race.getObj("Nachteile").removeKey("Goldgier");
+					},
+					(race, unalteredRace) -> {
+						final JSONObject unalteredPros = unalteredRace.getObj("Vorteile");
+						if (unalteredPros.containsKey("Schwer zu verzaubern")) {
+							final JSONObject pros = race.getObj("Vorteile");
+							pros.put("Schwer zu verzaubern", unalteredPros.getObj("Schwer zu verzaubern").clone(pros));
+						}
+						final JSONObject unalteredCons = unalteredRace.getObj("Nachteile");
+						if (unalteredCons.containsKey("Goldgier")) {
+							final JSONObject cons = race.getObj("Nachteile");
+							cons.put("Goldgier", unalteredPros.getObj("Goldgier").clone(cons));
+						}
+					}),
+
+			new Tuple5<String, String, Predicate<JSONObject>, Consumer<JSONObject>, BiConsumer<JSONObject, JSONObject>>(
+					"ZwergischerMagier", "Rasse",
+					hero -> "Zwerg".equals(hero.getObj("Biografie").getString("Rasse")) && "Magier".equals(hero.getObj("Biografie").getString("Profession")),
+					(race) -> {
+						final JSONObject pros = race.getObj("Vorteile");
+						pros.removeKey("Schwer zu verzaubern");
+						pros.put("Eisenaffine Aura", new JSONObject(pros));
+						final JSONObject mr = pros.getObjOrDefault("Hohe Magieresistenz", new JSONObject(pros));
+						mr.put("Stufe", mr.getIntOrDefault("Stufe", 0) + 3);
+						pros.put("Hohe Magieresistenz", mr);
+
+						final JSONObject cons = race.getObj("Nachteile");
+						JSONArray choices;
+						if (cons.containsKey("Wahl")) {
+							choices = cons.getArr("Wahl");
+							if (choices.getObjs().stream().anyMatch(choice -> choice.containsKey("Unfähigkeit für Merkmal"))) return;
+						} else {
+							choices = new JSONArray(cons);
+							cons.put("Wahl", choices);
+						}
+						final JSONObject choice = new JSONObject(choices);
+						final JSONArray traits = new JSONArray(choice);
+						for (final String traitName : new String[] { "Eigenschaften", "Einfluss", "Form", "Heilung", "Hellsicht", "Herrschaft" }) {
+							final JSONObject trait = new JSONObject(traits);
+							trait.put("Auswahl", traitName);
+							traits.add(trait);
+						}
+						choice.put("Unfähigkeit für Merkmal", traits);
+						choices.add(choice);
+						choices.add(choice.clone(choices));
+					},
+					(race, unalteredRace) -> {
+						final JSONObject unalteredPros = unalteredRace.getObj("Vorteile");
+						final JSONObject pros = generationState.getObj("Rasse").getObj("Vorteile");
+						if (unalteredPros.containsKey("Schwer zu verzaubern")) {
+							pros.put("Schwer zu verzaubern", unalteredPros.getObj("Schwer zu verzaubern").clone(pros));
+						}
+						if (!unalteredPros.containsKey("Eisenaffine Aura")) {
+							pros.removeKey("Eisenaffine Aura");
+						}
+						if (unalteredPros.containsKey("Hohe Magieresistenz")) {
+							pros.put("Hohe Magieresistenz", unalteredPros.getObj("Hohe Magieresistenz").clone(pros));
+						} else {
+							pros.removeKey("Hohe Magieresistenz");
+						}
+
+						final JSONArray choices = race.getObj("Nachteile").getArr("Wahl");
+						final JSONObject choice = new JSONObject(choices);
+						final JSONArray traits = new JSONArray(choice);
+						for (final String traitName : new String[] { "Eigenschaften", "Einfluss", "Form", "Heilung", "Hellsicht", "Herrschaft" }) {
+							final JSONObject trait = new JSONObject(traits);
+							trait.put("Auswahl", traitName);
+							traits.add(trait);
+						}
+						choices.remove(choice);
+						choices.remove(choice);
+					}),
+
+			new Tuple5<String, String, Predicate<JSONObject>, Consumer<JSONObject>, BiConsumer<JSONObject, JSONObject>>(
+					"TocamuyacSchamane", "Kultur",
+					hero -> "Medizinmann".equals(hero.getObj("Biografie").getString("Profession"))
+							&& hero.getObj("Biografie").getArr("Profession:Modifikation").contains("Tocamuyac")
+							&& "Tocamuyac".equals(hero.getObj("Biografie").getString("Kultur")),
+					(culture) -> {
+						culture.getObj("Vorteile").removeKey("Richtungssinn");
+					},
+					(culture, unalteredCulture) -> {
+						final JSONObject unalteredPros = unalteredCulture.getObj("Vorteile");
+						if (unalteredPros.containsKey("Richtungssinn")) {
+							final JSONObject pros = culture.getObj("Vorteile");
+							pros.put("Richtungssinn", unalteredPros.getObj("Richtungssinn").clone(pros));
+						}
+					}),
+
+			new Tuple5<String, String, Predicate<JSONObject>, Consumer<JSONObject>, BiConsumer<JSONObject, JSONObject>>(
+					"SchamaneMitTotenangst", "Kultur",
+					hero -> "Medizinmann".equals(hero.getObj("Biografie").getString("Profession"))
+							&& hero.getObj("Biografie").getArr("Profession:Modifikation").contains("Waldinsel-Utulus")
+							&& "Waldinsel-Utulus".equals(hero.getObj("Biografie").getString("Kultur"))
+							|| "Kasknus".equals(hero.getObj("Biografie").getString("Profession"))
+									&& "Nivesenstämme".equals(hero.getObj("Biografie").getString("Kultur"))
+							|| "Brenoch-Dûn".equals(hero.getObj("Biografie").getString("Profession"))
+									&& "Gjalskerland".equals(hero.getObj("Biografie").getString("Kultur")),
+					(culture) -> {
+						culture.getObj("Nachteile").removeKey("Totenangst");
+					},
+					(culture, unalteredCulture) -> {
+						final JSONObject unalteredCons = unalteredCulture.getObj("Nachteile");
+						if (unalteredCons.containsKey("Totenangst")) {
+							final JSONObject cons = culture.getObj("Nachteile");
+							cons.put("Totenangst", unalteredCons.getObj("Totenangst").clone(cons));
+						}
+					}),
+
+			new Tuple5<String, String, Predicate<JSONObject>, Consumer<JSONObject>, BiConsumer<JSONObject, JSONObject>>(
+					"DarnaSchamane", "Kultur",
+					hero -> "Medizinmann".equals(hero.getObj("Biografie").getString("Profession"))
+							&& hero.getObj("Biografie").getArr("Profession:Modifikation").contains("Darna")
+							&& "Darna".equals(hero.getObj("Biografie").getString("Kultur")),
+					(culture) -> {
+						culture.getObj("Vorteile").removeKey("Viertelzauberer");
+					},
+					(culture, unalteredCulture) -> {
+						final JSONObject unalteredPros = unalteredCulture.getObj("Vorteile");
+						if (unalteredPros.containsKey("Viertelzauberer")) {
+							final JSONObject pros = culture.getObj("Vorteile");
+							pros.put("Viertelzauberer", unalteredPros.getObj("Viertelzauberer").clone(pros));
+						}
+					}),
+
+			new Tuple5<String, String, Predicate<JSONObject>, Consumer<JSONObject>, BiConsumer<JSONObject, JSONObject>>(
+					"GoblinSchamamin", "Rasse",
+					hero -> "Goblin-Schamanin".equals(hero.getObj("Biografie").getString("Profession"))
+							&& "Goblin".equals(hero.getObj("Biografie").getString("Rasse")),
+					(race) -> {
+						race.getObj("Nachteile").removeKey("Unstet");
+					},
+					(race, unalteredRace) -> {
+						final JSONObject unalteredCons = unalteredRace.getObj("Nachteile");
+						if (unalteredCons.containsKey("Unstet")) {
+							final JSONObject cons = race.getObj("Nachteile");
+							cons.put("Unstet", unalteredCons.getObj("Unstet").clone(cons));
+						}
+					}),
+
+			new Tuple5<String, String, Predicate<JSONObject>, Consumer<JSONObject>, BiConsumer<JSONObject, JSONObject>>(
+					"ElfischeSiedlungMitNichtmagischerProfession", "Profession",
+					hero -> {
+						if (!"Elfische Siedlung".equals(hero.getObj("Biografie").getString("Kultur"))) return false;
+						final JSONObject pros = generationState.getObj("Profession").getObj("Vorteile");
+						if (pros.containsKey("Vollzauberer") || pros.containsKey("Halbzauberer") || pros.containsKey("Viertelzauberer")) return false;
+						JSONObject additionalPros = null;
+						if (generationState.containsKey("Breitgefächerte Bildung")) {
+							additionalPros = generationState.getObj("Breitgefächerte Bildung").getObj("Vorteile");
+						} else if (generationState.containsKey("Veteran")) {
+							additionalPros = generationState.getObj("Veteran").getObj("Vorteile");
+						}
+						if (additionalPros != null && (additionalPros.containsKey("Vollzauberer") || additionalPros.containsKey("Halbzauberer")
+								|| additionalPros.containsKey("Viertelzauberer")))
+							return false;
+						return true;
+					},
+					(profession) -> {
+						final JSONArray spells = profession.getObj("Zauber").getArr("Wahl");
+						final JSONObject newChoices = generationState.getObj("Kultur").getObj("Zauber").getArr("Wahl").getObj(0).clone(spells);
+						newChoices.put("Punkte", 60);
+						newChoices.removeKey("Anzahl:Maximum");
+						newChoices.put("Hauszauber", 4);
+						newChoices.removeKey("Leittalente");
+						spells.add(newChoices);
+					},
+					(profession, unalteredProfession) -> {
+						final JSONArray spells = profession.getObj("Zauber").getArr("Wahl");
+						final JSONObject newChoices = ResourceManager.getResource("Kulturen").getObj("Elfische Siedlung").getObj("Zauber").getArr("Wahl")
+								.getObj(0).clone(spells);
+						newChoices.put("Punkte", 60);
+						newChoices.removeKey("Anzahl:Maximum");
+						newChoices.put("Hauszauber", 4);
+						newChoices.removeKey("Leittalente");
+						spells.remove(newChoices);
+					}));
+
 	public RKPSelectors(final JSONObject generationState, final TabPane tabPane, final VBox leftBox, final IntegerProperty gp) {
 		super(generationState, gp);
 
@@ -128,7 +314,6 @@ public class RKPSelectors extends TabController {
 	public void activate(final boolean forward) {
 		final ObservableList<Node> items = leftBox.getChildren();
 
-		changedRace = false;
 		items.add(0, new Label("Rasse: "));
 		raceLabel = new Label();
 		raceLabel.setWrapText(true);
@@ -138,9 +323,9 @@ public class RKPSelectors extends TabController {
 			raceSelector.select(race.getString("Name"), race.getArrOrDefault("Modifikation", null));
 			raceLabel.setText(RKPString(raceSelector.getCurrentChoice(), raceSelector.getCurrentVariants(), false));
 		}
+		changedRace = false;
 		items.add(1, raceLabel);
 
-		changedCulture = false;
 		items.add(2, new Label("Kultur: "));
 		cultureLabel = new Label();
 		cultureLabel.setWrapText(true);
@@ -150,9 +335,9 @@ public class RKPSelectors extends TabController {
 			cultureSelector.select(culture.getString("Name"), culture.getArrOrDefault("Modifikation", null));
 			cultureLabel.setText(RKPString(cultureSelector.getCurrentChoice(), cultureSelector.getCurrentVariants(), false));
 		}
+		changedCulture = false;
 		items.add(3, cultureLabel);
 
-		changedProfession = false;
 		items.add(4, new Label("Profession: "));
 		professionLabel = new Label();
 		professionLabel.setWrapText(true);
@@ -162,9 +347,9 @@ public class RKPSelectors extends TabController {
 			professionSelector.select(profession.getString("Name"), profession.getArrOrDefault("Modifikation", null));
 			professionLabel.setText(RKPString(professionSelector.getCurrentChoice(), professionSelector.getCurrentVariants(), false));
 		}
+		changedProfession = false;
 		items.add(5, professionLabel);
 
-		changedBgbVeteran = false;
 		bgbVeteranLabel = new Label();
 		items.add(6, bgbVeteranLabel);
 		bgbVeteranProfessionLabel = new Label();
@@ -185,6 +370,7 @@ public class RKPSelectors extends TabController {
 			bgbVeteranLabel.setText("");
 			bgbVeteranProfessionLabel.setText("");
 		}
+		changedBgbVeteran = false;
 		items.add(7, bgbVeteranProfessionLabel);
 
 		raceTab.setDisable(false);
@@ -358,7 +544,7 @@ public class RKPSelectors extends TabController {
 		target.put(name, getArr(source, name).clone(target));
 	}
 
-	private void collectBasicValues(final JSONObject hero) {
+	private void collectBasicValues(final JSONObject hero, final int soGP) {
 		final JSONObject basicValues = hero.getObj("Basiswerte");
 
 		for (final String current : new String[] { "Rasse", "Kultur", "Profession" }) {
@@ -396,6 +582,13 @@ public class RKPSelectors extends TabController {
 					value.put(key, value.getIntOrDefault(key, 0) + (currentValues.getIntOrDefault(valueName, 0) + 1) / 2);
 				}
 			}
+		}
+
+		if (soGP != 0) {
+			final JSONObject so = basicValues.getObj("Sozialstatus");
+			final String key = basicValueKey("Sozialstatus");
+			so.put(key, so.getInt(key) + soGP);
+			so.put("temporary:GP", soGP);
 		}
 	}
 
@@ -850,7 +1043,9 @@ public class RKPSelectors extends TabController {
 		}
 
 		if (changedRace || changedCulture || changedProfession || changedBgbVeteran) {
-			hero.getObj("Basiswerte").clear();
+			final JSONObject basicValues = hero.getObj("Basiswerte");
+			final int soGP = basicValues.getObj("Sozialstatus").getIntOrDefault("temporary:GP", 0);
+			basicValues.clear();
 			hero.getObj("Vorteile").clear();
 			hero.getObj("Nachteile").clear();
 			hero.getObj("Sonderfertigkeiten").clear();
@@ -859,11 +1054,9 @@ public class RKPSelectors extends TabController {
 			hero.removeKey("Zauber");
 			hero.removeKey("Besitz");
 
-			collectBasicValues(hero);
+			handleSpecialCases(hero);
 
-			handleGeodeSpecialCase(hero);
-			handleDwarfMageSpecialCase(hero);
-			handleShamanSpecialCases(hero);
+			collectBasicValues(hero, soGP);
 
 			collectProsOrCons("Vorteile", hero);
 			collectProsOrCons("Nachteile", hero);
@@ -947,66 +1140,31 @@ public class RKPSelectors extends TabController {
 		return source.data.getStringOrDefault(name, source.parent != null ? getString(source.parent, name) : "");
 	}
 
-	private void handleDwarfMageSpecialCase(final JSONObject hero) {
-		if ("Zwerg".equals(hero.getObj("Biografie").getString("Rasse")) && "Magier".equals(hero.getObj("Biografie").getString("Profession"))) {
-			final JSONObject pros = generationState.getObj("Rasse").getObj("Vorteile");
-			pros.removeKey("Schwer zu verzaubern");
-			pros.put("Eisenaffine Aura", new JSONObject(pros));
-			final JSONObject mr = new JSONObject(pros);
-			mr.put("Stufe", 3);
-			pros.put("Hohe Magieresistenz", mr);
+	private void handleSpecialCases(final JSONObject hero) {
+		final JSONObject unalteredRKP = new JSONObject(null);
+		unalteredRKP.put("Rasse", buildRace(raceSelector.getCurrentChoice(), raceSelector.getCurrentVariants()));
+		unalteredRKP.put("Kultur", buildRace(cultureSelector.getCurrentChoice(), cultureSelector.getCurrentVariants()));
+		unalteredRKP.put("Profession", buildRace(professionSelector.getCurrentChoice(), professionSelector.getCurrentVariants()));
 
-			final JSONObject cons = generationState.getObj("Rasse").getObj("Nachteile");
-			JSONArray choices;
-			if (cons.containsKey("Wahl")) {
-				choices = cons.getArr("Wahl");
+		for (final Tuple5<String, String, Predicate<JSONObject>, Consumer<JSONObject>, BiConsumer<JSONObject, JSONObject>> specialCase : specialCases) {
+			final String name = "temporary:Spezialfall" + specialCase._1;
+			final String type = specialCase._2;
+			final Predicate<JSONObject> applicable = specialCase._3;
+			final Consumer<JSONObject> apply = specialCase._4;
+			final BiConsumer<JSONObject, JSONObject> unapply = specialCase._5;
+
+			final JSONObject modified = generationState.getObj(type);
+			if (applicable.test(hero)) {
+				if (!modified.getBoolOrDefault(name, false)) {
+					apply.accept(modified);
+					modified.put(name, true);
+				}
 			} else {
-				choices = new JSONArray(cons);
-				cons.put("Wahl", choices);
+				if (modified.getBoolOrDefault(name, false)) {
+					unapply.accept(modified, unalteredRKP.getObj(type));
+					modified.removeKey(name);
+				}
 			}
-			final JSONObject choice = new JSONObject(choices);
-			final JSONArray traits = new JSONArray(cons);
-			for (final String traitName : new String[] { "Eigenschaften", "Einfluss", "Form", "Heilung", "Hellsicht", "Herrschaft" }) {
-				final JSONObject trait = new JSONObject(traits);
-				trait.put("Auswahl", traitName);
-				traits.add(trait);
-			}
-			choice.put("Unfähigkeit für Merkmal", traits);
-			choices.add(choice);
-			choices.add(choice.clone(choices));
-		}
-	}
-
-	private void handleGeodeSpecialCase(final JSONObject hero) {
-		if ("Geode".equals(hero.getObj("Biografie").getString("Profession"))) {
-			final JSONObject pros = generationState.getObj("Rasse").getObj("Vorteile");
-			pros.removeKey("Schwer zu verzaubern");
-			final JSONObject cons = generationState.getObj("Rasse").getObj("Nachteile");
-			cons.removeKey("Goldgier");
-		}
-	}
-
-	private void handleShamanSpecialCases(final JSONObject hero) {
-		if ("Medizinmann".equals(hero.getObj("Biografie").getString("Profession"))) {
-			final JSONArray mod = hero.getObj("Biografie").getArr("Profession:Modifikation");
-			if (mod.contains("Tocamuyac") && "Tocamuyac".equals(hero.getObj("Biografie").getString("Kultur"))) {
-				final JSONObject pros = generationState.getObj("Rasse").getObj("Vorteile");
-				pros.removeKey("Richtungssinn");
-			} else if (mod.contains("Waldinsel-Utulus") && "Waldinsel-Utulus".equals(hero.getObj("Biografie").getString("Kultur"))) {
-				final JSONObject cons = generationState.getObj("Kultur").getObj("Nachteile");
-				cons.removeKey("Totenangst");
-			} else if (mod.contains("Darna") && "Darna".equals(hero.getObj("Biografie").getString("Kultur"))) {
-				final JSONObject pros = generationState.getObj("Rasse").getObj("Vorteile");
-				pros.removeKey("Viertelzauberer");
-			}
-		} else if (Set.of("Kasknuk", "Brenoch-Dûn").contains(hero.getObj("Biografie").getString("Profession"))
-				&& Set.of("Nivesenstämme", "Gjalskerland").contains(hero.getObj("Biografie").getString("Kultur"))) {
-			final JSONObject cons = generationState.getObj("Kultur").getObj("Nachteile");
-			cons.removeKey("Totenangst");
-		} else if ("Goblin-Schamanin".equals(hero.getObj("Biografie").getString("Profession"))
-				&& "Goblin".equals(hero.getObj("Biografie").getString("Rasse"))) {
-			final JSONObject cons = generationState.getObj("Kultur").getObj("Nachteile");
-			cons.removeKey("Unstet");
 		}
 	}
 

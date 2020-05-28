@@ -159,6 +159,7 @@ public class Attributes extends TabController {
 		gp.set(gp.get() - currentSO + soMin + so.getIntOrDefault("temporary:GP", 0));
 		so.put("temporary:GP", currentSO - soMin);
 		so.put("Wert", currentSO);
+		soSpinner.getValueFactory().setValue(currentSO);
 		soSpinner.valueProperty().addListener((o, oldV, newV) -> {
 			gp.set(gp.get() + oldV - newV);
 			so.put("temporary:GP", so.getIntOrDefault("temporary:GP", 0) + newV - oldV);
