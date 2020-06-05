@@ -35,9 +35,9 @@ import dsatool.resources.ResourceManager;
 import dsatool.ui.ReactiveSpinner;
 import dsatool.util.Tuple;
 import dsatool.util.Util;
+import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.BooleanExpression;
-import javafx.beans.binding.When;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -464,7 +464,7 @@ public class Choices extends TabController {
 			currentValue.setAlignment(Pos.CENTER);
 			input.add(currentValue, 1, i + 1);
 			currentValue.textProperty()
-					.bind(new When(actualTalent.valueProperty().lessThan(Integer.MIN_VALUE + 1)).then("n.a.")
+					.bind(Bindings.when(actualTalent.valueProperty().lessThan(Integer.MIN_VALUE + 1)).then("n.a.")
 							.otherwise(actualTalent.valueProperty().asString()));
 
 			for (int j = 0; j < choices.size(); ++j) {
@@ -1094,7 +1094,7 @@ public class Choices extends TabController {
 					currentValue.setPrefWidth(20);
 					currentValue.setAlignment(Pos.CENTER);
 					input.add(currentValue, 1, current + 1 + additionalRows);
-					currentValue.textProperty().bind(new When(actualTalent.valueProperty().lessThan(Integer.MIN_VALUE + 1)).then("n.a.")
+					currentValue.textProperty().bind(Bindings.when(actualTalent.valueProperty().lessThan(Integer.MIN_VALUE + 1)).then("n.a.")
 							.otherwise(actualTalent.valueProperty().asString()));
 
 					for (int k = 0; k < numValues; ++k) {
