@@ -21,6 +21,7 @@ import java.util.List;
 import dsa41basis.util.HeroUtil;
 import dsatool.resources.ResourceManager;
 import dsatool.util.ErrorLogger;
+import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -34,6 +35,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -120,63 +122,69 @@ public class SkillSelector extends ProConSkillSelector {
 			ErrorLogger.logError(e);
 		}
 
-		final ContextMenu cheaperMenu = new ContextMenu();
+		possibleTable.setRowFactory(t -> {
+			final TableRow<ProConOrSkill> row = new TableRow<>();
 
-		final MenuItem addItem = new MenuItem("Hinzufügen");
-		cheaperMenu.getItems().add(addItem);
-		addItem.setOnAction(o -> {
-			final JSONObject hero = generationState.getObj("Held");
-			final JSONObject target = hero.getObj("Sonderfertigkeiten");
-			final ProConOrSkill skill = possibleTable.getSelectionModel().getSelectedItem();
-			final String name = skill.getName();
-			final boolean hasChoice = skill.getProOrCon().containsKey("Auswahl");
-			final boolean hasText = skill.getProOrCon().containsKey("Freitext");
-			JSONObject actual;
-			if (hasChoice || hasText) {
-				actual = skill.getActual().clone(target.getArr(name));
-				target.getArr(name).add(actual);
-			} else {
-				actual = skill.getActual().clone(target);
-				target.put(name, actual);
-			}
-			actual.removeKey("temporary:suppressEffects");
-			actual.put("temporary:Chosen", true);
-			HeroUtil.applyEffect(hero, name, skill.getProOrCon(), skill.getActual());
-			target.notifyListeners(null);
-		});
+			final ContextMenu cheaperMenu = new ContextMenu();
 
-		final MenuItem removeItem = new MenuItem("Entfernen");
-		cheaperMenu.getItems().add(removeItem);
-		removeItem.setOnAction(o -> {
-			final JSONObject hero = generationState.getObj("Held");
-			final JSONObject target = hero.getObj("Verbilligte Sonderfertigkeiten");
-			final ProConOrSkill current = possibleTable.getSelectionModel().getSelectedItem();
-			if (current.getProOrCon().containsKey("Auswahl") || current.getProOrCon().containsKey("Freitext")) {
-				target.getArr(current.getName()).remove(current.getActual());
-				if (target.getArr(current.getName()).size() == 0) {
+			final MenuItem addItem = new MenuItem("Hinzufügen");
+			cheaperMenu.getItems().add(addItem);
+			addItem.setOnAction(o -> {
+				final JSONObject hero = generationState.getObj("Held");
+				final JSONObject target = hero.getObj("Sonderfertigkeiten");
+				final ProConOrSkill skill = row.getItem();
+				final String name = skill.getName();
+				final boolean hasChoice = skill.getProOrCon().containsKey("Auswahl");
+				final boolean hasText = skill.getProOrCon().containsKey("Freitext");
+				JSONObject actual;
+				if (hasChoice || hasText) {
+					actual = skill.getActual().clone(target.getArr(name));
+					target.getArr(name).add(actual);
+				} else {
+					actual = skill.getActual().clone(target);
+					target.put(name, actual);
+				}
+				actual.removeKey("temporary:suppressEffects");
+				actual.put("temporary:Chosen", true);
+				HeroUtil.applyEffect(hero, name, skill.getProOrCon(), skill.getActual());
+				target.notifyListeners(null);
+			});
+
+			final MenuItem removeItem = new MenuItem("Entfernen");
+			cheaperMenu.getItems().add(removeItem);
+			removeItem.setOnAction(o -> {
+				final JSONObject hero = generationState.getObj("Held");
+				final JSONObject target = hero.getObj("Verbilligte Sonderfertigkeiten");
+				final ProConOrSkill current = row.getItem();
+				if (current.getProOrCon().containsKey("Auswahl") || current.getProOrCon().containsKey("Freitext")) {
+					target.getArr(current.getName()).remove(current.getActual());
+					if (target.getArr(current.getName()).size() == 0) {
+						target.removeKey(current.getName());
+					}
+				} else {
+					final JSONObject actual = target.getObj(current.getName());
+					if (actual.containsKey("temporary:Cheaper")) {
+						final JSONObject cheaperSkills = hero.getObj("Verbilligte Sonderfertigkeiten");
+						final JSONObject cheaper = new JSONObject(cheaperSkills);
+						final int numCheaper = actual.getInt("temporary:Cheaper");
+						if (numCheaper > 1) {
+							cheaper.put("Verbilligungen", numCheaper);
+						}
+						cheaperSkills.put(current.getName(), cheaper);
+					}
 					target.removeKey(current.getName());
 				}
-			} else {
-				final JSONObject actual = target.getObj(current.getName());
-				if (actual.containsKey("temporary:Cheaper")) {
-					final JSONObject cheaperSkills = hero.getObj("Verbilligte Sonderfertigkeiten");
-					final JSONObject cheaper = new JSONObject(cheaperSkills);
-					final int numCheaper = actual.getInt("temporary:Cheaper");
-					if (numCheaper > 1) {
-						cheaper.put("Verbilligungen", numCheaper);
-					}
-					cheaperSkills.put(current.getName(), cheaper);
-				}
-				target.removeKey(current.getName());
-			}
-			target.notifyListeners(null);
-		});
+				target.notifyListeners(null);
+			});
 
-		cheaperMenu.setOnShowing(e -> {
-			final ProConOrSkill cheaperSkill = possibleTable.getSelectionModel().getSelectedItem();
-			removeItem.setVisible(cheaperSkill != null && !cheaperSkill.isFixed());
+			row.contextMenuProperty().bind(
+					Bindings.when(Bindings.createBooleanBinding(() -> {
+						final ProConOrSkill cheaperSkill = row.getItem();
+						return cheaperSkill != null && !cheaperSkill.isFixed();
+					}, row.itemProperty())).then(cheaperMenu).otherwise((ContextMenu) null));
+
+			return row;
 		});
-		possibleTable.setContextMenu(cheaperMenu);
 
 		possibleValueColumn.setOnEditCommit(t -> t.getRowValue().setValue(t.getNewValue()));
 
