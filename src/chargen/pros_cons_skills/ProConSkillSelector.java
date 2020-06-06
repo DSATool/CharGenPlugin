@@ -283,9 +283,11 @@ public abstract class ProConSkillSelector {
 				final JSONArray current = currentProsOrCons.getArr(name);
 				for (int i = 0; i < current.size(); ++i) {
 					final JSONObject actual = current.getObj(i);
+					HeroUtil.unapplyEffect(hero, name, proOrCon, actual);
 					items.add(new ProConOrSkill(name, hero, proOrCon, actual, !actual.containsKey("temporary:Chosen"),
 							actual.containsKey("Auswahl") && !actual.containsKey("temporary:SetChoice"),
 							actual.containsKey("Freitext") && !actual.containsKey("temporary:SetText"), isSkills, false, false, false));
+					HeroUtil.applyEffect(hero, name, proOrCon, actual);
 				}
 			} else {
 				final JSONObject actual = currentProsOrCons.getObj(name);
