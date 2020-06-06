@@ -524,7 +524,8 @@ public class Choices extends TabController {
 		panel.getChildren().add(new Label("Verteile "));
 		panel.getChildren().add(pointsLabel);
 		panel.getChildren().add(new Label((useComplexity ? " Verrechnungspunkte" : " Punkte")
-				+ (choices.containsKey("Anzahl:Maximum") ? " auf maximal " + choices.getInt("Anzahl:Maximum") + (spells ? " Zauber" : " Talente") : "")));
+				+ (choices.containsKey("Anzahl:Maximum") ? " auf maximal " + choices.getInt("Anzahl:Maximum") + (spells ? " Zauber" : " Talente") : "")
+				+ (choices.containsKey("Maximum") ? " (je maximal " + choices.getInt("Maximum") + " Punkte)" : "")));
 		box.getChildren().add(panel);
 
 		final ScrollPane scrollPane = new ScrollPane();
