@@ -627,6 +627,7 @@ public class Choices extends TabController {
 		isValid.bind(valid);
 
 		int current = 0;
+		int row = 1;
 		for (int i = 0; i < actualChoices.size(); ++i) {
 			final String name = spells ? spellNames[i] : ((JSONArray) actualChoices).getString(i);
 			List<String> actualNames = new LinkedList<>();
@@ -657,7 +658,7 @@ public class Choices extends TabController {
 				names.append(talentName);
 				names.append(", ");
 				final Label nameLabel = new Label(talentName);
-				input.add(nameLabel, 0, current + 1);
+				input.add(nameLabel, 0, row);
 				if (spells) {
 					nameLabel.setText(talentName + " (" + ((Spell) actualTalent).getComplexity() + ")");
 					final JSONArray traits = actualTalent.getTalent().getArrOrDefault("Merkmale",
@@ -668,7 +669,7 @@ public class Choices extends TabController {
 				final Label currentValue = new Label(actualTalent.getValue() == Integer.MIN_VALUE ? "n.a." : Integer.toString(actualTalent.getValue()));
 				currentValue.setPrefWidth(20);
 				currentValue.setAlignment(Pos.CENTER);
-				input.add(currentValue, 1, current + 1);
+				input.add(currentValue, 1, row);
 				actualTalent.valueProperty().addListener((o, oldV, newV) -> {
 					if (newV.intValue() == Integer.MIN_VALUE) {
 						currentValue.setText("n.a.");
@@ -683,7 +684,7 @@ public class Choices extends TabController {
 					possible.add(Integer.toString(j));
 				}
 				final ReactiveSpinner<String> value = new ReactiveSpinner<>(possible);
-				input.add(value, 2, current + 1);
+				input.add(value, 2, row);
 
 				canSelect.addListener((o, oldV, newV) -> {
 					if (newV.intValue() <= 0 && "n.a.".equals(value.getValue())) {
@@ -725,7 +726,7 @@ public class Choices extends TabController {
 				final CheckBox primaryTalent = needsPrimaryTalents ? new CheckBox() : null;
 
 				if (needsPrimarySpells) {
-					input.add(primarySpell, 3, current + 1);
+					input.add(primarySpell, 3, row);
 					GridPane.setHalignment(primarySpell, HPos.CENTER);
 
 					final SimpleBooleanProperty isExternallySet = new SimpleBooleanProperty(false);
@@ -783,7 +784,7 @@ public class Choices extends TabController {
 				}
 
 				if (needsPrimaryTalents) {
-					input.add(primaryTalent, needsPrimarySpells ? 4 : 3, current + 1);
+					input.add(primaryTalent, needsPrimarySpells ? 4 : 3, row);
 					GridPane.setHalignment(primaryTalent, HPos.CENTER);
 
 					final SimpleBooleanProperty isExternallySet = new SimpleBooleanProperty(false);
@@ -834,6 +835,7 @@ public class Choices extends TabController {
 						}
 					});
 				}
+				++row;
 			}
 			++current;
 		}
