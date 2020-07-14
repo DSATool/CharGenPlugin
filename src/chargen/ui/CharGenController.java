@@ -169,7 +169,7 @@ public class CharGenController {
 		return pane;
 	}
 
-	private void init() {
+	public void init() {
 		controllers.clear();
 		tabPane.getTabs().clear();
 		leftBox.getChildren().clear();

@@ -28,6 +28,8 @@ import dsatool.settings.IntegerSetting;
  */
 public class CharGen extends Plugin {
 
+	private CharGenController controller;
+
 	/*
 	 * (non-Javadoc)
 	 *
@@ -46,7 +48,9 @@ public class CharGen extends Plugin {
 	@Override
 	public void initialize() {
 		Main.addDetachableToolComposite("Helden", "Erschaffung", 900, 800, () -> {
-			return new CharGenController().getRoot();
+			controller = new CharGenController();
+			getNotifications = true;
+			return controller.getRoot();
 		});
 		Settings.addSetting(new IntegerSetting("GP", 110, 0, 999, "Heldenerschaffung", "GP"));
 		Settings.addSetting(new IntegerSetting("GP für Eigenschaften", 100, 0, 999, "Heldenerschaffung", "GP für Eigenschaften"));
@@ -63,5 +67,7 @@ public class CharGen extends Plugin {
 	 * @see plugins.Plugin#load()
 	 */
 	@Override
-	public void load() {}
+	public void load() {
+		controller.init();
+	}
 }
