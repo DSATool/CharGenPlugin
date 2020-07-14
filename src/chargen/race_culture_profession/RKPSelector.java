@@ -75,7 +75,7 @@ public class RKPSelector {
 		});
 
 		tree.setCellFactory(tv -> {
-			final TreeCell<RKP> cell = new TreeCell<RKP>() {
+			final TreeCell<RKP> cell = new TreeCell<>() {
 				@Override
 				public void updateItem(final RKP item, final boolean empty) {
 					super.updateItem(item, empty);
@@ -138,8 +138,8 @@ public class RKPSelector {
 	}
 
 	private TreeItem<RKP> findChild(final TreeItem<RKP> item, final String child) {
-		for (int i = 0; i < item.getChildren().size(); ++i) {
-			if (child.equals(item.getChildren().get(i).getValue().name)) return item.getChildren().get(i);
+		for (final TreeItem<RKP> current : item.getChildren()) {
+			if (child.equals(current.getValue().name)) return current;
 		}
 		return null;
 	}
