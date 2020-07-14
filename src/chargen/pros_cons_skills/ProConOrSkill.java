@@ -108,7 +108,7 @@ public class ProConOrSkill extends ProOrCon {
 		if (applyEffect) {
 			HeroUtil.unapplyEffect(hero, name.get(), proOrCon, actual);
 		}
-		if (proOrCon.containsKey("Auswahl")) {
+		if (proOrCon.containsKey("Auswahl") || "Auswahl".equals(proOrCon.getString("Spezialisierung"))) {
 			actual.put("Auswahl", description);
 		} else if (proOrCon.containsKey("Freitext")) {
 			actual.put("Freitext", description);
