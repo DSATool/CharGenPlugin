@@ -15,9 +15,14 @@
  */
 package chargen.pros_cons_skills;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 import dsa41basis.util.HeroUtil;
 import dsatool.util.ErrorLogger;
 import dsatool.util.Tuple;
+import dsatool.util.Tuple4;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -73,9 +78,13 @@ public abstract class ProConSkillSelector {
 	private final IntegerProperty conGP;
 	private final IntegerProperty seGP;
 
+	private boolean isInitializing = false;
+
 	protected final JSONListener listener = o -> {
-		initializeChosenTable();
-		setCost();
+		if (!isInitializing) {
+			initializeChosenTable();
+			setCost();
+		}
 	};
 
 	public ProConSkillSelector(final JSONObject generationState, final IntegerProperty gp, final String type, final IntegerProperty conGP,
@@ -267,12 +276,16 @@ public abstract class ProConSkillSelector {
 	}
 
 	protected void initializeChosenTable() {
+		isInitializing = true;
+
 		final JSONObject hero = generationState.getObj("Held");
 		final JSONObject currentProsOrCons = hero.getObj(type);
 		final ObservableList<ProConOrSkill> items = chosenTable.getItems();
 		items.clear();
 
 		final boolean isSkills = "Sonderfertigkeiten".equals(type);
+
+		final List<Tuple4<String, JSONObject, JSONObject, JSONObject>> changedProsOrCons = new ArrayList<>();
 
 		for (final String name : currentProsOrCons.keySet()) {
 			if (name.startsWith("temporary:")) {
@@ -283,22 +296,40 @@ public abstract class ProConSkillSelector {
 				final JSONArray current = currentProsOrCons.getArr(name);
 				for (int i = 0; i < current.size(); ++i) {
 					final JSONObject actual = current.getObj(i);
-					HeroUtil.unapplyEffect(hero, name, proOrCon, actual);
-					items.add(new ProConOrSkill(name, hero, proOrCon, actual, !actual.containsKey("temporary:Chosen"),
+					final JSONObject previous = actual.clone(null);
+					final boolean isFixed = !actual.containsKey("temporary:Chosen");
+					items.add(new ProConOrSkill(name, hero, proOrCon, actual, isFixed,
 							actual.containsKey("Auswahl") && !actual.containsKey("temporary:SetChoice"),
-							actual.containsKey("Freitext") && !actual.containsKey("temporary:SetText"), isSkills, false, false, false));
-					HeroUtil.applyEffect(hero, name, proOrCon, actual);
+							actual.containsKey("Freitext") && !actual.containsKey("temporary:SetText"), isSkills && !isFixed, false, false, false));
+
+					if (!Objects.equals(actual.getString("Auswahl"), previous.getString("Auswahl"))
+							|| !Objects.equals(actual.getString("Freitext"), previous.getString("Freitext"))) {
+						changedProsOrCons.add(new Tuple4<>(name, proOrCon, previous, actual));
+					}
 				}
 			} else {
 				final JSONObject actual = currentProsOrCons.getObj(name);
-				items.add(
-						new ProConOrSkill(name, hero, proOrCon, actual, !actual.containsKey("temporary:Chosen"), false, false, isSkills, false, false, false));
+				final boolean isFixed = !actual.containsKey("temporary:Chosen");
+				items.add(new ProConOrSkill(name, hero, proOrCon, actual, isFixed, false, false, isSkills && !isFixed, false, false, false));
 			}
+		}
+
+		if (!changedProsOrCons.isEmpty()) {
+			for (final Tuple4<String, JSONObject, JSONObject, JSONObject> changedProOrCon : changedProsOrCons) {
+				final String name = changedProOrCon._1;
+				final JSONObject proOrCon = changedProOrCon._2;
+				HeroUtil.unapplyEffect(hero, name, proOrCon, changedProOrCon._3);
+				HeroUtil.applyEffect(hero, name, proOrCon, changedProOrCon._4);
+			}
+			initializeChosenTable();
+			return;
 		}
 
 		chosenTable.sort();
 
 		chosenTable.setMinHeight((items.size() + 1) * 28 + 1);
+
+		isInitializing = false;
 	}
 
 	public void setCost() {
