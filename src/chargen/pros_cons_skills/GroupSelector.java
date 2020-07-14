@@ -199,7 +199,7 @@ public class GroupSelector {
 
 		possibleTable.getSortOrder().add(possibleNameColumn);
 
-		possibleTable.setItems(new FilteredList<>(allItems, (skill) -> valid.containsKey(skill)));
+		possibleTable.setItems(new FilteredList<>(allItems, valid::containsKey));
 
 		showAll.addListener((o, oldV, newV) -> initializePossibleTable());
 	}

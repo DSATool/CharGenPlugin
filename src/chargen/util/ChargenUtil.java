@@ -75,9 +75,10 @@ public class ChargenUtil {
 									found = true;
 									break;
 								} else if (choice.containsKey("Punkte") && newChoice.containsKey("Punkte")
-										&& choice.getIntOrDefault("Minimum", 0) == newChoice.getIntOrDefault("Minimum", 0)
-										&& choice.getIntOrDefault("Maximum", 0) == newChoice.getIntOrDefault("Maximum", 0)
-										&& choice.getBoolOrDefault("Verrechnungspunkte", false) == newChoice.getBoolOrDefault("Verrechnungspunkte", false)) {
+										&& choice.getIntOrDefault("Minimum", 0).equals(newChoice.getIntOrDefault("Minimum", 0))
+										&& choice.getIntOrDefault("Maximum", 0).equals(newChoice.getIntOrDefault("Maximum", 0))
+										&& choice.getBoolOrDefault("Verrechnungspunkte", false)
+												.equals(newChoice.getBoolOrDefault("Verrechnungspunkte", false))) {
 									choice.put("Punkte", choice.getInt("Punkte") + newChoice.getInt("Punkte"));
 									if (newChoice.containsKey("Ausgewählt")) {
 										choice.put("Ausgewählt", newChoice.getArr("Ausgewählt"));
@@ -113,10 +114,10 @@ public class ChargenUtil {
 											found = true;
 											break;
 										} else if (alternativeChoice.containsKey("Punkte") && newChoice.containsKey("Punkte")
-												&& alternativeChoice.getIntOrDefault("Minimum", 0) == newChoice.getIntOrDefault("Minimum", 0)
-												&& alternativeChoice.getIntOrDefault("Maximum", 0) == newChoice.getIntOrDefault("Maximum", 0)
-												&& alternativeChoice.getBoolOrDefault("Verrechnungspunkte", false) == newChoice
-														.getBoolOrDefault("Verrechnungspunkte", false)) {
+												&& alternativeChoice.getIntOrDefault("Minimum", 0).equals(newChoice.getIntOrDefault("Minimum", 0))
+												&& alternativeChoice.getIntOrDefault("Maximum", 0).equals(newChoice.getIntOrDefault("Maximum", 0))
+												&& alternativeChoice.getBoolOrDefault("Verrechnungspunkte", false)
+														.equals(newChoice.getBoolOrDefault("Verrechnungspunkte", false))) {
 											alternativeChoice.put("Punkte", alternativeChoice.getInt("Punkte") + newChoice.getInt("Punkte"));
 											if (newChoice.containsKey("Ausgewählt")) {
 												alternativeChoice.put("Ausgewählt", newChoice.getArr("Ausgewählt"));
@@ -218,9 +219,10 @@ public class ChargenUtil {
 									found = true;
 									break;
 								} else if (choice.containsKey("Punkte") && newChoice.containsKey("Punkte")
-										&& choice.getIntOrDefault("Minimum", 0) == newChoice.getIntOrDefault("Minimum", 0)
-										&& choice.getIntOrDefault("Maximum", 0) == newChoice.getIntOrDefault("Maximum", 0)
-										&& choice.getBoolOrDefault("Verrechnungspunkte", false) == newChoice.getBoolOrDefault("Verrechnungspunkte", false)) {
+										&& choice.getIntOrDefault("Minimum", 0).equals(newChoice.getIntOrDefault("Minimum", 0))
+										&& choice.getIntOrDefault("Maximum", 0).equals(newChoice.getIntOrDefault("Maximum", 0))
+										&& choice.getBoolOrDefault("Verrechnungspunkte", false)
+												.equals(newChoice.getBoolOrDefault("Verrechnungspunkte", false))) {
 									choice.put("Punkte", choice.getInt("Punkte") + newChoice.getInt("Punkte"));
 									if (newChoice.containsKey("Ausgewählt")) {
 										choice.put("Ausgewählt", newChoice.getArr("Ausgewählt"));

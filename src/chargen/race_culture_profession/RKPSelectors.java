@@ -297,16 +297,16 @@ public class RKPSelectors extends TabController {
 		super(generationState, gp);
 
 		this.leftBox = leftBox;
-		raceSelector = new RKPSelector(() -> updateRace());
+		raceSelector = new RKPSelector(this::updateRace);
 		raceSelector.setData(ResourceManager.getResource("data/Rassen"), t -> new RKP(RKP.Type.Race, t._1, t._2, t._3));
 		raceTab = addTab(tabPane, "Rasse", raceSelector.getControl());
-		cultureSelector = new RKPSelector(() -> updateCulture());
+		cultureSelector = new RKPSelector(this::updateCulture);
 		cultureSelector.setData(ResourceManager.getResource("data/Kulturen"), t -> new RKP(RKP.Type.Culture, t._1, t._2, t._3));
 		cultureTab = addTab(tabPane, "Kultur", cultureSelector.getControl());
-		professionSelector = new RKPSelector(() -> updateProfession());
+		professionSelector = new RKPSelector(this::updateProfession);
 		professionSelector.setData(ResourceManager.getResource("data/Professionen"), t -> new RKP(RKP.Type.Profession, t._1, t._2, t._3));
 		professionTab = addTab(tabPane, "Profession", professionSelector.getControl());
-		bgbVeteranSelector = new BGBVeteranSelector(() -> updateBGBVeteran(), generationState);
+		bgbVeteranSelector = new BGBVeteranSelector(this::updateBGBVeteran, generationState);
 		bgbVeteranTab = addTab(tabPane, "BGB/Veteran", bgbVeteranSelector.getControl());
 	}
 

@@ -244,7 +244,7 @@ public class Choices extends TabController {
 		sl = new SimpleObjectProperty<>(null);
 		tl = new SimpleObjectProperty<>(null);
 		mlWriting = new SimpleObjectProperty<>(null);
-		final boolean[] addLanguageBoni = new boolean[] { forward, forward, forward, forward };
+		final boolean[] addLanguageBoni = { forward, forward, forward, forward };
 
 		ml.addListener((o, oldV, newV) -> {
 			if (oldV != null) {
@@ -538,15 +538,13 @@ public class Choices extends TabController {
 
 		final JSONValue actualChoices = spells ? choices.getObj("Wahl") : choices.getArr("Wahl");
 
-		JSONArray chosen;
-		if (choices.containsKey("Ausgewählt")) {
-			chosen = choices.getArr("Ausgewählt");
-		} else {
-			chosen = new JSONArray(choices);
-			for (int i = 0; i < actualChoices.size(); ++i) {
-				chosen.add(-1);
-			}
+		final JSONObject initialChosen = choices.getObjOrDefault("Ausgewählt", null);
+		JSONObject chosen;
+		if (initialChosen == null) {
+			chosen = new JSONObject(choices);
 			choices.put("Ausgewählt", chosen);
+		} else {
+			chosen = initialChosen;
 		}
 
 		final StringBuilder names = new StringBuilder();
@@ -554,7 +552,6 @@ public class Choices extends TabController {
 		final IntegerProperty canSelect = new SimpleIntegerProperty(choices.getIntOrDefault("Anzahl:Maximum", actualChoices.size()));
 
 		String[] spellNames = null;
-		String rep = null;
 		final boolean needsPrimarySpells = spells && choices.getIntOrDefault("Hauszauber", 0) > 0;
 		final IntegerProperty availablePrimarySpells = new SimpleIntegerProperty(choices.getIntOrDefault("Hauszauber", 0));
 		JSONArray chosenPrimarySpells;
@@ -631,6 +628,7 @@ public class Choices extends TabController {
 		for (int i = 0; i < actualChoices.size(); ++i) {
 			final String name = spells ? spellNames[i] : ((JSONArray) actualChoices).getString(i);
 			List<String> actualNames = new LinkedList<>();
+
 			if ("Fremdsprache".equals(name)) {
 				final JSONObject langs = ResourceManager.getResource("data/Talente").getObj("Sprachen und Schriften");
 				for (final String lang : langs.keySet()) {
@@ -648,9 +646,9 @@ public class Choices extends TabController {
 			} else {
 				actualNames = Collections.singletonList(name);
 			}
-			if (spells) {
-				rep = ((JSONObject) actualChoices).getString(name);
-			}
+
+			final String rep = spells ? ((JSONObject) actualChoices).getString(name) : null;
+
 			for (final String actualName : actualNames) {
 				final Talent actualTalent = getTalent(actualName, rep);
 
@@ -665,6 +663,8 @@ public class Choices extends TabController {
 							((JSONObject) actualTalent.getTalent().getParent()).getArr("Merkmale"));
 					nameLabel.setTooltip(new Tooltip("(" + String.join(", ", traits.getStrings()) + ")"));
 				}
+
+				final String choiceName = spells ? talentName + rep : talentName;
 
 				final Label currentValue = new Label(actualTalent.getValue() == Integer.MIN_VALUE ? "n.a." : Integer.toString(actualTalent.getValue()));
 				currentValue.setPrefWidth(20);
@@ -695,8 +695,9 @@ public class Choices extends TabController {
 				});
 
 				final ValueChoice actualChoice = new ValueChoice(actualTalent, points, useComplexity, rep, primarySpells);
-				value.getValueFactory().setValue(chosen.getInt(current) == -1 ? "n.a." : Integer.toString(chosen.getInt(current)));
-				if (chosen.getInt(current) == -1) {
+				final int chosenValue = chosen.getIntOrDefault(choiceName, -1);
+				value.getValueFactory().setValue(chosenValue == -1 ? "n.a." : Integer.toString(chosenValue));
+				if (chosenValue == -1) {
 					actualChoice.value = null;
 				} else {
 					actualChoice.value = Integer.parseInt(value.getValue());
@@ -708,7 +709,11 @@ public class Choices extends TabController {
 					actualChoice.unapply(hero);
 					actualChoice.value = "n.a.".equals(value.getValue()) ? null : Integer.parseInt(value.getValue());
 					actualChoice.apply(hero, false);
-					chosen.set(finalC, "n.a.".equals(value.getValue()) ? -1 : Integer.parseInt(value.getValue()));
+					if ("n.a.".equals(value.getValue())) {
+						chosen.removeKey(choiceName);
+					} else {
+						chosen.put(choiceName, Integer.parseInt(value.getValue()));
+					}
 					if ("n.a.".equals(newV) && !"n.a.".equals(oldV)) {
 						canSelect.set(canSelect.get() + 1);
 					} else if ("n.a.".equals(oldV) && !"n.a.".equals(newV)) {
@@ -889,7 +894,7 @@ public class Choices extends TabController {
 			choices.put("Ausgewählt", group.getToggles().indexOf(newV));
 		});
 
-		final int[] i = new int[] { 0 };
+		final int[] i = { 0 };
 		for (final String choiceName : choices.keySet()) {
 			if ("Ausgewählt".equals(choiceName)) {
 				continue;
