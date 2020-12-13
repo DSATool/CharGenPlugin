@@ -239,6 +239,7 @@ public class SkillSelector extends ProConSkillSelector {
 	@Override
 	public void deactivate(final boolean forward) {
 		super.deactivate(forward);
+		generationState.getObj("Held").getObj("Verbilligte Sonderfertigkeiten").removeListener(listener);
 		if (!forward) {
 			cheaperPool.set(cheaperPool.get() + cheaperCost);
 		}
