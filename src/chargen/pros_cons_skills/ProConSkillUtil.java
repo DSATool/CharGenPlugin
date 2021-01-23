@@ -31,12 +31,11 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.TextFieldTableCell;
 
 public class ProConSkillUtil {
-	static void setupTable(final String type, final int additionalSpace, final TableView<ProConOrSkill> table,
-			final TableColumn<ProConOrSkill, String> nameColumn,
+	static void setupTable(final String type, final TableView<ProConOrSkill> table, final TableColumn<ProConOrSkill, String> nameColumn,
 			final TableColumn<ProConOrSkill, String> descColumn, final TableColumn<ProConOrSkill, String> variantColumn,
-			final TableColumn<ProConOrSkill, Integer> valueColumn,
-			final TableColumn<ProConOrSkill, Boolean> validColumn, final TableColumn<ProConOrSkill, Boolean> suggestedColumn) {
-		GUIUtil.autosizeTable(table, 0, additionalSpace);
+			final TableColumn<ProConOrSkill, Integer> valueColumn, final TableColumn<ProConOrSkill, Boolean> validColumn,
+			final TableColumn<ProConOrSkill, Boolean> suggestedColumn) {
+		GUIUtil.autosizeTable(table);
 		GUIUtil.cellValueFactories(table, "name", "description", "variant", "value", "cost", "valid", "suggested");
 
 		final boolean isCheaperSkills = "Verbilligte Sonderfertigkeiten".equals(type);
@@ -117,7 +116,7 @@ public class ProConSkillUtil {
 			final ProConOrSkill value = t.getRowValue();
 			value.setVariant(t.getNewValue(), !value.getActual().getBoolOrDefault("temporary:suppressEffects", false));
 		});
-		valueColumn.setCellFactory(o -> new IntegerSpinnerTableCell<>(1, 999, 1, false) {
+		valueColumn.setCellFactory(o -> new IntegerSpinnerTableCell<>(1, 999) {
 			@Override
 			public void updateItem(final Integer item, final boolean empty) {
 				final ProConOrSkill proOrCon = getTableRow().getItem();

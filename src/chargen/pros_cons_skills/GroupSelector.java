@@ -89,8 +89,7 @@ public class GroupSelector {
 		}
 	}
 
-	public GroupSelector(final JSONObject generationState, final String type, final JSONObject possibleProsOrCons,
-			final BooleanProperty showAll, final int additionalSpace) {
+	public GroupSelector(final JSONObject generationState, final String type, final JSONObject possibleProsOrCons, final BooleanProperty showAll) {
 		this.generationState = generationState;
 		this.type = type;
 		this.possibleProsOrCons = possibleProsOrCons;
@@ -178,13 +177,10 @@ public class GroupSelector {
 		possibleValueColumn.setOnEditCommit(t -> t.getRowValue().setValue(t.getNewValue()));
 
 		valid.addListener((final MapChangeListener.Change<?, ?> o) -> {
-			final int size = valid.size();
-			possibleTable.setMinHeight(size * 28 + 26);
-			possibleTable.setMaxHeight(size * 28 + 26);
-
 			if (parent != null) {
-				parent.setVisible(size != 0);
-				parent.setManaged(size != 0);
+				final boolean nonEmpty = !valid.isEmpty();
+				parent.setVisible(nonEmpty);
+				parent.setManaged(nonEmpty);
 			}
 		});
 
@@ -194,12 +190,12 @@ public class GroupSelector {
 			possibleValueColumn.setMaxWidth(0);
 		}
 
-		ProConSkillUtil.setupTable(type, additionalSpace, possibleTable, possibleNameColumn, possibleDescColumn, possibleVariantColumn, possibleValueColumn,
-				possibleValidColumn, possibleSuggestedColumn);
+		possibleTable.setItems(new FilteredList<>(allItems, valid::containsKey));
+
+		ProConSkillUtil.setupTable(type, possibleTable, possibleNameColumn, possibleDescColumn, possibleVariantColumn, possibleValueColumn, possibleValidColumn,
+				possibleSuggestedColumn);
 
 		possibleTable.getSortOrder().add(possibleNameColumn);
-
-		possibleTable.setItems(new FilteredList<>(allItems, valid::containsKey));
 
 		showAll.addListener((o, oldV, newV) -> initializePossibleTable());
 	}

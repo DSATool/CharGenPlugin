@@ -48,6 +48,8 @@ public abstract class ProConSkillSelector {
 
 	@FXML
 	protected ScrollPane possiblePane;
+	@FXML
+	protected ScrollPane chosenPane;
 
 	@FXML
 	protected TableView<ProConOrSkill> chosenTable;
@@ -153,8 +155,9 @@ public abstract class ProConSkillSelector {
 			setCost();
 		});
 
-		ProConSkillUtil.setupTable(type, 2, chosenTable, chosenNameColumn, chosenDescColumn, chosenVariantColumn, chosenValueColumn, chosenValidColumn,
+		ProConSkillUtil.setupTable(type, chosenTable, chosenNameColumn, chosenDescColumn, chosenVariantColumn, chosenValueColumn, chosenValidColumn,
 				chosenSuggestedColumn);
+		chosenTable.minHeightProperty().bind(chosenPane.heightProperty().subtract(2));
 
 		chosenTable.getSortOrder().add(chosenNameColumn);
 	}
@@ -326,8 +329,6 @@ public abstract class ProConSkillSelector {
 		}
 
 		chosenTable.sort();
-
-		chosenTable.setMinHeight((items.size() + 1) * 28 + 1);
 
 		isInitializing = false;
 	}

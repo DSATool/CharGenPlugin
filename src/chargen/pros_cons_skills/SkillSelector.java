@@ -82,7 +82,7 @@ public class SkillSelector extends ProConSkillSelector {
 
 		final JSONObject skills = ResourceManager.getResource("data/Sonderfertigkeiten");
 		for (final String groupName : skills.keySet()) {
-			final GroupSelector selector = new GroupSelector(generationState, type, skills.getObj(groupName), showAll, 0);
+			final GroupSelector selector = new GroupSelector(generationState, type, skills.getObj(groupName), showAll);
 			final Node titledPane = new TitledPane(groupName, selector.getControl());
 			selector.setParent(titledPane);
 			box.getChildren().add(titledPane);
@@ -90,7 +90,7 @@ public class SkillSelector extends ProConSkillSelector {
 		}
 
 		final JSONObject liturgies = ResourceManager.getResource("data/Liturgien");
-		final GroupSelector liturgiesSelector = new GroupSelector(generationState, type, liturgies, showAll, 0);
+		final GroupSelector liturgiesSelector = new GroupSelector(generationState, type, liturgies, showAll);
 		final Node liturgiesTitledPane = new TitledPane("Liturgien", liturgiesSelector.getControl());
 		liturgiesSelector.setParent(liturgiesTitledPane);
 		box.getChildren().add(liturgiesTitledPane);
@@ -98,7 +98,7 @@ public class SkillSelector extends ProConSkillSelector {
 
 		final JSONObject rituals = ResourceManager.getResource("data/Rituale");
 		for (final String groupName : rituals.keySet()) {
-			final GroupSelector selector = new GroupSelector(generationState, type, rituals.getObj(groupName), showAll, 0);
+			final GroupSelector selector = new GroupSelector(generationState, type, rituals.getObj(groupName), showAll);
 			final Node titledPane = new TitledPane(groupName, selector.getControl());
 			selector.setParent(titledPane);
 			box.getChildren().add(titledPane);
@@ -188,7 +188,7 @@ public class SkillSelector extends ProConSkillSelector {
 
 		possibleValueColumn.setOnEditCommit(t -> t.getRowValue().setValue(t.getNewValue()));
 
-		ProConSkillUtil.setupTable("Verbilligte Sonderfertigkeiten", 0, possibleTable, possibleNameColumn, possibleDescColumn, possibleVariantColumn,
+		ProConSkillUtil.setupTable("Verbilligte Sonderfertigkeiten", possibleTable, possibleNameColumn, possibleDescColumn, possibleVariantColumn,
 				possibleValueColumn, possibleValidColumn, possibleSuggestedColumn);
 
 		possibleValueColumn.setText("Anzahl");
@@ -211,6 +211,7 @@ public class SkillSelector extends ProConSkillSelector {
 		cheaperPane.setFitToWidth(true);
 		cheaperPane.setPrefHeight(50);
 		VBox.setVgrow(cheaperPane, Priority.ALWAYS);
+		possibleTable.minHeightProperty().bind(cheaperPane.heightProperty().subtract(2));
 
 		pane.getChildren().add(cheaperPane);
 	}
@@ -304,8 +305,6 @@ public class SkillSelector extends ProConSkillSelector {
 		}
 
 		possibleTable.sort();
-
-		possibleTable.setMinHeight((items.size() + 1) * 28 + 1);
 	}
 
 	@Override
