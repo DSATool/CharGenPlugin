@@ -105,6 +105,13 @@ public class SkillSelector extends ProConSkillSelector {
 			selectors.add(selector);
 		}
 
+		final JSONObject shamanicRituals = ResourceManager.getResource("data/Schamanenrituale");
+		final GroupSelector shamanicSelector = new GroupSelector(generationState, type, shamanicRituals, showAll);
+		final Node shamanicTitledPane = new TitledPane("Schamanenrituale", shamanicSelector.getControl());
+		shamanicSelector.setParent(shamanicTitledPane);
+		box.getChildren().add(shamanicTitledPane);
+		selectors.add(shamanicSelector);
+
 		chosenValueColumn.setVisible(false);
 		DoubleBinding width = chosenTable.widthProperty().subtract(2);
 		width = width.subtract(chosenDescColumn.widthProperty()).subtract(chosenVariantColumn.widthProperty()).subtract(chosenCostColumn.widthProperty());
