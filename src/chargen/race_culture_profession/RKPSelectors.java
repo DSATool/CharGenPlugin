@@ -453,7 +453,7 @@ public class RKPSelectors extends TabController {
 	}
 
 	private JSONObject buildRKP(final RKP source, final List<RKP> variants) {
-		final JSONObject result = new JSONObject(null);
+		final JSONObject result = new JSONObject(generationState);
 
 		result.put("Name", getName(source));
 		final JSONArray modifications = getModifications(result, source, variants);
@@ -1142,9 +1142,9 @@ public class RKPSelectors extends TabController {
 
 	private void handleSpecialCases(final JSONObject hero) {
 		final JSONObject unalteredRKP = new JSONObject(null);
-		unalteredRKP.put("Rasse", buildRace(raceSelector.getCurrentChoice(), raceSelector.getCurrentVariants()));
-		unalteredRKP.put("Kultur", buildRace(cultureSelector.getCurrentChoice(), cultureSelector.getCurrentVariants()));
-		unalteredRKP.put("Profession", buildRace(professionSelector.getCurrentChoice(), professionSelector.getCurrentVariants()));
+		unalteredRKP.put("Rasse", buildRace(raceSelector.getCurrentChoice(), raceSelector.getCurrentVariants()).clone(unalteredRKP));
+		unalteredRKP.put("Kultur", buildRace(cultureSelector.getCurrentChoice(), cultureSelector.getCurrentVariants()).clone(unalteredRKP));
+		unalteredRKP.put("Profession", buildRace(professionSelector.getCurrentChoice(), professionSelector.getCurrentVariants()).clone(unalteredRKP));
 
 		for (final Tuple5<String, String, Predicate<JSONObject>, Consumer<JSONObject>, BiConsumer<JSONObject, JSONObject>> specialCase : specialCases) {
 			final String name = "temporary:Spezialfall" + specialCase._1;

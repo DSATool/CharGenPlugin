@@ -42,6 +42,7 @@ import javafx.scene.control.TableView;
 import jsonant.event.JSONListener;
 import jsonant.value.JSONArray;
 import jsonant.value.JSONObject;
+import jsonant.value.JSONValue;
 
 public class GroupSelector {
 
@@ -248,7 +249,7 @@ public class GroupSelector {
 				final JSONObject current = generationState.getObj(currentType);
 				final JSONObject currentSuggested = current.getObj("Empfohlene " + type);
 				for (final String suggestedName : currentSuggested.keySet()) {
-					final Object cur = currentSuggested.getUnsafe(suggestedName);
+					final JSONValue cur = ((JSONValue) currentSuggested.getUnsafe(suggestedName)).clone(suggested);
 					if (cur instanceof JSONObject) {
 						suggested.put(suggestedName, (JSONObject) cur);
 					} else {
@@ -257,7 +258,7 @@ public class GroupSelector {
 				}
 				final JSONObject currentInvalid = current.getObj("Ungeeignete " + type);
 				for (final String invalidName : currentInvalid.keySet()) {
-					final Object cur = currentInvalid.getUnsafe(invalidName);
+					final JSONValue cur = ((JSONValue) currentInvalid.getUnsafe(invalidName)).clone(actualInvalid);
 					if (cur instanceof JSONObject) {
 						actualInvalid.put(invalidName, (JSONObject) cur);
 					} else {
