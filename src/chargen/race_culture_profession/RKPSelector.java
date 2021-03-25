@@ -182,7 +182,7 @@ public class RKPSelector {
 				current = child;
 			}
 			if (variantNodes != null) {
-				for (--i; i < modifications.size(); ++i) {
+				for (Math.max(--i, 0); i < modifications.size(); ++i) {
 					for (final Node box : variantNodes) {
 						final String name = ((CheckBox) box).getText();
 						final String actualName = modifications.getString(i);
