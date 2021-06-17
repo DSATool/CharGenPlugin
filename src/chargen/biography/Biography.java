@@ -172,7 +172,7 @@ public class Biography extends TabController {
 		}
 
 		if (bio.containsKey("Geschlecht")) {
-			final boolean isFemale = bio.getStringOrDefault("Geschlecht", "männlich").equals("weiblich");
+			final boolean isFemale = "weiblich".equals(bio.getStringOrDefault("Geschlecht", "männlich"));
 			male.setSelected(!isFemale);
 			female.setSelected(isFemale);
 		} else {

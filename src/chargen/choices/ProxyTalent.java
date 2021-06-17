@@ -26,7 +26,7 @@ public class ProxyTalent extends Talent {
 	private final IntegerProperty wrappedValue;
 	private final IntegerProperty target;
 
-	public ProxyTalent(String name, Talent wrapped, JSONObject actualGroup, IntegerProperty target) {
+	public ProxyTalent(final String name, final Talent wrapped, final JSONObject actualGroup, final IntegerProperty target) {
 		super(name, null, wrapped == null ? new JSONObject(null) : wrapped.getTalent(), wrapped == null ? new JSONObject(null) : wrapped.getActual(),
 				actualGroup);
 		this.wrapped = wrapped;
@@ -39,7 +39,7 @@ public class ProxyTalent extends Talent {
 		}
 	}
 
-	public void changeTalent(Talent newTalent, JSONObject newActualGroup) {
+	public void changeTalent(final Talent newTalent, final JSONObject newActualGroup) {
 		wrappedValue.unbind();
 		wrapped = newTalent;
 		wrappedValue.bind(wrapped.valueProperty());

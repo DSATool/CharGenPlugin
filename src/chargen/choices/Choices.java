@@ -75,7 +75,7 @@ import jsonant.value.JSONValue;
 
 public class Choices extends TabController {
 
-	public class ChoicePage {
+	public static class ChoicePage {
 		private final StringProperty text;
 		private final BooleanProperty valid;
 
@@ -900,7 +900,7 @@ public class Choices extends TabController {
 				continue;
 			}
 
-			final Consumer<JSONObject> create = (choice) -> {
+			final Consumer<JSONObject> create = choice -> {
 				final String name;
 				if (isEquipment) {
 					name = choiceName;
@@ -1219,18 +1219,16 @@ public class Choices extends TabController {
 					}
 					talent.put("aktiviert", false);
 					actualTalent = Spell.getSpell(name, currentTalent, talent, (JSONObject) actual, group, representation);
-				} else if (currentTalent.containsKey("Auswahl") || currentTalent.containsKey("Freitext")) {
-					actual = new JSONArray(group);
-					group.put(name, (JSONArray) actual);
-					talent = new JSONObject(actual);
-					((JSONArray) actual).add(talent);
-					if (!currentTalent.getBoolOrDefault("Basis", false)) {
-						talent.put("aktiviert", false);
-					}
-					actualTalent = Talent.getTalent(name, talentGroup, currentTalent, talent, group);
 				} else {
-					talent = new JSONObject(group);
-					group.put(name, talent);
+					if (currentTalent.containsKey("Auswahl") || currentTalent.containsKey("Freitext")) {
+						actual = new JSONArray(group);
+						group.put(name, (JSONArray) actual);
+						talent = new JSONObject(actual);
+						((JSONArray) actual).add(talent);
+					} else {
+						talent = new JSONObject(group);
+						group.put(name, talent);
+					}
 					if (!currentTalent.getBoolOrDefault("Basis", false)) {
 						talent.put("aktiviert", false);
 					}

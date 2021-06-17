@@ -30,14 +30,14 @@ public abstract class TabController {
 
 	final protected BooleanProperty canContinue = new SimpleBooleanProperty(false);
 
-	protected TabController(JSONObject generationState, IntegerProperty gp) {
+	protected TabController(final JSONObject generationState, final IntegerProperty gp) {
 		this.generationState = generationState;
 		this.gp = gp;
 	}
 
 	public abstract void activate(boolean forward);
 
-	protected Tab addTab(TabPane tabPane, String text, Node node) {
+	protected Tab addTab(final TabPane tabPane, final String text, final Node node) {
 		final Tab tab = new Tab(text);
 		tab.setContent(node);
 		tab.setClosable(false);

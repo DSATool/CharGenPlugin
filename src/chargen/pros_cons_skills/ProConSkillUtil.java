@@ -123,13 +123,14 @@ public class ProConSkillUtil {
 				if (empty || item.intValue() == Integer.MIN_VALUE || proOrCon == null) {
 					setText("");
 					setGraphic(null);
-				} else if (isCheaperSkills) {
-					min = proOrCon.getNumCheaper() - proOrCon.getActual().getIntOrDefault("temporary:AdditionalLevels", 0);
-					super.updateItem(item, empty);
 				} else {
-					min = proOrCon.getMinValue();
-					max = proOrCon.getMaxValue();
-					step = proOrCon.getStep();
+					if (isCheaperSkills) {
+						min = proOrCon.getNumCheaper() - proOrCon.getActual().getIntOrDefault("temporary:AdditionalLevels", 0);
+					} else {
+						min = proOrCon.getMinValue();
+						max = proOrCon.getMaxValue();
+						step = proOrCon.getStep();
+					}
 					super.updateItem(item, empty);
 				}
 			}

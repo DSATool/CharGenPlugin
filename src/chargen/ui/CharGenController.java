@@ -386,7 +386,7 @@ public class CharGenController {
 	private void setMoney(final JSONObject hero) {
 		final JSONObject basicValues = hero.getObj("Basiswerte");
 		final int so = basicValues.getObj("Sozialstatus").getInt("Wert");
-		;
+
 		int startMoney = so * so;
 		if (HeroUtil.isNoble(hero)) {
 			startMoney *= 2;

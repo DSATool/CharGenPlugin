@@ -306,11 +306,12 @@ public class RKPSelector {
 				if (suggested.apply(variant)) {
 					variant.valid.set(true);
 					variant.suggested.set(true);
-				} else if (!possible.apply(variant)) {
-					variant.valid.set(false);
-					variant.suggested.set(false);
 				} else {
-					variant.valid.set(true);
+					if (!possible.apply(variant)) {
+						variant.valid.set(false);
+					} else {
+						variant.valid.set(true);
+					}
 					variant.suggested.set(false);
 				}
 			}

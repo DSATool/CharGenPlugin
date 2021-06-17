@@ -114,7 +114,7 @@ public class RKPSelectors extends TabController {
 			new Tuple5<String, String, Predicate<JSONObject>, Consumer<JSONObject>, BiConsumer<JSONObject, JSONObject>>(
 					"Geode", "Rasse",
 					hero -> "Geode".equals(hero.getObj("Biografie").getString("Profession")),
-					(race) -> {
+					race -> {
 						race.getObj("Vorteile").removeKey("Schwer zu verzaubern");
 						race.getObj("Nachteile").removeKey("Goldgier");
 					},
@@ -134,7 +134,7 @@ public class RKPSelectors extends TabController {
 			new Tuple5<String, String, Predicate<JSONObject>, Consumer<JSONObject>, BiConsumer<JSONObject, JSONObject>>(
 					"ZwergischerMagier", "Rasse",
 					hero -> "Zwerg".equals(hero.getObj("Biografie").getString("Rasse")) && "Magier".equals(hero.getObj("Biografie").getString("Profession")),
-					(race) -> {
+					race -> {
 						final JSONObject pros = race.getObj("Vorteile");
 						pros.removeKey("Schwer zu verzaubern");
 						pros.put("Eisenaffine Aura", new JSONObject(pros));
@@ -194,7 +194,7 @@ public class RKPSelectors extends TabController {
 					hero -> "Medizinmann".equals(hero.getObj("Biografie").getString("Profession"))
 							&& hero.getObj("Biografie").getArr("Profession:Modifikation").contains("Tocamuyac")
 							&& "Tocamuyac".equals(hero.getObj("Biografie").getString("Kultur")),
-					(culture) -> {
+					culture -> {
 						culture.getObj("Vorteile").removeKey("Richtungssinn");
 					},
 					(culture, unalteredCulture) -> {
@@ -214,7 +214,7 @@ public class RKPSelectors extends TabController {
 									&& "Nivesenstämme".equals(hero.getObj("Biografie").getString("Kultur"))
 							|| "Brenoch-Dûn".equals(hero.getObj("Biografie").getString("Profession"))
 									&& "Gjalskerland".equals(hero.getObj("Biografie").getString("Kultur")),
-					(culture) -> {
+					culture -> {
 						culture.getObj("Nachteile").removeKey("Totenangst");
 					},
 					(culture, unalteredCulture) -> {
@@ -230,7 +230,7 @@ public class RKPSelectors extends TabController {
 					hero -> "Medizinmann".equals(hero.getObj("Biografie").getString("Profession"))
 							&& hero.getObj("Biografie").getArr("Profession:Modifikation").contains("Darna")
 							&& "Darna".equals(hero.getObj("Biografie").getString("Kultur")),
-					(culture) -> {
+					culture -> {
 						culture.getObj("Vorteile").removeKey("Viertelzauberer");
 					},
 					(culture, unalteredCulture) -> {
@@ -245,7 +245,7 @@ public class RKPSelectors extends TabController {
 					"GoblinSchamamin", "Rasse",
 					hero -> "Goblin-Schamanin".equals(hero.getObj("Biografie").getString("Profession"))
 							&& "Goblin".equals(hero.getObj("Biografie").getString("Rasse")),
-					(race) -> {
+					race -> {
 						race.getObj("Nachteile").removeKey("Unstet");
 					},
 					(race, unalteredRace) -> {
@@ -273,7 +273,7 @@ public class RKPSelectors extends TabController {
 							return false;
 						return true;
 					},
-					(profession) -> {
+					profession -> {
 						final JSONArray spells = profession.getObj("Zauber").getArr("Wahl");
 						final JSONObject newChoices = generationState.getObj("Kultur").getObj("Zauber").getArr("Wahl").getObj(0).clone(spells);
 						newChoices.put("Punkte", 60);
@@ -718,17 +718,14 @@ public class RKPSelectors extends TabController {
 									HeroUtil.unapplyEffect(hero, "Halbzauberer", ResourceManager.getResource("data/Vorteile").getObj("Halbzauberer"),
 											prosOrCons.getObj("Halbzauberer"));
 									prosOrCons.removeKey("Halbzauberer");
-									prosOrCons.put(name, currentCategory.getObj(name).clone(prosOrCons));
 								} else if (prosOrCons.containsKey("Viertelzauberer")) {
 									gp.set(gp.get() + (int) Math
 											.round(ResourceManager.getResource("data/Vorteile").getObj("Viertelzauberer").getIntOrDefault("Kosten", 0) * 0.3));
 									HeroUtil.unapplyEffect(hero, "Viertelzauberer", ResourceManager.getResource("data/Vorteile").getObj("Viertelzauberer"),
 											prosOrCons.getObj("Viertelzauberer"));
 									prosOrCons.removeKey("Viertelzauberer");
-									prosOrCons.put(name, currentCategory.getObj(name).clone(prosOrCons));
-								} else {
-									prosOrCons.put(name, currentCategory.getObj(name).clone(prosOrCons));
 								}
+								prosOrCons.put(name, currentCategory.getObj(name).clone(prosOrCons));
 								HeroUtil.applyEffect(hero, name, proOrCon, prosOrCons.getObj(name));
 								break;
 							case "Halbzauberer":
@@ -741,10 +738,8 @@ public class RKPSelectors extends TabController {
 									HeroUtil.unapplyEffect(hero, "Viertelzauberer", ResourceManager.getResource("data/Vorteile").getObj("Viertelzauberer"),
 											prosOrCons.getObj("Viertelzauberer"));
 									prosOrCons.removeKey("Viertelzauberer");
-									prosOrCons.put(name, currentCategory.getObj(name).clone(prosOrCons));
-								} else {
-									prosOrCons.put(name, currentCategory.getObj(name).clone(prosOrCons));
 								}
+								prosOrCons.put(name, currentCategory.getObj(name).clone(prosOrCons));
 								HeroUtil.applyEffect(hero, name, proOrCon, prosOrCons.getObj(name));
 								break;
 							case "Viertelzauberer":
