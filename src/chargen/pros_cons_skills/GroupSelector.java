@@ -175,7 +175,11 @@ public class GroupSelector {
 			return row;
 		});
 
-		possibleValueColumn.setOnEditCommit(t -> t.getRowValue().setValue(t.getNewValue()));
+		possibleValueColumn.setOnEditCommit(t -> {
+			if (t.getRowValue() != null) {
+				t.getRowValue().setValue(t.getNewValue());
+			}
+		});
 
 		valid.addListener((final MapChangeListener.Change<?, ?> o) -> {
 			if (parent != null) {

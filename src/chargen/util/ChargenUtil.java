@@ -67,7 +67,7 @@ public class ChargenUtil {
 										}
 									}
 									if (newChoice.containsKey("Ausgewählt")) {
-										choice.put("Ausgewählt", newChoice.getArr("Ausgewählt"));
+										choice.put("Ausgewählt", newChoice.getArr("Ausgewählt").clone(choice));
 									}
 									if (newChoice.containsKey("Leittalent")) {
 										choice.put("Leittalent", newChoice.getBool("Leittalent"));
@@ -81,7 +81,7 @@ public class ChargenUtil {
 												.equals(newChoice.getBoolOrDefault("Verrechnungspunkte", false))) {
 									choice.put("Punkte", choice.getInt("Punkte") + newChoice.getInt("Punkte"));
 									if (newChoice.containsKey("Ausgewählt")) {
-										choice.put("Ausgewählt", newChoice.getArr("Ausgewählt"));
+										choice.put("Ausgewählt", newChoice.getArr("Ausgewählt").clone(choice));
 									}
 									if (newChoice.containsKey("Leittalent")) {
 										choice.put("Leittalent", newChoice.getBool("Leittalent"));
@@ -106,7 +106,7 @@ public class ChargenUtil {
 												}
 											}
 											if (newChoice.containsKey("Ausgewählt")) {
-												alternativeChoice.put("Ausgewählt", newChoice.getArr("Ausgewählt"));
+												alternativeChoice.put("Ausgewählt", newChoice.getArr("Ausgewählt").clone(alternativeChoice));
 											}
 											if (newChoice.containsKey("Leittalent")) {
 												alternativeChoice.put("Leittalent", newChoice.getBool("Leittalent"));
@@ -120,7 +120,7 @@ public class ChargenUtil {
 														.equals(newChoice.getBoolOrDefault("Verrechnungspunkte", false))) {
 											alternativeChoice.put("Punkte", alternativeChoice.getInt("Punkte") + newChoice.getInt("Punkte"));
 											if (newChoice.containsKey("Ausgewählt")) {
-												alternativeChoice.put("Ausgewählt", newChoice.getArr("Ausgewählt"));
+												alternativeChoice.put("Ausgewählt", newChoice.getArr("Ausgewählt").clone(alternativeChoice));
 											}
 											if (newChoice.containsKey("Leittalent")) {
 												alternativeChoice.put("Leittalent", newChoice.getBool("Leittalent"));

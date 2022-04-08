@@ -193,7 +193,11 @@ public class SkillSelector extends ProConSkillSelector {
 			return row;
 		});
 
-		possibleValueColumn.setOnEditCommit(t -> t.getRowValue().setValue(t.getNewValue()));
+		possibleValueColumn.setOnEditCommit(t -> {
+			if (t.getRowValue() != null) {
+				t.getRowValue().setValue(t.getNewValue());
+			}
+		});
 
 		ProConSkillUtil.setupTable("Verbilligte Sonderfertigkeiten", possibleTable, possibleNameColumn, possibleDescColumn, possibleVariantColumn,
 				possibleValueColumn, possibleValidColumn, possibleSuggestedColumn);
