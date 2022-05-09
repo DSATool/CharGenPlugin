@@ -320,14 +320,14 @@ public class RKPSelector {
 			item.valid.set(true);
 			item.suggested.set(true);
 			for (final TreeItem<RKP> variantItem : treeItem.getChildren()) {
-				updateSuggestedPossible(variantItem, rkp -> false, rkp -> true);
+				updateSuggestedPossible(variantItem, rkp -> false, possible);
 			}
 			return new Tuple<>(true, true);
 		} else if (item != null && possible.apply(item)) {
 			item.valid.set(true);
 			item.suggested.set(false);
 			for (final TreeItem<RKP> variantItem : treeItem.getChildren()) {
-				updateSuggestedPossible(variantItem, rkp -> false, rkp -> true);
+				updateSuggestedPossible(variantItem, rkp -> false, possible);
 			}
 			return new Tuple<>(true, false);
 		} else {
