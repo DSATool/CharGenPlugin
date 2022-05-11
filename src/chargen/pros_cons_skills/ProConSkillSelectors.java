@@ -25,6 +25,7 @@ import dsatool.resources.Settings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
@@ -85,6 +86,7 @@ public class ProConSkillSelectors extends TabController {
 			final Label proGPLabel = new Label();
 			proGPLabel.textProperty().bind(proSelector.getPool().asString().concat("/" + proGPPool));
 			items.add(pos + 1, proGPLabel);
+			VBox.setMargin(proGPLabel, new Insets(0, 0, 0, 10));
 			pos += 2;
 		}
 
@@ -95,6 +97,7 @@ public class ProConSkillSelectors extends TabController {
 			final Label conGPLabel = new Label();
 			conGPLabel.textProperty().bind(conSelector.getPool().asString().concat("/" + conGPPool));
 			items.add(pos + 1, conGPLabel);
+			VBox.setMargin(conGPLabel, new Insets(0, 0, 0, 10));
 			pos += 2;
 		}
 
@@ -105,6 +108,7 @@ public class ProConSkillSelectors extends TabController {
 			final Label skillAPLabel = new Label();
 			skillAPLabel.textProperty().bind(skillSelector.getPool().asString().concat("/" + skillAPPool));
 			items.add(pos + 1, skillAPLabel);
+			VBox.setMargin(skillAPLabel, new Insets(0, 0, 0, 10));
 			pos += 2;
 		}
 
@@ -114,6 +118,7 @@ public class ProConSkillSelectors extends TabController {
 		final Label cheaperSkillAPLabel = new Label();
 		cheaperSkillAPLabel.textProperty().bind(skillSelector.getCheaperPool().negate().add(cheaperSkillAPPool).asString().concat("/" + cheaperSkillAPPool));
 		items.add(pos + 1, cheaperSkillAPLabel);
+		VBox.setMargin(cheaperSkillAPLabel, new Insets(0, 0, 0, 10));
 		pos += 2;
 
 		final int maxConGP = Settings.getSettingIntOrDefault(50, "Heldenerschaffung", "GP aus Nachteilen");
@@ -122,6 +127,7 @@ public class ProConSkillSelectors extends TabController {
 		items.add(pos, new Label("GP aus Nachteilen: "));
 		final Label conGPLabel = new Label();
 		conGPLabel.textProperty().bind(conGP.asString().concat("/" + maxConGP));
+		VBox.setMargin(conGPLabel, new Insets(0, 0, 0, 10));
 		items.add(pos + 1, conGPLabel);
 
 		final int maxSEGP = Settings.getSettingIntOrDefault(30, "Heldenerschaffung", "GP aus Schlechten Eigenschaften");
@@ -130,6 +136,7 @@ public class ProConSkillSelectors extends TabController {
 		items.add(pos, new Label("GP aus Schlechten Eigenschaften: "));
 		final Label seGPLabel = new Label();
 		seGPLabel.textProperty().bind(seGP.asString().concat("/" + maxSEGP));
+		VBox.setMargin(seGPLabel, new Insets(0, 0, 0, 10));
 		items.add(pos + 1, seGPLabel);
 
 		proSelector.activate(forward);

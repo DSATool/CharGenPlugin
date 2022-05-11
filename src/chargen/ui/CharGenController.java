@@ -34,6 +34,7 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -202,6 +203,7 @@ public class CharGenController {
 		leftBox.getChildren().add(new Label("GP:"));
 		final Label gpLabel = new Label();
 		gpLabel.textProperty().bind(gp.asString());
+		VBox.setMargin(gpLabel, new Insets(0, 0, 0, 10));
 		leftBox.getChildren().add(gpLabel);
 
 		try {

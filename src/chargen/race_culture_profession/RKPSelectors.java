@@ -37,6 +37,7 @@ import dsatool.util.Tuple3;
 import dsatool.util.Tuple5;
 import javafx.beans.property.IntegerProperty;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
@@ -317,6 +318,7 @@ public class RKPSelectors extends TabController {
 		items.add(0, new Label("Rasse: "));
 		raceLabel = new Label();
 		raceLabel.setWrapText(true);
+		VBox.setMargin(raceLabel, new Insets(0, 0, 0, 10));
 		if (generationState.containsKey("Rasse")) {
 			final JSONObject race = generationState.getObj("Rasse");
 			raceCost = race.getIntOrDefault("Kosten", 0);
@@ -329,6 +331,7 @@ public class RKPSelectors extends TabController {
 		items.add(2, new Label("Kultur: "));
 		cultureLabel = new Label();
 		cultureLabel.setWrapText(true);
+		VBox.setMargin(cultureLabel, new Insets(0, 0, 0, 10));
 		if (generationState.containsKey("Kultur")) {
 			final JSONObject culture = generationState.getObj("Kultur");
 			cultureCost = culture.getIntOrDefault("Kosten", 0);
@@ -341,6 +344,7 @@ public class RKPSelectors extends TabController {
 		items.add(4, new Label("Profession: "));
 		professionLabel = new Label();
 		professionLabel.setWrapText(true);
+		VBox.setMargin(professionLabel, new Insets(0, 0, 0, 10));
 		if (generationState.containsKey("Profession")) {
 			final JSONObject profession = generationState.getObj("Profession");
 			professionCost = profession.getIntOrDefault("Kosten", 0);
@@ -354,6 +358,7 @@ public class RKPSelectors extends TabController {
 		items.add(6, bgbVeteranLabel);
 		bgbVeteranProfessionLabel = new Label();
 		bgbVeteranProfessionLabel.setWrapText(true);
+		VBox.setMargin(bgbVeteranProfessionLabel, new Insets(0, 0, 0, 10));
 		if (generationState.containsKey("Breitgefächerte Bildung") || generationState.containsKey("Veteran")) {
 			final BGBVeteran type = generationState.containsKey("Veteran") ? BGBVeteran.VETERAN : BGBVeteran.BGB;
 			final JSONObject profession = generationState.getObj(type == BGBVeteran.BGB ? "Breitgefächerte Bildung" : "Veteran");

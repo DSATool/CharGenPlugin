@@ -26,6 +26,7 @@ import dsatool.util.Util;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -78,6 +79,7 @@ public class Attributes extends TabController {
 		final Label GPLabel = new Label();
 		GPLabel.textProperty().bind(attributesGP.asString().concat("/" + maxGP));
 		items.add(2, GPLabel);
+		VBox.setMargin(GPLabel, new Insets(0, 0, 0, 10));
 
 		grid.getChildren().clear();
 		grid.add(new Label("Eigenschaft"), 0, 0);
