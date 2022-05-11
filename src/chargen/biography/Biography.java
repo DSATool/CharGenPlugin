@@ -16,6 +16,7 @@
 package chargen.biography;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import chargen.ui.TabController;
@@ -195,7 +196,18 @@ public class Biography extends TabController {
 			female.setSelected(isFemale);
 		} else {
 			male.setSelected(true);
-			female.setSelected(false);
+		}
+
+		for (final String RKP : Arrays.asList("Rasse", "Kultur", "Profession")) {
+			final String requirement = generationState.getObj(RKP).getObjOrDefault("Voraussetzungen", new JSONObject(null)).getStringOrDefault("Geschlecht",
+					null);
+			if (requirement != null) {
+				if ("männlich".equals(requirement)) {
+					female.getStyleClass().add("invalid");
+				} else {
+					male.getStyleClass().add("invalid");
+				}
+			}
 		}
 
 		if (weightTracksSize != bio.getBoolOrDefault("temporary:weightTracksSize", true)) {

@@ -56,8 +56,10 @@ public class RKPSelector {
 	private ObservableList<Node> variantNodes;
 
 	private Runnable updateValue;
+	private JSONObject data;
+	private Function<Tuple3<String, JSONObject, RKP>, RKP> itemConstructor;
 
-	public RKPSelector(final Runnable updateValue) {
+	public RKPSelector(final Runnable updateValue, final JSONObject data, final Function<Tuple3<String, JSONObject, RKP>, RKP> itemConstructor) {
 		final FXMLLoader fxmlLoader = new FXMLLoader();
 
 		fxmlLoader.setController(this);
@@ -69,9 +71,11 @@ public class RKPSelector {
 		}
 
 		this.updateValue = updateValue;
+		this.data = data;
+		this.itemConstructor = itemConstructor;
 
 		tree.getSelectionModel().selectedItemProperty().addListener((ChangeListener<TreeItem<RKP>>) (observable, oldValue, newValue) -> {
-			updateSelection(newValue);
+			updateSelection(newValue, oldValue == null || newValue != null && newValue.getValue().data != oldValue.getValue().data);
 		});
 
 		tree.setCellFactory(tv -> {
@@ -120,21 +124,31 @@ public class RKPSelector {
 			});
 			return cell;
 		});
+
+		refreshList();
 	}
 
-	private void addItem(final TreeItem<RKP> parent, final String name, final JSONObject item,
-			final Function<Tuple3<String, JSONObject, RKP>, RKP> constructor) {
-		if (!item.getBoolOrDefault("kombinierbar", false)) {
-			final TreeItem<RKP> treeItem = new TreeItem<>(constructor.apply(new Tuple3<>(name, item, parent.getValue())));
+	private TreeItem<RKP> addItem(final TreeItem<RKP> parent, final RKP item, final RKP selected) {
+		final JSONObject actual = item.data;
+		TreeItem<RKP> toSelect = null;
+		if (!actual.getBoolOrDefault("kombinierbar", false)) {
+			final TreeItem<RKP> treeItem = new TreeItem<>(item);
+			if (selected != null && selected.data.equals(item.data)) {
+				toSelect = treeItem;
+			}
 			parent.getChildren().add(treeItem);
-			if (item.containsKey("Varianten")) {
-				final JSONObject variants = item.getObj("Varianten");
+			if (actual.containsKey("Varianten")) {
+				final JSONObject variants = actual.getObj("Varianten");
 				for (final String variantName : variants.keySet()) {
 					final JSONObject variant = variants.getObj(variantName);
-					addItem(treeItem, variantName, variant, constructor);
+					final TreeItem<RKP> newSelection = addItem(treeItem, itemConstructor.apply(new Tuple3<>(variantName, variant, item)), selected);
+					if (newSelection != null) {
+						toSelect = newSelection;
+					}
 				}
 			}
 		}
+		return toSelect;
 	}
 
 	private TreeItem<RKP> findChild(final TreeItem<RKP> item, final String child) {
@@ -154,6 +168,26 @@ public class RKPSelector {
 
 	public List<RKP> getCurrentVariants() {
 		return currentVariants;
+	}
+
+	public void refreshList() {
+		final TreeItem<RKP> selectedItem = tree.getSelectionModel().getSelectedItem();
+		final RKP selected = selectedItem != null ? selectedItem.getValue() : null;
+		TreeItem<RKP> toSelect = null;
+		root.getChildren().clear();
+		root.setValue(null);
+		if (data != null) {
+			for (final String itemName : data.keySet()) {
+				final JSONObject item = data.getObj(itemName);
+				final TreeItem<RKP> newSelection = addItem(root, itemConstructor.apply(new Tuple3<>(itemName, item, null)), selected);
+				if (newSelection != null) {
+					toSelect = newSelection;
+				}
+			}
+		}
+		tree.getSelectionModel().clearSelection();
+		tree.getSelectionModel().select(toSelect);
+		updateSelection(toSelect, false);
 	}
 
 	public void select(final String top, final JSONArray modifications) {
@@ -201,36 +235,35 @@ public class RKPSelector {
 		tree.getSelectionModel().select(current);
 	}
 
-	public void setData(final JSONObject data, final Function<Tuple3<String, JSONObject, RKP>, RKP> itemConstructor) {
-		root.getChildren().clear();
-		root.setValue(null);
-		if (data != null) {
-			for (final String itemName : data.keySet()) {
-				final JSONObject item = data.getObj(itemName);
-				addItem(root, itemName, item, itemConstructor);
-			}
-		}
-		tree.getSelectionModel().clearSelection();
-		updateSelection(null);
+	public void setData(final JSONObject data) {
+		this.data = data;
+		refreshList();
 	}
 
-	public void setRoot(final String name, final JSONObject data, final Function<Tuple3<String, JSONObject, RKP>, RKP> itemConstructor) {
+	public void setRoot(final String name, final JSONObject data) {
+		final TreeItem<RKP> selectedItem = tree.getSelectionModel().getSelectedItem();
+		final RKP selected = selectedItem != null ? selectedItem.getValue() : null;
+		TreeItem<RKP> toSelect = root;
 		root.getChildren().clear();
 		if (data != null) {
-			root.setValue(itemConstructor.apply(new Tuple3<>(name, data, null)));
+			final RKP rootItem = itemConstructor.apply(new Tuple3<>(name, data, null));
+			root.setValue(rootItem);
 			for (final String itemName : data.getObj("Varianten").keySet()) {
 				final JSONObject item = data.getObj("Varianten").getObj(itemName);
-				addItem(root, itemName, item, itemConstructor);
+				final TreeItem<RKP> newSelection = addItem(root, itemConstructor.apply(new Tuple3<>(itemName, item, rootItem)), selected);
+				if (newSelection != null) {
+					toSelect = newSelection;
+				}
 			}
-			tree.getSelectionModel().select(root);
-			updateSelection(root);
+			tree.getSelectionModel().select(toSelect);
+			updateSelection(toSelect, false);
 		} else {
 			tree.getSelectionModel().clearSelection();
-			updateSelection(null);
+			updateSelection(null, true);
 		}
 	}
 
-	private void updateSelection(final TreeItem<RKP> selected) {
+	private void updateSelection(final TreeItem<RKP> selected, final boolean hasChanged) {
 		variantNodes = variantsBox.getChildren();
 		variantNodes.clear();
 		for (final RKP variant : variants) {
@@ -246,7 +279,6 @@ public class RKPSelector {
 			currentVariants = new ArrayList<>(actualVariants.size());
 			for (final RKP variant : value.getVariants()) {
 				final CheckBox variantCheckbox = new CheckBox(variant.name + " (" + Util.getSignedIntegerString(variant.getCost(0)) + ")");
-				variantCheckbox.setPrefWidth(500);
 				Util.addReference(variantCheckbox, variant.data, 60, variantCheckbox.widthProperty());
 				variantCheckbox.selectedProperty().addListener((o, oldV, newV) -> {
 					if (newV) {
@@ -289,7 +321,7 @@ public class RKPSelector {
 			currentChoice = null;
 			currentVariants = null;
 		}
-		if (selected != null) {
+		if (hasChanged) {
 			updateValue.run();
 		}
 	}

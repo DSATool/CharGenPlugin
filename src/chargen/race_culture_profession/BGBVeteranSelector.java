@@ -71,7 +71,7 @@ public class BGBVeteranSelector {
 			if (update) {
 				updateValue.run();
 			}
-		});
+		}, null, t -> new RKP(RKP.Type.Profession, t._1, t._2, t._3));
 		root.getChildren().add(selector.getControl());
 		VBox.setVgrow(selector.getControl(), Priority.ALWAYS);
 	}
@@ -94,6 +94,10 @@ public class BGBVeteranSelector {
 		return BGBVeteran.NONE;
 	}
 
+	public void refreshList() {
+		selector.refreshList();
+	}
+
 	public void select(String name, JSONArray modifications) {
 		update = false;
 		if (veteranChoice.isSelected() && modifications != null && modifications.size() > 0) {
@@ -109,7 +113,7 @@ public class BGBVeteranSelector {
 	public void setBGB() {
 		final JSONObject professions = ResourceManager.getResource("data/Professionen").clone(null);
 		professions.removeKey(professionName);
-		selector.setData(professions, t -> new RKP(RKP.Type.Profession, t._1, t._2, t._3));
+		selector.setData(professions);
 		updateSuggestedPossible();
 		if (update) {
 			updateValue.run();
@@ -118,7 +122,7 @@ public class BGBVeteranSelector {
 
 	@FXML
 	public void setNone() {
-		selector.setData(null, null);
+		selector.setData(null);
 		if (update) {
 			updateValue.run();
 		}
@@ -176,7 +180,7 @@ public class BGBVeteranSelector {
 	@FXML
 	public void setVeteran() {
 		final JSONObject professions = ResourceManager.getResource("data/Professionen");
-		selector.setRoot(professionName, professions.getObj(professionName), t -> new RKP(RKP.Type.Profession, t._1, t._2, t._3));
+		selector.setRoot(professionName, professions.getObj(professionName));
 		updateSuggestedPossible();
 		if (update) {
 			updateValue.run();

@@ -63,8 +63,20 @@ public class RKP {
 		}
 	}
 
+	@Override
+	public boolean equals(final Object other) {
+		if (other instanceof RKP)
+			return ((RKP) other).data == data;
+		else
+			return false;
+	}
+
 	public Integer getCost(final Integer defaultValue) {
 		return RKPSelectors.getInt(this, "Kosten", defaultValue);
+	}
+
+	public String getName(final boolean female) {
+		return female ? data.getStringOrDefault("Weiblich", name) : name;
 	}
 
 	public Tuple<JSONArray, JSONArray> getSuggestedOrPossible() {
@@ -82,6 +94,6 @@ public class RKP {
 	@Override
 	public String toString() {
 		final Integer cost = getCost(null);
-		return name + " (" + (cost == null ? "GP nach Variante" : getCost(0) + " GP") + ')';
+		return getName(RKPSelectors.male != null && !RKPSelectors.male.isSelected()) + " (" + (cost == null ? "GP nach Variante" : getCost(0) + " GP") + ')';
 	}
 }

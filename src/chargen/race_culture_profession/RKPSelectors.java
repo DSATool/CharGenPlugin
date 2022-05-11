@@ -40,8 +40,10 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.VBox;
 import jsonant.value.JSONArray;
 import jsonant.value.JSONObject;
@@ -51,6 +53,9 @@ public class RKPSelectors extends TabController {
 
 	private static final JSONObject dummyObj = new JSONObject(null);
 	private static final JSONArray dummyArr = new JSONArray(null);
+
+	public static RadioButton male;
+	public static RadioButton female;
 
 	private static String basicValueKey(final String value) {
 		return switch (value) {
@@ -298,14 +303,12 @@ public class RKPSelectors extends TabController {
 		super(generationState, gp);
 
 		this.leftBox = leftBox;
-		raceSelector = new RKPSelector(this::updateRace);
-		raceSelector.setData(ResourceManager.getResource("data/Rassen"), t -> new RKP(RKP.Type.Race, t._1, t._2, t._3));
+		raceSelector = new RKPSelector(this::updateRace, ResourceManager.getResource("data/Rassen"), t -> new RKP(RKP.Type.Race, t._1, t._2, t._3));
 		raceTab = addTab(tabPane, "Rasse", raceSelector.getControl());
-		cultureSelector = new RKPSelector(this::updateCulture);
-		cultureSelector.setData(ResourceManager.getResource("data/Kulturen"), t -> new RKP(RKP.Type.Culture, t._1, t._2, t._3));
+		cultureSelector = new RKPSelector(this::updateCulture, ResourceManager.getResource("data/Kulturen"), t -> new RKP(RKP.Type.Culture, t._1, t._2, t._3));
 		cultureTab = addTab(tabPane, "Kultur", cultureSelector.getControl());
-		professionSelector = new RKPSelector(this::updateProfession);
-		professionSelector.setData(ResourceManager.getResource("data/Professionen"), t -> new RKP(RKP.Type.Profession, t._1, t._2, t._3));
+		professionSelector = new RKPSelector(this::updateProfession, ResourceManager.getResource("data/Professionen"),
+				t -> new RKP(RKP.Type.Profession, t._1, t._2, t._3));
 		professionTab = addTab(tabPane, "Profession", professionSelector.getControl());
 		bgbVeteranSelector = new BGBVeteranSelector(this::updateBGBVeteran, generationState);
 		bgbVeteranTab = addTab(tabPane, "BGB/Veteran", bgbVeteranSelector.getControl());
@@ -314,6 +317,34 @@ public class RKPSelectors extends TabController {
 	@Override
 	public void activate(final boolean forward) {
 		final ObservableList<Node> items = leftBox.getChildren();
+
+		items.add(0, new Label("Geschlecht:"));
+		final ToggleGroup gender = new ToggleGroup();
+		male = new RadioButton("männlich");
+		male.setToggleGroup(gender);
+		VBox.setMargin(male, new Insets(0, 0, 0, 10));
+		items.add(1, male);
+		female = new RadioButton("weiblich");
+		female.setToggleGroup(gender);
+		VBox.setMargin(female, new Insets(0, 0, 0, 10));
+		items.add(2, female);
+
+		final JSONObject bio = generationState.getObj("Held").getObj("Biografie");
+		if (bio.containsKey("Geschlecht")) {
+			final boolean isFemale = "weiblich".equals(bio.getStringOrDefault("Geschlecht", "männlich"));
+			male.setSelected(!isFemale);
+			female.setSelected(isFemale);
+		} else {
+			male.setSelected(true);
+		}
+
+		male.selectedProperty().addListener((o, oldV, newV) -> {
+			generationState.getObj("Held").getObj("Biografie").put("Geschlecht", newV ? "männlich" : "weiblich");
+			raceSelector.refreshList();
+			cultureSelector.refreshList();
+			professionSelector.refreshList();
+			bgbVeteranSelector.refreshList();
+		});
 
 		items.add(0, new Label("Rasse: "));
 		raceLabel = new Label();
@@ -995,7 +1026,7 @@ public class RKPSelectors extends TabController {
 		bgbVeteranTab.setDisable(true);
 
 		final ObservableList<Node> items = leftBox.getChildren();
-		items.remove(0, 8);
+		items.remove(0, 11);
 
 		final JSONObject hero = generationState.getObj("Held");
 		final JSONObject biography = hero.getObj("Biografie");
@@ -1292,11 +1323,11 @@ public class RKPSelectors extends TabController {
 		RKP root = rkp;
 		final Stack<String> names = new Stack<>();
 
-		names.push(rkp.name);
+		names.push(rkp.getName(!male.isSelected()));
 		while (root.parent != null) {
 			root = root.parent;
 			if (names.isEmpty() || !root.name.equals(names.peek())) {
-				names.push(root.name);
+				names.push(root.getName(!male.isSelected()));
 			}
 		}
 
@@ -1329,7 +1360,7 @@ public class RKPSelectors extends TabController {
 				} else {
 					result.append(", ");
 				}
-				result.append(variant.name);
+				result.append(variant.getName(!male.isSelected()));
 			}
 		}
 		if (!first && !skipRootName) {
@@ -1378,6 +1409,8 @@ public class RKPSelectors extends TabController {
 		updateCultureSuggestedOrPossible();
 		updateCanContinue();
 
+		updateGenderValidity();
+
 		final int cost = switch (type) {
 			case BGB -> ResourceManager.getResource("data/Vorteile").getObj("Breitgefächerte Bildung").getIntOrDefault("Kosten", 7);
 			case VETERAN -> ResourceManager.getResource("data/Vorteile").getObj("Veteran").getIntOrDefault("Kosten", 3);
@@ -1418,6 +1451,8 @@ public class RKPSelectors extends TabController {
 
 		updateCanContinue();
 		bgbVeteranSelector.updateValid();
+
+		updateGenderValidity();
 
 		gp.set(gp.get() + cultureCost);
 		cultureCost = getCost(culture, variants);
@@ -1490,6 +1525,42 @@ public class RKPSelectors extends TabController {
 		});
 	}
 
+	private void updateGenderValidity() {
+		male.getStyleClass().remove("invalid");
+		female.getStyleClass().remove("invalid");
+		updateGenderValidity(raceSelector.getCurrentChoice(), raceSelector.getCurrentVariants());
+		updateGenderValidity(cultureSelector.getCurrentChoice(), cultureSelector.getCurrentVariants());
+		updateGenderValidity(professionSelector.getCurrentChoice(), professionSelector.getCurrentVariants());
+		updateGenderValidity(bgbVeteranSelector.getCurrentChoice(), bgbVeteranSelector.getCurrentVariants());
+	}
+
+	private void updateGenderValidity(final RKP choice, final List<RKP> variants) {
+		if (variants != null) {
+			for (final RKP variant : variants) {
+				final String requirement = variant.data.getObjOrDefault("Voraussetzungen", new JSONObject(null)).getStringOrDefault("Geschlecht", null);
+				if (requirement != null) {
+					if ("männlich".equals(requirement)) {
+						female.getStyleClass().add("invalid");
+					} else {
+						male.getStyleClass().add("invalid");
+					}
+					return;
+				}
+			}
+		}
+
+		if (choice != null) {
+			final String requirement = choice.data.getObjOrDefault("Voraussetzungen", new JSONObject(null)).getStringOrDefault("Geschlecht", null);
+			if (requirement != null) {
+				if ("männlich".equals(requirement)) {
+					female.getStyleClass().add("invalid");
+				} else {
+					male.getStyleClass().add("invalid");
+				}
+			}
+		}
+	}
+
 	private void updateProfession() {
 		changedProfession = true;
 		final RKP profession = professionSelector.getCurrentChoice();
@@ -1508,6 +1579,8 @@ public class RKPSelectors extends TabController {
 
 		updateCultureSuggestedOrPossible();
 		updateCanContinue();
+
+		updateGenderValidity();
 
 		bgbVeteranSelector.setProfession(profession);
 
@@ -1531,6 +1604,8 @@ public class RKPSelectors extends TabController {
 		updateCultureSuggestedOrPossible();
 		updateCanContinue();
 		bgbVeteranSelector.updateValid();
+
+		updateGenderValidity();
 
 		gp.set(gp.get() + raceCost);
 		raceCost = getCost(race, variants);
