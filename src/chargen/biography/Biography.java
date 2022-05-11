@@ -101,44 +101,62 @@ public class Biography extends TabController {
 		}
 
 		name.textProperty().addListener((o, oldV, newV) -> {
-			final JSONObject bio = generationState.getObj("Held").getObj("Biografie");
-			bio.put("temporary:customName", true);
-			final String fullName = newV.trim();
-			final int split = fullName.indexOf(' ');
-			if (split < 0) {
-				bio.put("Vorname", fullName);
-				bio.put("Nachname", "");
-			} else {
-				bio.put("Vorname", fullName.substring(0, split));
-				bio.put("Nachname", fullName.substring(split + 1));
+			if (newV != null) {
+				final JSONObject bio = generationState.getObj("Held").getObj("Biografie");
+				bio.put("temporary:customName", true);
+				final String fullName = newV.trim();
+				final int split = fullName.indexOf(' ');
+				if (split < 0) {
+					bio.put("Vorname", fullName);
+					bio.put("Nachname", "");
+				} else {
+					bio.put("Vorname", fullName.substring(0, split));
+					bio.put("Nachname", fullName.substring(split + 1));
+				}
 			}
 		});
 
 		size.valueProperty().addListener((o, oldV, newV) -> {
-			if (weightTracksSize) {
-				randomWeight();
+			if (newV != null) {
+				if (weightTracksSize) {
+					randomWeight();
+				}
+				generationState.getObj("Held").getObj("Biografie").put("Größe", newV);
 			}
-			generationState.getObj("Held").getObj("Biografie").put("Größe", newV);
 		});
 
-		weight.valueProperty().addListener((o, oldV, newV) -> generationState.getObj("Held").getObj("Biografie").put("Gewicht", newV));
+		weight.valueProperty().addListener((o, oldV, newV) -> {
+			if (newV != null) {
+				generationState.getObj("Held").getObj("Biografie").put("Gewicht", newV);
+			}
+		});
 
 		eyecolor.setItems(FXCollections.observableArrayList(HeroUtil.eyeColors));
-		eyecolor.valueProperty().addListener((o, oldV, newV) -> generationState.getObj("Held").getObj("Biografie").put("Augenfarbe", newV.trim()));
+		eyecolor.valueProperty().addListener((o, oldV, newV) -> {
+			if (newV != null) {
+				generationState.getObj("Held").getObj("Biografie").put("Augenfarbe", newV.trim());
+			}
+		});
 
 		haircolor.valueProperty().addListener((o, oldV, newV) -> {
-			generationState.getObj("Held").getObj("Biografie").put(scalecolor ? "Schuppenfarbe 1" : "Haarfarbe", newV.trim());
+			if (newV != null) {
+				generationState.getObj("Held").getObj("Biografie").put(scalecolor ? "Schuppenfarbe 1" : "Haarfarbe", newV.trim());
+			}
 		});
 
 		skincolor.valueProperty().addListener((o, oldV, newV) -> {
-			generationState.getObj("Held").getObj("Biografie").put(scalecolor ? "Schuppenfarbe 2" : "Hautfarbe", skincolor.getValue().trim());
+			if (newV != null) {
+				generationState.getObj("Held").getObj("Biografie").put(scalecolor ? "Schuppenfarbe 2" : "Hautfarbe", newV.trim());
+			}
 		});
 
 		male.selectedProperty().addListener((o, oldV, newV) -> {
-			if (!generationState.getObj("Held").getObj("Biografie").getBoolOrDefault("temporary:customName", false)) {
-				randomName();
+			if (newV != null) {
+				if (!generationState.getObj("Held").getObj("Biografie").getBoolOrDefault("temporary:customName", false)) {
+					randomName();
+				}
+				generationState.getObj("Held").getObj("Biografie").put("Geschlecht", newV ? "männlich" : "weiblich");
 			}
-			generationState.getObj("Held").getObj("Biografie").put("Geschlecht", newV ? "männlich" : "weiblich");
 		});
 
 		tab = addTab(tabPane, "Biografie", pane);
