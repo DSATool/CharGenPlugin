@@ -16,7 +16,6 @@
 package chargen.biography;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import chargen.ui.TabController;
@@ -198,7 +197,7 @@ public class Biography extends TabController {
 			male.setSelected(true);
 		}
 
-		for (final String RKP : Arrays.asList("Rasse", "Kultur", "Profession")) {
+		for (final String RKP : List.of("Rasse", "Kultur", "Profession")) {
 			final String requirement = generationState.getObj(RKP).getObjOrDefault("Voraussetzungen", new JSONObject(null)).getStringOrDefault("Geschlecht",
 					null);
 			if (requirement != null) {
