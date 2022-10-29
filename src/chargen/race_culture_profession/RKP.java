@@ -65,8 +65,8 @@ public class RKP {
 
 	@Override
 	public boolean equals(final Object other) {
-		if (other instanceof RKP)
-			return ((RKP) other).data == data;
+		if (other instanceof final RKP rkp)
+			return rkp.data == data;
 		else
 			return false;
 	}

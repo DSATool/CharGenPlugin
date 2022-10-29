@@ -554,7 +554,7 @@ public class Choices extends TabController {
 		String[] spellNames = null;
 		final boolean needsPrimarySpells = spells && choices.getIntOrDefault("Hauszauber", 0) > 0;
 		final IntegerProperty availablePrimarySpells = new SimpleIntegerProperty(choices.getIntOrDefault("Hauszauber", 0));
-		JSONArray chosenPrimarySpells;
+		final JSONArray chosenPrimarySpells;
 		if (spells) {
 			final Set<String> keySet = ((JSONObject) actualChoices).keySet();
 			spellNames = keySet.toArray(new String[keySet.size()]);
@@ -587,7 +587,7 @@ public class Choices extends TabController {
 
 		final boolean needsPrimaryTalents = choices.getIntOrDefault("Leittalente", 0) > 0 && hero.getObj("Nachteile").containsKey("Elfische Weltsicht");
 		final IntegerProperty availablePrimaryTalents = new SimpleIntegerProperty(choices.getIntOrDefault("Leittalente", 0));
-		JSONArray chosenPrimaryTalents;
+		final JSONArray chosenPrimaryTalents;
 		if (needsPrimaryTalents) {
 			final Label primaryTalentsLabel = new Label();
 			primaryTalentsLabel.textProperty().bind(availablePrimaryTalents.asString());

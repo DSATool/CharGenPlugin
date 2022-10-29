@@ -108,15 +108,15 @@ public class CharGenController {
 				final String talentName = pro.getObj(i).getString("Auswahl");
 				final Tuple<JSONObject, String> talentAndGroup = HeroUtil.findTalent(talentName);
 				final Object talent = hero.getObj("Talente").getObj(talentAndGroup._2).getUnsafe(talentName);
-				if (talent instanceof JSONObject) {
-					final int taw = ((JSONObject) talent).getIntOrDefault("TaW", 0);
+				if (talent instanceof final JSONObject obj) {
+					final int taw = obj.getIntOrDefault("TaW", 0);
 					if (taw == 0 && !talentAndGroup._1.getBoolOrDefault("Basis", false)) {
-						((JSONObject) talent).put("TaW", 0);
-						((JSONObject) talent).removeKey("aktiviert");
+						obj.put("TaW", 0);
+						obj.removeKey("aktiviert");
 					} else {
-						((JSONObject) talent).put("TaW", taw + 1);
+						obj.put("TaW", taw + 1);
 					}
-				} else if (talent instanceof JSONArray) {
+				} else {
 					for (int j = 0; j < ((JSONArray) talent).size(); ++j) {
 						final JSONObject variant = ((JSONArray) talent).getObj(i);
 						final int taw = variant.getIntOrDefault("TaW", 0);
@@ -138,9 +138,9 @@ public class CharGenController {
 				if (spell != null) {
 					for (final String repName : spell.keySet()) {
 						final Object rep = spell.getUnsafe(repName);
-						if (rep instanceof JSONObject) {
-							((JSONObject) rep).put("ZfW", ((JSONObject) rep).getIntOrDefault("ZfW", 0) + 1);
-						} else if (rep instanceof JSONArray) {
+						if (rep instanceof final JSONObject obj) {
+							obj.put("ZfW", obj.getIntOrDefault("ZfW", 0) + 1);
+						} else {
 							for (int j = 0; j < ((JSONArray) rep).size(); ++j) {
 								final JSONObject variant = ((JSONArray) rep).getObj(i);
 								variant.put("ZfW", variant.getIntOrDefault("ZfW", 0) + 1);
@@ -245,11 +245,11 @@ public class CharGenController {
 			final List<String> toRemove = new LinkedList<>();
 			for (final String talentName : group.keySet()) {
 				final JSONValue talent = (JSONValue) group.getUnsafe(talentName);
-				if (talent instanceof JSONArray) {
+				if (talent instanceof final JSONArray arr) {
 					for (int i = talent.size() - 1; i >= 0; --i) {
-						final JSONObject actual = ((JSONArray) talent).getObj(i);
+						final JSONObject actual = arr.getObj(i);
 						if (actual.size() == 1 && !actual.getBoolOrDefault("aktiviert", true)) {
-							((JSONArray) talent).removeAt(i);
+							arr.removeAt(i);
 						}
 					}
 					if (talent.size() == 0) {
@@ -274,11 +274,11 @@ public class CharGenController {
 			final List<String> repsToRemove = new LinkedList<>();
 			for (final String rep : spell.keySet()) {
 				final JSONValue representation = (JSONValue) spell.getUnsafe(rep);
-				if (representation instanceof JSONArray) {
+				if (representation instanceof final JSONArray arr) {
 					for (int i = representation.size() - 1; i >= 0; --i) {
-						final JSONObject actual = ((JSONArray) representation).getObj(i);
+						final JSONObject actual = arr.getObj(i);
 						if (actual.size() == 1 && !actual.getBoolOrDefault("aktiviert", true)) {
-							((JSONArray) representation).removeAt(i);
+							arr.removeAt(i);
 						}
 					}
 					if (representation.size() == 0) {
@@ -305,20 +305,20 @@ public class CharGenController {
 	private void removeTemporaries(final JSONArray current) {
 		for (int i = 0; i < current.size(); ++i) {
 			final Object value = current.getUnsafe(i);
-			if (value instanceof String) {
-				if (((String) value).startsWith("temporary")) {
+			if (value instanceof final String str) {
+				if (str.startsWith("temporary")) {
 					current.removeAt(i);
 					--i;
 				}
-			} else if (value instanceof JSONObject) {
-				removeTemporaries((JSONObject) value);
-				if (((JSONObject) value).size() == 0) {
+			} else if (value instanceof final JSONObject obj) {
+				removeTemporaries(obj);
+				if (obj.size() == 0) {
 					current.removeAt(i);
 					--i;
 				}
-			} else if (value instanceof JSONArray) {
-				removeTemporaries((JSONArray) value);
-				if (((JSONArray) value).size() == 0) {
+			} else if (value instanceof final JSONArray arr) {
+				removeTemporaries(arr);
+				if (arr.size() == 0) {
 					current.removeAt(i);
 					--i;
 				}
@@ -333,10 +333,10 @@ public class CharGenController {
 				toRemove.add(key);
 			} else {
 				final Object value = current.getUnsafe(key);
-				if (value instanceof JSONObject) {
-					removeTemporaries((JSONObject) value);
-				} else if (value instanceof JSONArray) {
-					removeTemporaries((JSONArray) value);
+				if (value instanceof final JSONObject obj) {
+					removeTemporaries(obj);
+				} else if (value instanceof final JSONArray arr) {
+					removeTemporaries(arr);
 				}
 			}
 		}
