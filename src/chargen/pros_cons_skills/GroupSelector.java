@@ -31,6 +31,7 @@ import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -195,12 +196,11 @@ public class GroupSelector {
 			possibleValueColumn.setMaxWidth(0);
 		}
 
-		possibleTable.setItems(new FilteredList<>(allItems, valid::containsKey));
+		possibleTable.getSortOrder().add(possibleNameColumn);
+		possibleTable.setItems(new SortedList<>(new FilteredList<>(allItems, valid::containsKey), possibleTable.getComparator()));
 
 		ProConSkillUtil.setupTable(type, possibleTable, possibleNameColumn, possibleDescColumn, possibleVariantColumn, possibleValueColumn, possibleValidColumn,
 				possibleSuggestedColumn);
-
-		possibleTable.getSortOrder().add(possibleNameColumn);
 
 		showAll.addListener((o, oldV, newV) -> initializePossibleTable());
 	}
