@@ -1219,14 +1219,25 @@ public class RKPSelectors extends TabController {
 
 		if (culture != null) {
 			RKP current = profession;
+			RKP currentCulture = culture;
+			JSONArray suggested = culture.getSuggestedOrPossible()._1;
 			JSONArray possible = culture.getSuggestedOrPossible()._2;
 
-			if (culture.parent != null && possible == null) {
-				possible = culture.parent.getSuggestedOrPossible()._2;
+			while (currentCulture.parent != null) {
+				currentCulture = currentCulture.parent;
+				if (suggested == null) {
+					suggested = currentCulture.getSuggestedOrPossible()._1;
+				}
+				if (possible == null) {
+					possible = currentCulture.getSuggestedOrPossible()._2;
+				}
 			}
 			if (cultureVariants != null) {
 				for (final RKP variant : cultureVariants) {
 					final Tuple<JSONArray, JSONArray> variantSuggestedOrPossible = variant.getSuggestedOrPossible();
+					if (variantSuggestedOrPossible._1 != null) {
+						suggested = variantSuggestedOrPossible._1;
+					}
 					if (variantSuggestedOrPossible._2 != null) {
 						possible = variantSuggestedOrPossible._2;
 					}
@@ -1237,9 +1248,21 @@ public class RKPSelectors extends TabController {
 				final JSONObject requirements = current.data.getObjOrDefault("Voraussetzungen", new JSONObject(null)).getObjOrDefault("Kulturen", null);
 				if (requirements != null) {
 					final JSONObject requiredCultures = requirements.getObjOrDefault("Muss", requirements.getObjOrDefault("Wahl", null));
-					if (requiredCultures != null && !requiredCultures.containsKey(culture.name)) return false;
+					if (requiredCultures != null) {
+						boolean foundCulture = false;
+						RKP curCulture = culture;
+						while (curCulture != null) {
+							if (requiredCultures.containsKey(curCulture.name)) {
+								foundCulture = true;
+								break;
+							}
+							curCulture = curCulture.parent;
+						}
+						if (!foundCulture)
+							return false;
+					}
 				}
-				if (possible != null && possible.contains(current.name)) return true;
+				if (suggested != null && suggested.contains(current.name) || possible != null && possible.contains(current.name)) return true;
 				current = current.parent;
 			}
 			return possible == null;
@@ -1286,16 +1309,29 @@ public class RKPSelectors extends TabController {
 		}
 
 		if (culture != null) {
+			JSONArray suggested = race.getSuggestedOrPossible()._1;
 			JSONArray possible = race.getSuggestedOrPossible()._2;
-			if (race.parent != null && possible == null) {
-				possible = race.parent.getSuggestedOrPossible()._2;
+			RKP currentRace = race;
+			while (currentRace.parent != null) {
+				currentRace = currentRace.parent;
+				if (suggested == null) {
+					suggested = currentRace.getSuggestedOrPossible()._1;
+				}
+				if (possible == null) {
+					possible = currentRace.getSuggestedOrPossible()._2;
+				}
 			}
 			RKP current = culture;
+			boolean foundCulture = false;
 			while (current != null) {
-				if (possible != null)
-					return possible.contains(current.name);
+				if (suggested != null && suggested.contains(current.name) || possible != null && possible.contains(current.name)) {
+					foundCulture = true;
+					break;
+				}
 				current = current.parent;
 			}
+			if (!foundCulture)
+				return false;
 		}
 
 		return true;
@@ -1511,7 +1547,7 @@ public class RKPSelectors extends TabController {
 			} else {
 				RKP current = culture;
 				while (current != null) {
-					if (fromRace._2.contains(current.name)) {
+					if (fromRace._1.contains(current.name) || fromRace._2.contains(current.name)) {
 						raceOk = true;
 						break;
 					}
