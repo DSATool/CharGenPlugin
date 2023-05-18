@@ -1099,7 +1099,7 @@ public class Choices extends TabController {
 					names.append(", ");
 
 					final Label currentValue = new Label();
-					currentValue.setPrefWidth(20);
+					currentValue.setPrefWidth(25);
 					currentValue.setAlignment(Pos.CENTER);
 					input.add(currentValue, 1, current + 1 + additionalRows);
 					currentValue.textProperty().bind(Bindings.when(actualTalent.valueProperty().lessThan(Integer.MIN_VALUE + 1)).then("n.a.")

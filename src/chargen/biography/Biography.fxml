@@ -57,7 +57,7 @@
             <Tooltip text="Zufälliges Gewicht" />
          </tooltip>
       </Button>
-      <Label text="Augenfarbe:" GridPane.rowIndex="2" />
+      <Label text="Augenfarbe:" GridPane.rowIndex="2" minWidth="85" />
       <ReactiveComboBox fx:id="eyecolor" editable="true" GridPane.rowIndex="2" GridPane.columnIndex="1" />
       <Button GridPane.rowIndex="2" GridPane.columnIndex="2" onAction="#randomEyecolor" text="&#xE028;" >
          <padding><Insets top="5" right="5" bottom="5" left="5"/></padding>
@@ -79,7 +79,7 @@
             <Tooltip text="Zufällige Haarfarbe" />
          </tooltip>
       </Button>
-      <Label fx:id="skincolorLabel" text="Hautfarbe:" GridPane.rowIndex="3" GridPane.columnIndex="4" />
+      <Label fx:id="skincolorLabel" text="Hautfarbe:" GridPane.rowIndex="3" GridPane.columnIndex="4" minWidth="70" />
       <ReactiveComboBox fx:id="skincolor" editable="true" GridPane.rowIndex="3" GridPane.columnIndex="5" />
       <Button GridPane.rowIndex="3" GridPane.columnIndex="6" onAction="#randomSkincolor" text="&#xE028;" >
          <padding><Insets top="5" right="5" bottom="5" left="5"/></padding>
