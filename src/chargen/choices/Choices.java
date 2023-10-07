@@ -50,6 +50,7 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
@@ -123,9 +124,9 @@ public class Choices extends TabController {
 		tab = addTab(tabPane, "Auswahl", pane);
 
 		choiceNames = new TableView<>();
-		choiceNames.getColumns().add(new TableColumn<ChoicePage, String>());
-		choiceNames.getColumns().add(new TableColumn<ChoicePage, Boolean>());
-		choiceNames.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+		choiceNames.getColumns().add(new TableColumn<>());
+		choiceNames.getColumns().add(new TableColumn<>());
+		choiceNames.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_NEXT_COLUMN);
 		choiceNames.getColumns().get(1).setMinWidth(0);
 		choiceNames.getColumns().get(1).setMaxWidth(0);
 		choiceNames.getColumns().get(1).setPrefWidth(0);
@@ -657,6 +658,8 @@ public class Choices extends TabController {
 				names.append(", ");
 				final Label nameLabel = new Label(talentName);
 				input.add(nameLabel, 0, row);
+				nameLabel.setMinWidth(250);
+				nameLabel.setPadding(new Insets(0, 10, 0, 10));
 				if (spells) {
 					nameLabel.setText(talentName + " (" + ((Spell) actualTalent).getComplexity() + ")");
 					final JSONArray traits = actualTalent.getTalent().getArrOrDefault("Merkmale",
@@ -667,7 +670,7 @@ public class Choices extends TabController {
 				final String choiceName = spells ? talentName + rep : talentName;
 
 				final Label currentValue = new Label(actualTalent.getValue() == Integer.MIN_VALUE ? "n.a." : Integer.toString(actualTalent.getValue()));
-				currentValue.setPrefWidth(20);
+				currentValue.setMinWidth(25);
 				currentValue.setAlignment(Pos.CENTER);
 				input.add(currentValue, 1, row);
 				actualTalent.valueProperty().addListener((o, oldV, newV) -> {
@@ -684,6 +687,8 @@ public class Choices extends TabController {
 					possible.add(Integer.toString(j));
 				}
 				final ReactiveSpinner<String> value = new ReactiveSpinner<>(possible);
+				value.setMinWidth(70);
+				value.setPrefWidth(70);
 				input.add(value, 2, row);
 
 				canSelect.addListener((o, oldV, newV) -> {
