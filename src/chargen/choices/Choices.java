@@ -751,6 +751,8 @@ public class Choices extends TabController {
 						}
 					});
 
+					final boolean[] isSetup = { true };
+
 					primarySpell.selectedProperty().addListener((o, oldV, newV) -> {
 						if (!isExternallySet.get()) {
 							chosenPrimarySpells.set(finalC, newV);
@@ -759,7 +761,7 @@ public class Choices extends TabController {
 								primaryTalent.setDisable(newV);
 							}
 							availablePrimarySpells.set(availablePrimarySpells.get() - (newV ? 1 : -1));
-							if (!"n.a.".equals(value.getValue())) {
+							if (!"n.a.".equals(value.getValue()) && !isSetup[0]) {
 								points.set(points.get() + (Integer.parseInt(value.getValue()) + 1) * (newV ? 1 : -1));
 							}
 							recalculateCanContinue();
@@ -773,6 +775,8 @@ public class Choices extends TabController {
 						}
 						primarySpell.setSelected(true);
 					}
+
+					isSetup[0] = false;
 
 					((Spell) actualTalent).primarySpellProperty().addListener((o, oldV, newV) -> {
 						if (newV && !chosenPrimarySpells.getBool(finalC)) {
