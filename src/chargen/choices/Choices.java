@@ -662,8 +662,10 @@ public class Choices extends TabController {
 				nameLabel.setPadding(new Insets(0, 10, 0, 10));
 				if (spells) {
 					nameLabel.setText(talentName + " (" + ((Spell) actualTalent).getComplexity() + ")");
-					final JSONArray traits = actualTalent.getTalent().getArrOrDefault("Merkmale",
-							((JSONObject) actualTalent.getTalent().getParent()).getArr("Merkmale"));
+					JSONArray traits = actualTalent.getTalent().getArrOrDefault("Merkmale", null);
+					if (traits == null) {
+						traits = ((JSONObject) actualTalent.getTalent().getParent()).getArr("Merkmale");
+					}
 					nameLabel.setTooltip(new Tooltip("(" + String.join(", ", traits.getStrings()) + ")"));
 				}
 
