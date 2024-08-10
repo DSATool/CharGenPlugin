@@ -731,6 +731,7 @@ public class Choices extends TabController {
 				actualTalent.valueProperty().addListener((o, oldV, newV) -> {
 					if (newV.intValue() == Integer.MIN_VALUE && "0".equals(value.getValue())) {
 						actualTalent.setValue(0);
+						actualTalent.getActual().put("temporary:ChoiceOnly", true);
 					}
 				});
 

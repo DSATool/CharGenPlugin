@@ -43,17 +43,21 @@ public class ValueChoice extends Choice {
 	}
 
 	protected void applyInternally(final JSONObject hero, final Integer value, final boolean unapply, final boolean alreadyApplied) {
-		if (value == null) return;
-		if (!alreadyApplied) {
+		final boolean choiceOnly = !talent.exists() || talent.getActual().getBoolOrDefault("temporary:ChoiceOnly", false);
+		if (!alreadyApplied && value != null) {
 			talent.setValue((talent.getValue() == Integer.MIN_VALUE ? 0 : talent.getValue()) + value);
+			if (choiceOnly) {
+				talent.getActual().put("temporary:ChoiceOnly", true);
+			}
 		}
+		if (talent.getValue() == 0 && (value == null || value != 0 || unapply) && choiceOnly) {
+			talent.setValue(Integer.MIN_VALUE);
+		}
+		if (value == null) return;
+
 		points.setValue(points.getValue() - (value + (useComplexity ? unapply ? -1 : 1 : 0))
 				* (useComplexity ? rep != null ? HeroUtil.getSpellBaseComplexity(talent.getName(), rep) + (((Spell) talent).isPrimarySpell() ? -1 : 0)
 						: HeroUtil.getTalentBaseComplexity(talent.getName()) : 1));
-		final boolean choiceOnly = talent.getActual().getBoolOrDefault("temporary:ChoiceOnly", false);
-		if (talent.getValue() == 0 && (value != 0 || unapply) && choiceOnly) {
-			talent.setValue(Integer.MIN_VALUE);
-		}
 		if (primarySpell) {
 			final JSONObject actual = talent.getActual();
 			if (unapply) {
