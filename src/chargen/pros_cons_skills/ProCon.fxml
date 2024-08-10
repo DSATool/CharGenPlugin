@@ -17,7 +17,7 @@
       <TableColumn fx:id="possibleNameColumn" minWidth="150" prefWidth="250" editable="false" />
       <TableColumn fx:id="possibleDescColumn" text="Beschreibung" minWidth="100" prefWidth="150" sortable="false" />
       <TableColumn fx:id="possibleVariantColumn" text="Variante" minWidth="100" prefWidth="150" resizable="false" sortable="false" />
-      <TableColumn fx:id="possibleValueColumn" text="Wert" minWidth="55" maxWidth="55" resizable="false" sortable="false" style="-fx-alignment: CENTER;" />
+      <TableColumn fx:id="possibleValueColumn" text="Wert" minWidth="65" maxWidth="65" resizable="false" sortable="false" style="-fx-alignment: CENTER;" />
       <TableColumn fx:id="possibleCostColumn" text="Kosten" minWidth="60" maxWidth="60" resizable="false" sortable="false" style="-fx-alignment: CENTER;" />
       <TableColumn fx:id="possibleValidColumn" minWidth="0" maxWidth="0" />
       <TableColumn fx:id="possibleSuggestedColumn" minWidth="0" maxWidth="0" />
