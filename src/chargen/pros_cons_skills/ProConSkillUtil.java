@@ -49,6 +49,11 @@ public class ProConSkillUtil {
 					final ProConOrSkill proOrCon = getTableRow().getItem();
 					if (proOrCon != null) {
 						Util.addReference(this, proOrCon.getProOrCon(), 15, nameColumn.widthProperty());
+						if (proOrCon.getProOrCon().getBoolOrDefault("Schlechte Eigenschaft", false)) {
+							getStyleClass().add("italic");
+						} else {
+							getStyleClass().remove("italic");
+						}
 					}
 				}
 			}
