@@ -960,7 +960,16 @@ public class RKPSelectors extends TabController {
 				}
 			} else {
 				final JSONObject talent = actualTalents.getObj(groupName).getObj(talentName);
-				talent.put("TaW", talentList.get(talentName).get(0));
+				final int mod = talentList.get(talentName).get(0);
+				talent.put("TaW", mod);
+				if ("Nahkampftalente".equals(groupName) || "Fernkampftalente".equals(groupName)) {
+					if (talentAndGroup._1.getBoolOrDefault("NurAT", false) || talentAndGroup._1.getBoolOrDefault("FK", false)) {
+						talent.put("AT", mod);
+					} else {
+						talent.put("AT", (mod + 1) / 2);
+						talent.put("PA", mod / 2);
+					}
+				}
 			}
 		}
 
