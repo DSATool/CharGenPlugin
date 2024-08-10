@@ -107,7 +107,10 @@ public class CharGenController {
 			for (int i = 0; i < pro.size(); ++i) {
 				final String talentName = pro.getObj(i).getString("Auswahl");
 				final Tuple<JSONObject, String> talentAndGroup = HeroUtil.findTalent(talentName);
-				final Object talent = hero.getObj("Talente").getObj(talentAndGroup._2).getUnsafe(talentName);
+				Object talent = hero.getObj("Talente").getObj(talentAndGroup._2).getUnsafe(talentName);
+				if (talent == null && !talentAndGroup._1.containsKey("Auswahl") && !talentAndGroup._1.containsKey("Freitext")) {
+					talent = hero.getObj("Talente").getObj(talentAndGroup._2).getObj(talentName);
+				}
 				if (talent instanceof final JSONObject obj) {
 					final int taw = obj.getIntOrDefault("TaW", 0);
 					if (taw == 0 && !talentAndGroup._1.getBoolOrDefault("Basis", false)) {
@@ -116,9 +119,9 @@ public class CharGenController {
 					} else {
 						obj.put("TaW", taw + 1);
 					}
-				} else {
-					for (int j = 0; j < ((JSONArray) talent).size(); ++j) {
-						final JSONObject variant = ((JSONArray) talent).getObj(i);
+				} else if (talent instanceof final JSONArray arr) {
+					for (int j = 0; j < arr.size(); ++j) {
+						final JSONObject variant = arr.getObj(i);
 						final int taw = variant.getIntOrDefault("TaW", 0);
 						if (taw == 0 && !talentAndGroup._1.getBoolOrDefault("Basis", false)) {
 							variant.put("TaW", 0);
