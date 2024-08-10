@@ -346,6 +346,10 @@ public class RKPSelectors extends TabController {
 			cultureSelector.refreshList();
 			professionSelector.refreshList();
 			bgbVeteranSelector.refreshList();
+
+			updateRaceSuggestedOrPossible();
+			updateCultureSuggestedOrPossible();
+			updateProfessionSuggestedOrPossible();
 		});
 
 		items.add(0, new Label("Rasse: "));
@@ -1449,10 +1453,7 @@ public class RKPSelectors extends TabController {
 			}
 		}
 
-		final RKP culture = cultureSelector.getCurrentChoice();
-		final RKP secondProfession = professionSelector.getCurrentChoice();
-		raceSelector.updateSuggestedPossible(race -> isSuggestedRace(race, culture), race -> isPossibleRace(race, culture, secondProfession, profession));
-
+		updateRaceSuggestedOrPossible();
 		updateCultureSuggestedOrPossible();
 		updateCanContinue();
 
@@ -1489,12 +1490,8 @@ public class RKPSelectors extends TabController {
 			generationState.put("Kultur", buildCulture(culture, variants));
 		}
 
-		raceSelector.updateSuggestedPossible(race -> isSuggestedRace(race, culture),
-				race -> isPossibleRace(race, culture, professionSelector.getCurrentChoice(), bgbVeteranSelector.getCurrentChoice()));
-
-		final RKP race = raceSelector.getCurrentChoice();
-		professionSelector.updateSuggestedPossible(profession -> false, profession -> isPossibleProfession(race, culture, variants, profession));
-		bgbVeteranSelector.setSuggestedPossible(profession -> false, profession -> isPossibleProfession(race, culture, variants, profession));
+		updateRaceSuggestedOrPossible();
+		updateProfessionSuggestedOrPossible();
 
 		updateCanContinue();
 		bgbVeteranSelector.updateValid();
@@ -1620,10 +1617,7 @@ public class RKPSelectors extends TabController {
 			generationState.put("Profession", buildProfession(profession, variants));
 		}
 
-		final RKP culture = cultureSelector.getCurrentChoice();
-		final RKP secondProfession = bgbVeteranSelector.getCurrentChoice();
-		raceSelector.updateSuggestedPossible(race -> isSuggestedRace(race, culture), race -> isPossibleRace(race, culture, profession, secondProfession));
-
+		updateRaceSuggestedOrPossible();
 		updateCultureSuggestedOrPossible();
 		updateCanContinue();
 
@@ -1634,6 +1628,15 @@ public class RKPSelectors extends TabController {
 		gp.set(gp.get() + professionCost);
 		professionCost = getCost(profession, variants);
 		gp.set(gp.get() - professionCost);
+	}
+
+	private void updateProfessionSuggestedOrPossible() {
+		final RKP race = raceSelector.getCurrentChoice();
+		final RKP culture = cultureSelector.getCurrentChoice();
+		final List<RKP> variants = cultureSelector.getCurrentVariants();
+		updateCultureSuggestedOrPossible();
+		professionSelector.updateSuggestedPossible(profession -> false, profession -> isPossibleProfession(race, culture, variants, profession));
+		bgbVeteranSelector.setSuggestedPossible(profession -> false, profession -> isPossibleProfession(race, culture, variants, profession));
 	}
 
 	private void updateRace() {
@@ -1657,5 +1660,12 @@ public class RKPSelectors extends TabController {
 		gp.set(gp.get() + raceCost);
 		raceCost = getCost(race, variants);
 		gp.set(gp.get() - raceCost);
+	}
+
+	private void updateRaceSuggestedOrPossible() {
+		final RKP culture = cultureSelector.getCurrentChoice();
+		final RKP profession = professionSelector.getCurrentChoice();
+		final RKP secondProfession = bgbVeteranSelector.getCurrentChoice();
+		raceSelector.updateSuggestedPossible(race -> isSuggestedRace(race, culture), race -> isPossibleRace(race, culture, profession, secondProfession));
 	}
 }
