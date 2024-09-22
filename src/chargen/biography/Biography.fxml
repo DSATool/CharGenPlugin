@@ -17,10 +17,9 @@
    <children>
       <Label text="Name: " />
       <TextField fx:id="name" GridPane.columnIndex="1" GridPane.columnSpan="5" />
-      <SplitMenuButton fx:id="namesButton" GridPane.columnIndex="6" onAction="#randomName" text="&#xE028;" >
-         <padding><Insets top="0" right="0" bottom="0" left="0"/></padding>
+      <SplitMenuButton fx:id="namesButton" GridPane.columnIndex="6" onAction="#randomName" text="&#xE028;" minHeight="26" maxHeight="26" style="-fx-label-padding: -2 -6 -3 -5;">
          <font>
-            <Font name="Material Icons" size="15.0" />
+            <Font name="Material Symbols Outlined" size="15.0" />
          </font>
          <tooltip>
             <Tooltip text="Zufälliger Name" />
@@ -29,18 +28,18 @@
       <Label text="Größe:" GridPane.rowIndex="1" />
       <ReactiveSpinner fx:id="size" imin="0" imax="500" GridPane.rowIndex="1" GridPane.columnIndex="1" editable="true" />
       <Button GridPane.rowIndex="1" GridPane.columnIndex="2" onAction="#randomSize" text="&#xE028;" >
-         <padding><Insets top="5" right="5" bottom="5" left="5"/></padding>
+         <padding><Insets top="3" right="5" bottom="-1" left="5"/></padding>
          <font>
-            <Font name="Material Icons" size="15.0" />
+            <Font name="Material Symbols Outlined" size="15.0" />
          </font>
          <tooltip>
             <Tooltip text="Zufällige Größe" />
          </tooltip>
       </Button>
       <Button fx:id="weightTracksSizeButton" GridPane.rowIndex="1" GridPane.columnIndex="3" onAction="#toggleWeightTracksSize" text="&#xE157;" >
-         <padding><Insets top="5" right="5" bottom="5" left="5"/></padding>
+         <padding><Insets top="3" right="5" bottom="-1" left="5"/></padding>
          <font>
-            <Font name="Material Icons" size="15.0" />
+            <Font name="Material Symbols Outlined" size="15.0" />
          </font>
          <tooltip>
             <Tooltip text="Gewicht an Größe angleichen" />
@@ -49,9 +48,9 @@
       <Label text="Gewicht:" GridPane.rowIndex="1" GridPane.columnIndex="4" />
       <ReactiveSpinner fx:id="weight" imin="0" imax="500" GridPane.rowIndex="1" GridPane.columnIndex="5" editable="true" />
       <Button GridPane.rowIndex="1" GridPane.columnIndex="6" onAction="#randomWeight" text="&#xE028;" >
-         <padding><Insets top="5" right="5" bottom="5" left="5"/></padding>
+         <padding><Insets top="3" right="5" bottom="-1" left="5"/></padding>
          <font>
-            <Font name="Material Icons" size="15.0" />
+            <Font name="Material Symbols Outlined" size="15.0" />
          </font>
          <tooltip>
             <Tooltip text="Zufälliges Gewicht" />
@@ -60,9 +59,9 @@
       <Label text="Augenfarbe:" GridPane.rowIndex="2" minWidth="85" />
       <ReactiveComboBox fx:id="eyecolor" editable="true" GridPane.rowIndex="2" GridPane.columnIndex="1" />
       <Button GridPane.rowIndex="2" GridPane.columnIndex="2" onAction="#randomEyecolor" text="&#xE028;" >
-         <padding><Insets top="5" right="5" bottom="5" left="5"/></padding>
+         <padding><Insets top="3" right="5" bottom="-1" left="5"/></padding>
          <font>
-            <Font name="Material Icons" size="15.0" />
+            <Font name="Material Symbols Outlined" size="15.0" />
          </font>
          <tooltip>
             <Tooltip text="Zufällige Augenfarbe" />
@@ -71,9 +70,9 @@
       <Label fx:id="haircolorLabel" text="Haarfarbe:" GridPane.rowIndex="3" />
       <ReactiveComboBox fx:id="haircolor" editable="true" GridPane.rowIndex="3" GridPane.columnIndex="1" />
       <Button GridPane.rowIndex="3" GridPane.columnIndex="2" onAction="#randomHaircolor" text="&#xE028;" >
-         <padding><Insets top="5" right="5" bottom="5" left="5"/></padding>
+         <padding><Insets top="3" right="5" bottom="-1" left="5"/></padding>
          <font>
-            <Font name="Material Icons" size="15.0" />
+            <Font name="Material Symbols Outlined" size="15.0" />
          </font>
          <tooltip>
             <Tooltip text="Zufällige Haarfarbe" />
@@ -82,9 +81,9 @@
       <Label fx:id="skincolorLabel" text="Hautfarbe:" GridPane.rowIndex="3" GridPane.columnIndex="4" minWidth="70" />
       <ReactiveComboBox fx:id="skincolor" editable="true" GridPane.rowIndex="3" GridPane.columnIndex="5" />
       <Button GridPane.rowIndex="3" GridPane.columnIndex="6" onAction="#randomSkincolor" text="&#xE028;" >
-         <padding><Insets top="5" right="5" bottom="5" left="5"/></padding>
+         <padding><Insets top="3" right="5" bottom="-1" left="5"/></padding>
          <font>
-            <Font name="Material Icons" size="15.0" />
+            <Font name="Material Symbols Outlined" size="15.0" />
          </font>
          <tooltip>
             <Tooltip text="Zufällige Hautfarbe" />
