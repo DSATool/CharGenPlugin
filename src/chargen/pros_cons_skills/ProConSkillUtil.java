@@ -28,6 +28,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.cell.TextFieldTableCell;
 
 public class ProConSkillUtil {
@@ -148,8 +149,14 @@ public class ProConSkillUtil {
 				final TableRow<ProConOrSkill> row = getTableRow();
 				if (!empty && !valid) {
 					row.getStyleClass().setAll("cell", "indexed-cell", "table-row-cell", "invalid");
+					final Tooltip tooltip = new Tooltip();
+					tooltip.setOnShowing(o -> {
+						tooltip.setText(row.getItem().getInvalidReason(true));
+					});
+					row.setTooltip(tooltip);
 				} else {
 					row.getStyleClass().remove("invalid");
+					row.setTooltip(null);
 				}
 			}
 		});
