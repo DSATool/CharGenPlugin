@@ -197,7 +197,9 @@ public class GroupSelector {
 		}
 
 		possibleTable.getSortOrder().add(possibleNameColumn);
-		possibleTable.setItems(new SortedList<>(new FilteredList<>(allItems, valid::containsKey), possibleTable.getComparator()));
+		final SortedList<ProConOrSkill> items = new SortedList<>(new FilteredList<>(allItems, valid::containsKey), possibleTable.getComparator());
+		items.comparatorProperty().bind(possibleTable.comparatorProperty());
+		possibleTable.setItems(items);
 
 		ProConSkillUtil.setupTable(type, possibleTable, possibleNameColumn, possibleDescColumn, possibleVariantColumn, possibleValueColumn, possibleValidColumn,
 				possibleSuggestedColumn);
