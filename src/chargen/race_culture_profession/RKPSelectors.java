@@ -1224,7 +1224,18 @@ public class RKPSelectors extends TabController {
 				final JSONObject requirements = current.data.getObjOrDefault("Voraussetzungen", new JSONObject(null)).getObjOrDefault("Rassen", null);
 				if (requirements != null) {
 					final JSONObject requiredRaces = requirements.getObjOrDefault("Muss", requirements.getObjOrDefault("Wahl", null));
-					if (requiredRaces != null && !requiredRaces.containsKey(race.name)) return false;
+					if (requiredRaces != null) {
+						boolean found = false;
+						RKP currentRace = race;
+						while (currentRace != null) {
+							if (requiredRaces.containsKey(currentRace.name)) {
+								found = true;
+								break;
+							}
+							currentRace = currentRace.parent;
+						}
+						if (!found) return false;
+					}
 				}
 				current = current.parent;
 			}
