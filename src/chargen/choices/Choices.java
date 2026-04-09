@@ -255,6 +255,9 @@ public class Choices extends TabController {
 				} else {
 					oldV.setValue(oldV.getValue() - KL + 2 - languageBonus.get());
 				}
+				if (oldV.getValue() == 0) {
+					oldV.setValue(Integer.MIN_VALUE);
+				}
 			}
 			if (newV != null) {
 				if (addLanguageBoni[0]) {
@@ -276,6 +279,9 @@ public class Choices extends TabController {
 				oldV.getActual().removeKey("Zweitsprache");
 				if (oldV != tl.get()) {
 					oldV.setValue(oldV.getValue() - KL + 4);
+					if (oldV.getValue() == 0) {
+						oldV.setValue(Integer.MIN_VALUE);
+					}
 				}
 			}
 			if (newV != null) {
@@ -295,6 +301,9 @@ public class Choices extends TabController {
 					oldV.setValue(oldV.getValue() - 4);
 				} else if (oldV != sl.get()) {
 					oldV.setValue(oldV.getValue() - KL + 4);
+				}
+				if (oldV.getValue() == 0) {
+					oldV.setValue(Integer.MIN_VALUE);
 				}
 			}
 			if (newV != null) {
