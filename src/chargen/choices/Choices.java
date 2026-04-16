@@ -1253,18 +1253,18 @@ public class Choices extends TabController {
 					if (!currentTalent.getBoolOrDefault("Basis", false)) {
 						talent.put("aktiviert", false);
 					}
-					actualTalent = Talent.getTalent(name, talentGroup, currentTalent, talent, group);
+					actualTalent = Talent.getTalent(name, talentGroup, currentTalent, hero, talent, group);
 				}
 				talent.put("temporary:ChoiceOnly", true);
 			} else if (currentTalent.containsKey("Auswahl") || currentTalent.containsKey("Freitext")) {
 				actualTalent = representation != null
 						? Spell.getSpell(name, currentTalent, ((JSONObject) actual).getArr(representation).getObj(0), (JSONObject) actual, group,
 								representation)
-						: Talent.getTalent(name, talentGroup, currentTalent, ((JSONArray) actual).getObj(0), group);
+						: Talent.getTalent(name, talentGroup, currentTalent, hero, ((JSONArray) actual).getObj(0), group);
 			} else {
 				actualTalent = representation != null
 						? Spell.getSpell(name, currentTalent, ((JSONObject) actual).getObj(representation), (JSONObject) actual, group, representation)
-						: Talent.getTalent(name, talentGroup, currentTalent, (JSONObject) actual, group);
+						: Talent.getTalent(name, talentGroup, currentTalent, hero, (JSONObject) actual, group);
 			}
 		}
 		talents.put(name, actualTalent);
