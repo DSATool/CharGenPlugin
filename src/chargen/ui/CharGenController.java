@@ -26,6 +26,7 @@ import chargen.choices.Choices;
 import chargen.pros_cons_skills.ProConSkillSelectors;
 import chargen.race_culture_profession.RKPSelectors;
 import dsa41basis.util.HeroUtil;
+import dsatool.gui.ThemedAlert;
 import dsatool.resources.ResourceManager;
 import dsatool.resources.Settings;
 import dsatool.util.ErrorLogger;
@@ -157,7 +158,7 @@ public class CharGenController {
 
 	@FXML
 	private void cancel() {
-		final Alert alert = new Alert(AlertType.WARNING);
+		final Alert alert = new ThemedAlert(AlertType.WARNING);
 		alert.setTitle("Abbrechen");
 		alert.setHeaderText("Dadurch werden alle bisherigen Eingaben verworfen.");
 		alert.setContentText("Soll wirklich abgebrochen werden?");

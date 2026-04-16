@@ -83,9 +83,11 @@ public class RKPSelector {
 				@Override
 				public void updateItem(final RKP item, final boolean empty) {
 					super.updateItem(item, empty);
-					if (empty) {
+					getStyleClass().remove("empty-row");
+					if (empty || item == null) {
 						setText(null);
 						setGraphic(null);
+						getStyleClass().add("empty-row");
 					} else {
 						setText(item.toString());
 						Util.addReference(this, item.data, 45 + item.depth * 12, tree.widthProperty());
@@ -141,6 +143,9 @@ public class RKPSelector {
 				final JSONObject variants = actual.getObj("Varianten");
 				for (final String variantName : variants.keySet()) {
 					final JSONObject variant = variants.getObj(variantName);
+					if (!variant.getBoolOrDefault("Generierung", true)) {
+						continue;
+					}
 					final TreeItem<RKP> newSelection = addItem(treeItem, itemConstructor.apply(new Tuple3<>(variantName, variant, item)), selected);
 					if (newSelection != null) {
 						toSelect = newSelection;
@@ -179,6 +184,9 @@ public class RKPSelector {
 		if (data != null) {
 			for (final String itemName : data.keySet()) {
 				final JSONObject item = data.getObj(itemName);
+				if (!item.getBoolOrDefault("Generierung", true)) {
+					continue;
+				}
 				final TreeItem<RKP> newSelection = addItem(root, itemConstructor.apply(new Tuple3<>(itemName, item, null)), selected);
 				if (newSelection != null) {
 					toSelect = newSelection;

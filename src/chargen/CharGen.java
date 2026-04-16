@@ -47,7 +47,7 @@ public class CharGen extends Plugin {
 	 */
 	@Override
 	public void initialize() {
-		Main.addDetachableToolComposite("Helden", "Erschaffung", 900, 800, () -> {
+		Main.addDetachableToolComposite("Helden", "Erschaffung", 900, 850, () -> {
 			controller = new CharGenController();
 			getNotifications = true;
 			return controller.getRoot();
