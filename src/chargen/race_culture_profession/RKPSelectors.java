@@ -30,6 +30,7 @@ import chargen.race_culture_profession.BGBVeteranSelector.BGBVeteran;
 import chargen.ui.TabController;
 import chargen.util.ChargenUtil;
 import dsa41basis.util.HeroUtil;
+import dsa41basis.util.RKPUtil;
 import dsatool.resources.ResourceManager;
 import dsatool.util.Tuple;
 import dsatool.util.Tuple3;
@@ -49,9 +50,6 @@ import jsonant.value.JSONObject;
 import jsonant.value.JSONValue;
 
 public class RKPSelectors extends TabController {
-
-	private static final JSONObject dummyObj = new JSONObject(null);
-	private static final JSONArray dummyArr = new JSONArray(null);
 
 	public static RadioButton male;
 	public static RadioButton female;
@@ -427,8 +425,8 @@ public class RKPSelectors extends TabController {
 	private JSONObject buildCulture(final RKP culture, final List<RKP> variants) {
 		final JSONObject result = buildRKP(culture, variants);
 
-		String culturalKnowledge = getString(culture, "Kulturkunde");
-		result.put("Namen", getArr(culture, "Namen").clone(result));
+		String culturalKnowledge = RKPUtil.getString(culture.data, "Kulturkunde");
+		result.put("Namen", RKPUtil.getArr(culture.data, "Namen").clone(result));
 
 		for (final RKP variant : variants) {
 			if (variant.data.containsKey("Kulturkunde")) {
@@ -450,7 +448,7 @@ public class RKPSelectors extends TabController {
 	private JSONObject buildProfession(final RKP profession, final List<RKP> variants) {
 		final JSONObject result = buildRKP(profession, variants);
 
-		result.put("Zeitaufwendig", getBool(profession, "Zeitaufwendig"));
+		result.put("Zeitaufwendig", RKPUtil.getBool(profession.data, "Zeitaufwendig", false));
 
 		for (final RKP variant : variants) {
 			if (variant.data.containsKey("Zeitaufwendig")) {
@@ -470,25 +468,25 @@ public class RKPSelectors extends TabController {
 
 		final boolean hasParent = race.parent != null;
 
-		collectObj(race, "Augenfarbe", result);
+		RKPUtil.collectObj(race.data, "Augenfarbe", result);
 		if (race.data.containsKey("Schuppenfarbe") || hasParent && race.parent.data.containsKey("Schuppenfarbe")) {
-			collectObj(race, "Schuppenfarbe", result);
+			RKPUtil.collectObj(race.data, "Schuppenfarbe", result);
 		} else {
-			collectObj(race, "Haarfarbe", result);
-			result.put("Hautfarbe", getArr(race, "Hautfarbe").clone(result));
+			RKPUtil.collectObj(race.data, "Haarfarbe", result);
+			result.put("Hautfarbe", RKPUtil.getArr(race.data, "Hautfarbe").clone(result));
 		}
-		collectObj(race, "Größe", result);
-		collectObj(race, "Gewicht", result);
+		RKPUtil.collectObj(race.data, "Größe", result);
+		RKPUtil.collectObj(race.data, "Gewicht", result);
 
 		for (final RKP variant : variants) {
-			collectVariantObj(variant, "Augenfarbe", result);
-			collectVariantObj(variant, "Haarfarbe", result);
+			RKPUtil.collectVariantObj(variant.data, "Augenfarbe", result);
+			RKPUtil.collectVariantObj(variant.data, "Haarfarbe", result);
 			if (variant.data.containsKey("Hautfarbe")) {
 				result.put("Hautfarbe", variant.data.getArr("Hautfarbe").clone(result));
 			}
-			collectVariantObj(variant, "Schuppenfarbe", result);
-			collectVariantObj(variant, "Größe", result);
-			collectVariantObj(variant, "Gewicht", result);
+			RKPUtil.collectVariantObj(variant.data, "Schuppenfarbe", result);
+			RKPUtil.collectVariantObj(variant.data, "Größe", result);
+			RKPUtil.collectVariantObj(variant.data, "Gewicht", result);
 		}
 
 		return result;
@@ -504,19 +502,19 @@ public class RKPSelectors extends TabController {
 		}
 
 		result.put("Kosten", getInt(source, "Kosten", 0));
-		collectObj(source, "Voraussetzungen", result);
+		RKPUtil.collectObj(source.data, "Voraussetzungen", result);
 		result.put("Sozialstatus:Maximum", getInt(source, "Sozialstatus:Maximum", 21));
-		collectObj(source, "Eigenschaften", result);
-		collectObj(source, "Basiswerte", result);
-		collectObj(source, "Vorteile", result);
-		collectObj(source, "Nachteile", result);
-		collectObj(source, "Empfohlene Vorteile", result);
-		collectObj(source, "Empfohlene Nachteile", result);
-		collectObj(source, "Ungeeignete Vorteile", result);
-		collectObj(source, "Ungeeignete Nachteile", result);
-		collectObj(source, "Sonderfertigkeiten", result);
-		collectObj(source, "Verbilligte Sonderfertigkeiten", result);
-		collectArr(source, "Leittalente", result);
+		RKPUtil.collectObj(source.data, "Eigenschaften", result);
+		RKPUtil.collectObj(source.data, "Basiswerte", result);
+		RKPUtil.collectObj(source.data, "Vorteile", result);
+		RKPUtil.collectObj(source.data, "Nachteile", result);
+		RKPUtil.collectObj(source.data, "Empfohlene Vorteile", result);
+		RKPUtil.collectObj(source.data, "Empfohlene Nachteile", result);
+		RKPUtil.collectObj(source.data, "Ungeeignete Vorteile", result);
+		RKPUtil.collectObj(source.data, "Ungeeignete Nachteile", result);
+		RKPUtil.collectObj(source.data, "Sonderfertigkeiten", result);
+		RKPUtil.collectObj(source.data, "Verbilligte Sonderfertigkeiten", result);
+		RKPUtil.collectArr(source.data, "Leittalente", result);
 
 		RKP current = source;
 		final JSONObject languages = new JSONObject(result);
@@ -526,12 +524,12 @@ public class RKPSelectors extends TabController {
 		final JSONObject primarySpells = new JSONObject(result);
 		final JSONObject spells = new JSONObject(result);
 		while (current != null) {
-			ChargenUtil.collectLanguages(languages, current.data.getObjOrDefault("Sprachen", null));
-			ChargenUtil.collectModifications(attributes, current.data.getObjOrDefault("Eigenschaften", null));
-			ChargenUtil.collectModifications(basicValues, current.data.getObjOrDefault("Basiswerte", null));
-			ChargenUtil.collectModifications(talents, current.data.getObjOrDefault("Talente", null));
-			ChargenUtil.collectSpellModifications(primarySpells, current.data.getObjOrDefault("Hauszauber", null));
-			ChargenUtil.collectSpellModifications(spells, current.data.getObjOrDefault("Zauber", null));
+			RKPUtil.collectLanguages(languages, current.data.getObjOrDefault("Sprachen", null));
+			RKPUtil.collectModifications(attributes, current.data.getObjOrDefault("Eigenschaften", null));
+			RKPUtil.collectModifications(basicValues, current.data.getObjOrDefault("Basiswerte", null));
+			RKPUtil.collectModifications(talents, current.data.getObjOrDefault("Talente", null));
+			RKPUtil.collectSpellModifications(primarySpells, current.data.getObjOrDefault("Hauszauber", null));
+			RKPUtil.collectSpellModifications(spells, current.data.getObjOrDefault("Zauber", null));
 			current = current.parent;
 		}
 		result.put("Sprachen", languages);
@@ -541,49 +539,45 @@ public class RKPSelectors extends TabController {
 		result.put("Hauszauber", primarySpells);
 		result.put("Zauber", spells);
 
-		collectObj(source, "Ausrüstung", result);
+		RKPUtil.collectObj(source.data, "Ausrüstung", result);
 
 		for (final RKP variant : variants) {
 			result.put("Kosten", result.getInt("Kosten") + getInt(variant, "Kosten", 0));
-			collectVariantObj(source, "Voraussetzungen", result);
+			RKPUtil.collectVariantObj(variant.data, "Voraussetzungen", result);
 			if (variant.data.containsKey("Sozialstatus:Maximum")) {
 				result.put("Sozialstatus:Maximum", variant.data.getInt("Sozialstatus:Maximum"));
 			}
-			collectVariantObj(variant, "Vorteile", result);
-			collectVariantObj(variant, "Nachteile", result);
-			collectVariantObj(variant, "Empfohlene Vorteile", result);
-			collectVariantObj(variant, "Empfohlene Nachteile", result);
-			collectVariantObj(variant, "Ungeeignete Vorteile", result);
-			collectVariantObj(variant, "Ungeeignete Nachteile", result);
-			collectVariantObj(variant, "Sonderfertigkeiten", result);
-			collectVariantObj(variant, "Verbilligte Sonderfertigkeiten", result);
-			collectVariantArr(variant, "Leittalente", result);
+			RKPUtil.collectVariantObj(variant.data, "Vorteile", result);
+			RKPUtil.collectVariantObj(variant.data, "Nachteile", result);
+			RKPUtil.collectVariantObj(variant.data, "Empfohlene Vorteile", result);
+			RKPUtil.collectVariantObj(variant.data, "Empfohlene Nachteile", result);
+			RKPUtil.collectVariantObj(variant.data, "Ungeeignete Vorteile", result);
+			RKPUtil.collectVariantObj(variant.data, "Ungeeignete Nachteile", result);
+			RKPUtil.collectVariantObj(variant.data, "Sonderfertigkeiten", result);
+			RKPUtil.collectVariantObj(variant.data, "Verbilligte Sonderfertigkeiten", result);
+			RKPUtil.collectVariantArr(variant.data, "Leittalente", result);
 			if (variant.data.containsKey("Sprachen")) {
-				ChargenUtil.collectLanguages(result.getObj("Sprachen"), variant.data.getObj("Sprachen"));
+				RKPUtil.collectLanguages(result.getObj("Sprachen"), variant.data.getObj("Sprachen"));
 			}
 			if (variant.data.containsKey("Eigenschaften")) {
-				ChargenUtil.collectModifications(result.getObj("Eigenschaften"), variant.data.getObj("Eigenschaften"));
+				RKPUtil.collectModifications(result.getObj("Eigenschaften"), variant.data.getObj("Eigenschaften"));
 			}
 			if (variant.data.containsKey("Basiswerte")) {
-				ChargenUtil.collectModifications(result.getObj("Basiswerte"), variant.data.getObj("Basiswerte"));
+				RKPUtil.collectModifications(result.getObj("Basiswerte"), variant.data.getObj("Basiswerte"));
 			}
 			if (variant.data.containsKey("Talente")) {
-				ChargenUtil.collectModifications(result.getObj("Talente"), variant.data.getObj("Talente"));
+				RKPUtil.collectModifications(result.getObj("Talente"), variant.data.getObj("Talente"));
 			}
 			if (variant.data.containsKey("Hauszauber")) {
-				ChargenUtil.collectSpellModifications(result.getObj("Hauszauber"), variant.data.getObj("Hauszauber"));
+				RKPUtil.collectSpellModifications(result.getObj("Hauszauber"), variant.data.getObj("Hauszauber"));
 			}
 			if (variant.data.containsKey("Zauber")) {
-				ChargenUtil.collectSpellModifications(result.getObj("Zauber"), variant.data.getObj("Zauber"));
+				RKPUtil.collectSpellModifications(result.getObj("Zauber"), variant.data.getObj("Zauber"));
 			}
-			collectVariantObj(variant, "Ausrüstung", result);
+			RKPUtil.collectVariantObj(variant.data, "Ausrüstung", result);
 		}
 
 		return result;
-	}
-
-	private void collectArr(final RKP source, final String name, final JSONObject target) {
-		target.put(name, getArr(source, name).clone(target));
 	}
 
 	private void collectBasicValues(final JSONObject hero, final int soGP) {
@@ -672,10 +666,6 @@ public class RKPSelectors extends TabController {
 				}
 			}
 		}
-	}
-
-	private void collectObj(final RKP source, final String name, final JSONObject target) {
-		target.put(name, getObj(source, name).clone(target));
 	}
 
 	private void collectProsOrCons(String category, final JSONObject hero) {
@@ -1013,26 +1003,6 @@ public class RKPSelectors extends TabController {
 		}
 	}
 
-	private void collectVariantArr(final RKP source, final String name, final Consumer<JSONArray> action) {
-		if (source.data.containsKey(name)) {
-			action.accept(source.data.getArr(name));
-		}
-	}
-
-	private void collectVariantArr(final RKP source, final String name, final JSONObject target) {
-		collectVariantArr(source, name, o -> target.put(name, o.clone(target)));
-	}
-
-	private void collectVariantObj(final RKP source, final String name, final Consumer<JSONObject> action) {
-		if (source.data.containsKey(name)) {
-			action.accept(source.data.getObj(name));
-		}
-	}
-
-	private void collectVariantObj(final RKP source, final String name, final JSONObject target) {
-		collectVariantObj(source, name, o -> target.put(name, o.clone(target)));
-	}
-
 	@Override
 	public void deactivate(final boolean forward) {
 		raceTab.setDisable(true);
@@ -1150,14 +1120,6 @@ public class RKPSelectors extends TabController {
 		}
 	}
 
-	private JSONArray getArr(final RKP source, final String name) {
-		return source.data.getArrOrDefault(name, source.parent != null ? getArr(source.parent, name) : dummyArr);
-	}
-
-	private boolean getBool(final RKP source, final String name) {
-		return source.data.getBoolOrDefault(name, source.parent != null ? getBool(source.parent, name) : false);
-	}
-
 	private int getCost(final RKP choice, final List<RKP> variants) {
 		if (choice == null) return 0;
 		int result = choice.getCost(0);
@@ -1176,14 +1138,6 @@ public class RKPSelectors extends TabController {
 			modifications.add(variant.name);
 		}
 		return modifications;
-	}
-
-	private JSONObject getObj(final RKP source, final String name) {
-		return source.data.getObjOrDefault(name, source.parent != null ? getObj(source.parent, name) : dummyObj);
-	}
-
-	private String getString(final RKP source, final String name) {
-		return source.data.getStringOrDefault(name, source.parent != null ? getString(source.parent, name) : "");
 	}
 
 	private void handleSpecialCases(final JSONObject hero) {
