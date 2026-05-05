@@ -135,7 +135,7 @@ public class Choices extends TabController {
 		GUIUtil.cellValueFactories(choiceNames, "text", "valid");
 		choiceNames.getStyleClass().add("remove-header");
 		choiceNames.autosize();
-		choiceNames.getColumns().get(1).setCellFactory(tableColumn -> (TableCell) new TableCell<ChoicePage, Boolean>() {
+		choiceNames.getColumns().get(1).setCellFactory(_ -> (TableCell) new TableCell<ChoicePage, Boolean>() {
 			@Override
 			public void updateItem(final Boolean valid, final boolean empty) {
 				super.updateItem(valid, empty);
@@ -149,7 +149,7 @@ public class Choices extends TabController {
 		});
 		VBox.setVgrow(choiceNames, Priority.ALWAYS);
 
-		choiceNames.getSelectionModel().selectedIndexProperty().addListener((o, oldV, newV) -> {
+		choiceNames.getSelectionModel().selectedIndexProperty().addListener((_, oldV, newV) -> {
 			if (newV.intValue() > -1) {
 				pane.getChildren().get(newV.intValue()).setVisible(true);
 				if (oldV.intValue() > -1) {
@@ -247,7 +247,7 @@ public class Choices extends TabController {
 		mlWriting = new SimpleObjectProperty<>(null);
 		final boolean[] addLanguageBoni = { forward, forward, forward, forward };
 
-		ml.addListener((o, oldV, newV) -> {
+		ml.addListener((_, oldV, newV) -> {
 			if (oldV != null) {
 				oldV.getActual().removeKey("Muttersprache");
 				if (oldV == tl.get()) {
@@ -274,7 +274,7 @@ public class Choices extends TabController {
 				}
 			}
 		});
-		sl.addListener((o, oldV, newV) -> {
+		sl.addListener((_, oldV, newV) -> {
 			if (oldV != null) {
 				oldV.getActual().removeKey("Zweitsprache");
 				if (oldV != tl.get()) {
@@ -294,7 +294,7 @@ public class Choices extends TabController {
 				newV.getActual().put("Zweitsprache", true);
 			}
 		});
-		tl.addListener((o, oldV, newV) -> {
+		tl.addListener((_, oldV, newV) -> {
 			if (oldV != null) {
 				oldV.getActual().removeKey("Lehrsprache");
 				if (oldV == ml.get()) {
@@ -318,7 +318,7 @@ public class Choices extends TabController {
 				newV.getActual().put("Lehrsprache", true);
 			}
 		});
-		mlWriting.addListener((o, oldV, newV) -> {
+		mlWriting.addListener((_, oldV, newV) -> {
 			if (oldV != null) {
 				oldV.getActual().removeKey("Muttersprache");
 				oldV.setValue(oldV.getValue() - writingBonus.get());
@@ -334,13 +334,13 @@ public class Choices extends TabController {
 				}
 			}
 		});
-		languageBonus.addListener((o, oldV, newV) -> {
+		languageBonus.addListener((_, oldV, newV) -> {
 			final Talent language = ml.get();
 			if (language != null) {
 				language.setValue((language.getValue() == Integer.MIN_VALUE ? 0 : language.getValue()) - oldV.intValue() + newV.intValue());
 			}
 		});
-		writingBonus.addListener((o, oldV, newV) -> {
+		writingBonus.addListener((_, oldV, newV) -> {
 			final Talent writing = mlWriting.get();
 			if (writing != null) {
 				writing.setValue((writing.getValue() == Integer.MIN_VALUE ? 0 : writing.getValue()) - oldV.intValue() + newV.intValue());
@@ -440,7 +440,7 @@ public class Choices extends TabController {
 			toSelect.add(isValid);
 			allValid = allValid.and(isValid);
 			groups[i] = new ToggleGroup();
-			groups[i].selectedToggleProperty().addListener((o, oldV, newV) -> {
+			groups[i].selectedToggleProperty().addListener((_, oldV, newV) -> {
 				final int index = GridPane.getRowIndex((Node) newV);
 
 				if (oldV == null) {
@@ -485,7 +485,7 @@ public class Choices extends TabController {
 					check.setToggleGroup(groups[j]);
 					input.add(check, j + 2, i + 1);
 					GridPane.setHalignment(check, HPos.CENTER);
-					check.selectedProperty().addListener((o, oldV, newV) -> {
+					check.selectedProperty().addListener((_, _, newV) -> {
 						actualTalent.setPrimaryTalent(false);
 						if (newV) {
 							switch (choice._1) {
@@ -684,7 +684,7 @@ public class Choices extends TabController {
 				currentValue.setMinWidth(25);
 				currentValue.setAlignment(Pos.CENTER);
 				input.add(currentValue, 1, row);
-				actualTalent.valueProperty().addListener((o, oldV, newV) -> {
+				actualTalent.valueProperty().addListener((_, _, newV) -> {
 					if (newV.intValue() == Integer.MIN_VALUE) {
 						currentValue.setText("n.a.");
 					} else {
@@ -702,7 +702,7 @@ public class Choices extends TabController {
 				value.setPrefWidth(70);
 				input.add(value, 2, row);
 
-				canSelect.addListener((o, oldV, newV) -> {
+				canSelect.addListener((_, _, newV) -> {
 					if (newV.intValue() <= 0 && "n.a.".equals(value.getValue())) {
 						value.setDisable(true);
 					} else {
@@ -721,7 +721,7 @@ public class Choices extends TabController {
 				}
 				actualChoice.apply(hero, true);
 				final int finalC = current;
-				value.valueProperty().addListener((o, oldV, newV) -> {
+				value.valueProperty().addListener((_, oldV, newV) -> {
 					actualChoice.unapply(hero);
 					actualChoice.value = "n.a.".equals(value.getValue()) ? null : Integer.parseInt(value.getValue());
 					actualChoice.apply(hero, false);
@@ -737,7 +737,7 @@ public class Choices extends TabController {
 					}
 					recalculateCanContinue();
 				});
-				actualTalent.valueProperty().addListener((o, oldV, newV) -> {
+				actualTalent.valueProperty().addListener((_, _, newV) -> {
 					if (newV.intValue() == Integer.MIN_VALUE && "0".equals(value.getValue())) {
 						actualTalent.setValue(0);
 						actualTalent.getActual().put("temporary:ChoiceOnly", true);
@@ -753,7 +753,7 @@ public class Choices extends TabController {
 
 					final SimpleBooleanProperty isExternallySet = new SimpleBooleanProperty(false);
 
-					availablePrimarySpells.addListener((o, oldV, newV) -> {
+					availablePrimarySpells.addListener((_, _, newV) -> {
 						if (isExternallySet.get() || newV.intValue() <= 0 && !primarySpell.isSelected()) {
 							primarySpell.setDisable(true);
 						} else {
@@ -763,7 +763,7 @@ public class Choices extends TabController {
 
 					final boolean[] isSetup = { true };
 
-					primarySpell.selectedProperty().addListener((o, oldV, newV) -> {
+					primarySpell.selectedProperty().addListener((_, _, newV) -> {
 						if (!isExternallySet.get()) {
 							chosenPrimarySpells.set(finalC, newV);
 							((Spell) actualTalent).setPrimarySpell(newV);
@@ -788,7 +788,7 @@ public class Choices extends TabController {
 
 					isSetup[0] = false;
 
-					((Spell) actualTalent).primarySpellProperty().addListener((o, oldV, newV) -> {
+					((Spell) actualTalent).primarySpellProperty().addListener((_, _, newV) -> {
 						if (newV && !chosenPrimarySpells.getBool(finalC)) {
 							isExternallySet.set(true);
 							primarySpell.setDisable(true);
@@ -815,7 +815,7 @@ public class Choices extends TabController {
 
 					final SimpleBooleanProperty isExternallySet = new SimpleBooleanProperty(false);
 
-					availablePrimaryTalents.addListener((o, oldV, newV) -> {
+					availablePrimaryTalents.addListener((_, _, newV) -> {
 						if (isExternallySet.get() || newV.intValue() <= 0 && !primaryTalent.isSelected()
 								|| needsPrimarySpells && primarySpell.isSelected()) {
 							primaryTalent.setDisable(true);
@@ -824,7 +824,7 @@ public class Choices extends TabController {
 						}
 					});
 
-					primaryTalent.selectedProperty().addListener((o, oldV, newV) -> {
+					primaryTalent.selectedProperty().addListener((_, _, newV) -> {
 						if (!isExternallySet.get()) {
 							chosenPrimaryTalents.set(finalC, newV);
 							actualTalent.setPrimaryTalent(newV);
@@ -844,7 +844,7 @@ public class Choices extends TabController {
 						primaryTalent.setSelected(true);
 					}
 
-					actualTalent.primaryTalentProperty().addListener((o, oldV, newV) -> {
+					actualTalent.primaryTalentProperty().addListener((_, _, newV) -> {
 						if (newV && !chosenPrimaryTalents.getBool(finalC)) {
 							isExternallySet.set(true);
 							primaryTalent.setDisable(true);
@@ -907,7 +907,7 @@ public class Choices extends TabController {
 		final SimpleBooleanProperty isValid = new SimpleBooleanProperty(false);
 		toSelect.add(isValid);
 
-		group.selectedToggleProperty().addListener((o, oldV, newV) -> {
+		group.selectedToggleProperty().addListener((_, _, newV) -> {
 			if (newV != null) {
 				isValid.set(true);
 				recalculateCanContinue();
@@ -942,7 +942,7 @@ public class Choices extends TabController {
 							: ((JSONObject) target).containsKey("temporary:AppliedChoices"));
 				}
 				final int currentI = i[0];
-				check.selectedProperty().addListener((o, oldV, newV) -> {
+				check.selectedProperty().addListener((_, _, newV) -> {
 					if (newV) {
 						actualChoice.apply(hero, false);
 						choices.put("Ausgewählt", currentI);
@@ -1033,7 +1033,7 @@ public class Choices extends TabController {
 				final int finalJ = j;
 				final ToggleGroup current = new ToggleGroup();
 				groups[i].add(current);
-				current.selectedToggleProperty().addListener((o, oldV, newV) -> {
+				current.selectedToggleProperty().addListener((_, _, newV) -> {
 					final int index = newV == null ? -1 : newV.getToggleGroup().getToggles().indexOf(newV);
 
 					if (!choices.getBoolOrDefault("Mehrfach", false)) {
@@ -1142,7 +1142,7 @@ public class Choices extends TabController {
 							check.setSelected(true);
 							actualChoice.apply(hero, true);
 						}
-						check.selectedProperty().addListener((o, oldV, newV) -> {
+						check.selectedProperty().addListener((_, _, newV) -> {
 							if (choices.getBoolOrDefault("Leittalent", false)) {
 								actualTalent.setPrimaryTalent(newV);
 							}

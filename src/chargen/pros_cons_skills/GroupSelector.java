@@ -72,9 +72,9 @@ public class GroupSelector {
 	private final BooleanProperty showAll;
 	private final ObservableMap<ProConOrSkill, ChangeListener<Boolean>> valid = FXCollections.observableHashMap();
 	private final ObservableMap<ProConOrSkill, ChangeListener<Boolean>> invalid = FXCollections.observableHashMap();
-	private final ObservableList<ProConOrSkill> allItems = FXCollections.observableArrayList(item -> new Observable[] { valid });
+	private final ObservableList<ProConOrSkill> allItems = FXCollections.observableArrayList(_ -> new Observable[] { valid });
 
-	private final JSONListener listener = o -> {
+	private final JSONListener listener = _ -> {
 		initializePossibleTable();
 	};
 
@@ -107,14 +107,14 @@ public class GroupSelector {
 			ErrorLogger.logError(e);
 		}
 
-		possibleTable.setRowFactory(t -> {
+		possibleTable.setRowFactory(_ -> {
 			final TableRow<ProConOrSkill> row = new TableRow<>();
 
 			final ContextMenu possibleMenu = new ContextMenu();
 
 			final MenuItem addItem = new MenuItem("Hinzufügen");
 			possibleMenu.getItems().add(addItem);
-			addItem.setOnAction(o -> {
+			addItem.setOnAction(_ -> {
 				final JSONObject hero = generationState.getObj("Held");
 				final JSONObject target = hero.getObj(type);
 				final ProConOrSkill skill = row.getItem();
@@ -139,7 +139,7 @@ public class GroupSelector {
 			if ("Sonderfertigkeiten".equals(type)) {
 				final MenuItem cheaperItem = new MenuItem("Verbilligen");
 				possibleMenu.getItems().add(cheaperItem);
-				cheaperItem.setOnAction(o -> {
+				cheaperItem.setOnAction(_ -> {
 					final JSONObject hero = generationState.getObj("Held");
 					final JSONObject target = hero.getObj("Verbilligte Sonderfertigkeiten");
 					final ProConOrSkill skill = row.getItem();
@@ -182,7 +182,7 @@ public class GroupSelector {
 			}
 		});
 
-		valid.addListener((final MapChangeListener.Change<?, ?> o) -> {
+		valid.addListener((final MapChangeListener.Change<?, ?> _) -> {
 			if (parent != null) {
 				final boolean nonEmpty = !valid.isEmpty();
 				parent.setVisible(nonEmpty);
@@ -204,7 +204,7 @@ public class GroupSelector {
 		ProConSkillUtil.setupTable(type, possibleTable, possibleNameColumn, possibleDescColumn, possibleVariantColumn, possibleValueColumn, possibleValidColumn,
 				possibleSuggestedColumn);
 
-		showAll.addListener((o, oldV, newV) -> initializePossibleTable());
+		showAll.addListener((_, _, _) -> initializePossibleTable());
 	}
 
 	public void activate(final JSONObject hero, final JSONObject currentProsOrCons) {
@@ -356,8 +356,8 @@ public class GroupSelector {
 	private ChangeListener<Boolean> validListener(final ProConOrSkill item) {
 		final ChangeListener<Boolean> validListener = new ChangeListener<>() {
 			@Override
-			public void changed(final ObservableValue<? extends Boolean> observable, final Boolean oldValue, final Boolean newValue) {
-				if (showAll.get() || newValue || item.getProOrCon().containsKey("Auswahl") || item.getProOrCon().containsKey("Freitext")) {
+			public void changed(final ObservableValue<? extends Boolean> o, final Boolean oldV, final Boolean newV) {
+				if (showAll.get() || newV || item.getProOrCon().containsKey("Auswahl") || item.getProOrCon().containsKey("Freitext")) {
 					valid.put(item, this);
 					invalid.remove(item);
 				} else {

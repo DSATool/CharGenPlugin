@@ -74,11 +74,11 @@ public class RKPSelector {
 		this.data = data;
 		this.itemConstructor = itemConstructor;
 
-		tree.getSelectionModel().selectedItemProperty().addListener((ChangeListener<TreeItem<RKP>>) (observable, oldValue, newValue) -> {
-			updateSelection(newValue, oldValue == null || newValue != null && newValue.getValue().data != oldValue.getValue().data);
+		tree.getSelectionModel().selectedItemProperty().addListener((ChangeListener<TreeItem<RKP>>) (_, oldV, newV) -> {
+			updateSelection(newV, oldV == null || newV != null && newV.getValue().data != oldV.getValue().data);
 		});
 
-		tree.setCellFactory(tv -> {
+		tree.setCellFactory(_ -> {
 			final TreeCell<RKP> cell = new TreeCell<>() {
 				@Override
 				public void updateItem(final RKP item, final boolean empty) {
@@ -94,32 +94,32 @@ public class RKPSelector {
 					}
 				}
 			};
-			final ChangeListener<Boolean> validListener = (o, oldV, newV) -> {
+			final ChangeListener<Boolean> validListener = (_, _, newV) -> {
 				cell.getStyleClass().remove("invalid");
 				if (!newV) {
 					cell.getStyleClass().remove("valid");
 					cell.getStyleClass().add("invalid");
 				}
 			};
-			final ChangeListener<Boolean> suggestedListener = (o, oldV, newV) -> {
+			final ChangeListener<Boolean> suggestedListener = (_, _, newV) -> {
 				cell.getStyleClass().remove("valid");
 				if (newV && cell.getItem().valid.get()) {
 					cell.getStyleClass().add("valid");
 				}
 			};
-			cell.itemProperty().addListener((observable, oldValue, newValue) -> {
-				if (oldValue != null) {
-					oldValue.valid.removeListener(validListener);
-					oldValue.suggested.removeListener(suggestedListener);
+			cell.itemProperty().addListener((_, oldV, newV) -> {
+				if (oldV != null) {
+					oldV.valid.removeListener(validListener);
+					oldV.suggested.removeListener(suggestedListener);
 				}
 				cell.getStyleClass().remove("valid");
 				cell.getStyleClass().remove("invalid");
-				if (newValue != null) {
-					newValue.valid.addListener(validListener);
-					newValue.suggested.addListener(suggestedListener);
-					if (!newValue.valid.get()) {
+				if (newV != null) {
+					newV.valid.addListener(validListener);
+					newV.suggested.addListener(suggestedListener);
+					if (!newV.valid.get()) {
 						cell.getStyleClass().add("invalid");
-					} else if (newValue.suggested.get()) {
+					} else if (newV.suggested.get()) {
 						cell.getStyleClass().add("valid");
 					}
 				}
@@ -288,7 +288,7 @@ public class RKPSelector {
 			for (final RKP variant : value.getVariants()) {
 				final CheckBox variantCheckbox = new CheckBox(variant.name + " (" + Util.getSignedIntegerString(variant.getCost(0)) + ")");
 				Util.addReference(variantCheckbox, variant.data, 60, variantCheckbox.widthProperty());
-				variantCheckbox.selectedProperty().addListener((o, oldV, newV) -> {
+				variantCheckbox.selectedProperty().addListener((_, _, newV) -> {
 					if (newV) {
 						currentVariants.add(variant);
 					} else {
@@ -302,14 +302,14 @@ public class RKPSelector {
 					variantCheckbox.getStyleClass().add("valid");
 				}
 				variants.add(variant);
-				final ChangeListener<Boolean> validListener = (o, oldV, newV) -> {
+				final ChangeListener<Boolean> validListener = (_, _, newV) -> {
 					variantCheckbox.getStyleClass().remove("invalid");
 					if (!newV) {
 						variantCheckbox.getStyleClass().remove("valid");
 						variantCheckbox.getStyleClass().add("invalid");
 					}
 				};
-				final ChangeListener<Boolean> suggestedListener = (o, oldV, newV) -> {
+				final ChangeListener<Boolean> suggestedListener = (_, _, newV) -> {
 					variantCheckbox.getStyleClass().remove("valid");
 					if (newV && variant.valid.get()) {
 						variantCheckbox.getStyleClass().add("valid");
@@ -360,14 +360,14 @@ public class RKPSelector {
 			item.valid.set(true);
 			item.suggested.set(true);
 			for (final TreeItem<RKP> variantItem : treeItem.getChildren()) {
-				updateSuggestedPossible(variantItem, rkp -> false, possible);
+				updateSuggestedPossible(variantItem, _ -> false, possible);
 			}
 			return new Tuple<>(true, true);
 		} else if (item != null && possible.apply(item)) {
 			item.valid.set(true);
 			item.suggested.set(false);
 			for (final TreeItem<RKP> variantItem : treeItem.getChildren()) {
-				updateSuggestedPossible(variantItem, rkp -> false, possible);
+				updateSuggestedPossible(variantItem, _ -> false, possible);
 			}
 			return new Tuple<>(true, false);
 		} else {

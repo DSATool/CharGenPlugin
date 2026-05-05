@@ -200,7 +200,7 @@ public class CharGenController {
 
 		final IntegerProperty gp = new SimpleIntegerProperty(
 				generationState.getIntOrDefault("GP", Settings.getSettingIntOrDefault(110, "Heldenerschaffung", "GP")));
-		gp.addListener((o, oldV, newV) -> generationState.put("GP", newV.intValue()));
+		gp.addListener((_, _, newV) -> generationState.put("GP", newV.intValue()));
 
 		currentController = generationState.getIntOrDefault("SelectedController", 0);
 

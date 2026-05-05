@@ -127,7 +127,7 @@ public class Attributes extends TabController {
 			} else if (toChoose > curMax) {
 				extremes.put(attributeName, toChoose - curMax);
 			}
-			attributeSpinner.valueProperty().addListener((o, oldV, newV) -> {
+			attributeSpinner.valueProperty().addListener((_, oldV, newV) -> {
 				if (newV < curMin) {
 					extremes.put(attributeName, -1);
 				} else if (newV > curMax) {
@@ -162,7 +162,7 @@ public class Attributes extends TabController {
 		so.put("temporary:GP", currentSO - soMin);
 		so.put("Wert", currentSO);
 		soSpinner.getValueFactory().setValue(currentSO);
-		soSpinner.valueProperty().addListener((o, oldV, newV) -> {
+		soSpinner.valueProperty().addListener((_, oldV, newV) -> {
 			gp.set(gp.get() + oldV - newV);
 			so.put("temporary:GP", so.getIntOrDefault("temporary:GP", 0) + newV - oldV);
 			so.put("Wert", newV);

@@ -100,7 +100,7 @@ public class Biography extends TabController {
 			namesButton.getItems().add(item);
 		}
 
-		name.textProperty().addListener((o, oldV, newV) -> {
+		name.textProperty().addListener((_, _, newV) -> {
 			if (newV != null) {
 				final JSONObject bio = generationState.getObj("Held").getObj("Biografie");
 				bio.put("temporary:customName", true);
@@ -116,7 +116,7 @@ public class Biography extends TabController {
 			}
 		});
 
-		size.valueProperty().addListener((o, oldV, newV) -> {
+		size.valueProperty().addListener((_, _, newV) -> {
 			if (newV != null) {
 				if (weightTracksSize) {
 					randomWeight();
@@ -125,32 +125,32 @@ public class Biography extends TabController {
 			}
 		});
 
-		weight.valueProperty().addListener((o, oldV, newV) -> {
+		weight.valueProperty().addListener((_, _, newV) -> {
 			if (newV != null) {
 				generationState.getObj("Held").getObj("Biografie").put("Gewicht", newV);
 			}
 		});
 
 		eyecolor.setItems(FXCollections.observableArrayList(HeroUtil.eyeColors));
-		eyecolor.valueProperty().addListener((o, oldV, newV) -> {
+		eyecolor.valueProperty().addListener((_, _, newV) -> {
 			if (newV != null) {
 				generationState.getObj("Held").getObj("Biografie").put("Augenfarbe", newV.trim());
 			}
 		});
 
-		haircolor.valueProperty().addListener((o, oldV, newV) -> {
+		haircolor.valueProperty().addListener((_, _, newV) -> {
 			if (newV != null) {
 				generationState.getObj("Held").getObj("Biografie").put(scalecolor ? "Schuppenfarbe 1" : "Haarfarbe", newV.trim());
 			}
 		});
 
-		skincolor.valueProperty().addListener((o, oldV, newV) -> {
+		skincolor.valueProperty().addListener((_, _, newV) -> {
 			if (newV != null) {
 				generationState.getObj("Held").getObj("Biografie").put(scalecolor ? "Schuppenfarbe 2" : "Hautfarbe", newV.trim());
 			}
 		});
 
-		male.selectedProperty().addListener((o, oldV, newV) -> {
+		male.selectedProperty().addListener((_, _, newV) -> {
 			if (newV != null) {
 				if (!generationState.getObj("Held").getObj("Biografie").getBoolOrDefault("temporary:customName", false)) {
 					randomName();

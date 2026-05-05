@@ -82,7 +82,7 @@ public abstract class ProConSkillSelector {
 
 	private boolean isInitializing = false;
 
-	protected final JSONListener listener = o -> {
+	protected final JSONListener listener = _ -> {
 		if (!isInitializing) {
 			initializeChosenTable();
 			setCost();
@@ -107,14 +107,14 @@ public abstract class ProConSkillSelector {
 			ErrorLogger.logError(e);
 		}
 
-		chosenTable.setRowFactory(t -> {
+		chosenTable.setRowFactory(_ -> {
 			final TableRow<ProConOrSkill> row = new TableRow<>();
 
 			final ContextMenu chosenMenu = new ContextMenu();
 
 			final MenuItem removeItem = new MenuItem("Entfernen");
 			chosenMenu.getItems().add(removeItem);
-			removeItem.setOnAction(o -> {
+			removeItem.setOnAction(_ -> {
 				final JSONObject hero = generationState.getObj("Held");
 				final JSONObject target = hero.getObj(type);
 				final ProConOrSkill current = row.getItem();

@@ -287,7 +287,7 @@ public class RKPSelectors extends TabController {
 								newChoices.removeKey("Leittalente");
 								spells.add(newChoices);
 							},
-							(profession, unalteredProfession) -> {
+							(profession, _) -> {
 								final JSONArray spells = profession.getObj("Zauber").getArr("Wahl");
 								final JSONObject newChoices = ResourceManager.getResource("Kulturen").getObj("Elfische Siedlung").getObj("Zauber")
 										.getArr("Wahl")
@@ -338,7 +338,7 @@ public class RKPSelectors extends TabController {
 			male.setSelected(true);
 		}
 
-		male.selectedProperty().addListener((o, oldV, newV) -> {
+		male.selectedProperty().addListener((_, _, newV) -> {
 			generationState.getObj("Held").getObj("Biografie").put("Geschlecht", newV ? "männlich" : "weiblich");
 			raceSelector.refreshList();
 			cultureSelector.refreshList();
@@ -1600,8 +1600,8 @@ public class RKPSelectors extends TabController {
 		final RKP culture = cultureSelector.getCurrentChoice();
 		final List<RKP> variants = cultureSelector.getCurrentVariants();
 		updateCultureSuggestedOrPossible();
-		professionSelector.updateSuggestedPossible(profession -> false, profession -> isPossibleProfession(race, culture, variants, profession));
-		bgbVeteranSelector.setSuggestedPossible(profession -> false, profession -> isPossibleProfession(race, culture, variants, profession));
+		professionSelector.updateSuggestedPossible(_ -> false, profession -> isPossibleProfession(race, culture, variants, profession));
+		bgbVeteranSelector.setSuggestedPossible(_ -> false, profession -> isPossibleProfession(race, culture, variants, profession));
 	}
 
 	private void updateRace() {

@@ -129,14 +129,14 @@ public class SkillSelector extends ProConSkillSelector {
 			ErrorLogger.logError(e);
 		}
 
-		possibleTable.setRowFactory(t -> {
+		possibleTable.setRowFactory(_ -> {
 			final TableRow<ProConOrSkill> row = new TableRow<>();
 
 			final ContextMenu cheaperMenu = new ContextMenu();
 
 			final MenuItem addItem = new MenuItem("Hinzufügen");
 			cheaperMenu.getItems().add(addItem);
-			addItem.setOnAction(o -> {
+			addItem.setOnAction(_ -> {
 				final JSONObject hero = generationState.getObj("Held");
 				final JSONObject target = hero.getObj("Sonderfertigkeiten");
 				final ProConOrSkill skill = row.getItem();
@@ -159,7 +159,7 @@ public class SkillSelector extends ProConSkillSelector {
 
 			final MenuItem removeItem = new MenuItem("Entfernen");
 			cheaperMenu.getItems().add(removeItem);
-			removeItem.setOnAction(o -> {
+			removeItem.setOnAction(_ -> {
 				final JSONObject hero = generationState.getObj("Held");
 				final JSONObject target = hero.getObj("Verbilligte Sonderfertigkeiten");
 				final ProConOrSkill current = row.getItem();

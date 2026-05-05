@@ -200,7 +200,7 @@ public class BGBVeteranSelector {
 		if (!noneChoice.isSelected() && suggested != null && possible != null) {
 			selector.updateSuggestedPossible(suggested, isPossible);
 		} else {
-			selector.updateSuggestedPossible(profession -> false, isPossible);
+			selector.updateSuggestedPossible(_ -> false, isPossible);
 		}
 	}
 

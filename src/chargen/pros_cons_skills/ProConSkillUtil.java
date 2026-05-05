@@ -42,7 +42,7 @@ public class ProConSkillUtil {
 		final boolean isCheaperSkills = "Verbilligte Sonderfertigkeiten".equals(type);
 
 		nameColumn.setText(type);
-		nameColumn.setCellFactory(c -> new TextFieldTableCell<>() {
+		nameColumn.setCellFactory(_ -> new TextFieldTableCell<>() {
 			@Override
 			public void updateItem(final String item, final boolean empty) {
 				super.updateItem(item, empty);
@@ -60,7 +60,7 @@ public class ProConSkillUtil {
 			}
 		});
 
-		descColumn.setCellFactory(c -> new GraphicTableCell<>(false) {
+		descColumn.setCellFactory(_ -> new GraphicTableCell<>(false) {
 			@Override
 			protected void createGraphic() {
 				final ObservableList<String> items = FXCollections
@@ -91,7 +91,7 @@ public class ProConSkillUtil {
 			final ProConOrSkill value = t.getRowValue();
 			value.setDescription(t.getNewValue(), !value.getActual().getBoolOrDefault("temporary:suppressEffects", false));
 		});
-		variantColumn.setCellFactory(c -> new GraphicTableCell<>(false) {
+		variantColumn.setCellFactory(_ -> new GraphicTableCell<>(false) {
 			@Override
 			protected void createGraphic() {
 				final ObservableList<String> items = FXCollections
@@ -122,7 +122,7 @@ public class ProConSkillUtil {
 			final ProConOrSkill value = t.getRowValue();
 			value.setVariant(t.getNewValue(), !value.getActual().getBoolOrDefault("temporary:suppressEffects", false));
 		});
-		valueColumn.setCellFactory(o -> new IntegerSpinnerTableCell<>(1, 999) {
+		valueColumn.setCellFactory(_ -> new IntegerSpinnerTableCell<>(1, 999) {
 			@Override
 			public void updateItem(final Integer item, final boolean empty) {
 				final ProConOrSkill proOrCon = getTableRow().getItem();
@@ -141,7 +141,7 @@ public class ProConSkillUtil {
 				}
 			}
 		});
-		validColumn.setCellFactory(tableColumn -> new TextFieldTableCell<>() {
+		validColumn.setCellFactory(_ -> new TextFieldTableCell<>() {
 			@Override
 			public void updateItem(final Boolean valid, final boolean empty) {
 				super.updateItem(valid, empty);
@@ -150,7 +150,7 @@ public class ProConSkillUtil {
 				if (!empty && !valid) {
 					row.getStyleClass().setAll("cell", "indexed-cell", "table-row-cell", "invalid");
 					final Tooltip tooltip = new Tooltip();
-					tooltip.setOnShowing(o -> {
+					tooltip.setOnShowing(_ -> {
 						tooltip.setText(row.getItem().getInvalidReason(true));
 					});
 					row.setTooltip(tooltip);
@@ -160,7 +160,7 @@ public class ProConSkillUtil {
 				}
 			}
 		});
-		suggestedColumn.setCellFactory(tableColumn -> new TextFieldTableCell<>() {
+		suggestedColumn.setCellFactory(_ -> new TextFieldTableCell<>() {
 			@Override
 			public void updateItem(final Boolean cheaper, final boolean empty) {
 				super.updateItem(cheaper, empty);
