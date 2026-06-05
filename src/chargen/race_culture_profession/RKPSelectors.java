@@ -38,13 +38,20 @@ import dsatool.util.Tuple5;
 import javafx.beans.property.IntegerProperty;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
 import jsonant.value.JSONArray;
 import jsonant.value.JSONObject;
 import jsonant.value.JSONValue;
@@ -53,6 +60,8 @@ public class RKPSelectors extends TabController {
 
 	public static RadioButton male;
 	public static RadioButton female;
+
+	public static boolean sorted = false;
 
 	private static String basicValueKey(final String value) {
 		return switch (value) {
@@ -86,31 +95,31 @@ public class RKPSelectors extends TabController {
 	}
 
 	private final VBox leftBox;
-
 	private Label raceLabel;
 	private Label cultureLabel;
 	private Label professionLabel;
 	private Label bgbVeteranLabel;
-	private Label bgbVeteranProfessionLabel;
 
+	private Label bgbVeteranProfessionLabel;
 	private final RKPSelector raceSelector;
 	private final RKPSelector cultureSelector;
 	private final RKPSelector professionSelector;
-	private final BGBVeteranSelector bgbVeteranSelector;
 
+	private final BGBVeteranSelector bgbVeteranSelector;
 	private boolean changedRace;
 	private boolean changedCulture;
 	private boolean changedProfession;
-	private boolean changedBgbVeteran;
 
+	private boolean changedBgbVeteran;
 	private final Tab raceTab;
 	private final Tab cultureTab;
 	private final Tab professionTab;
-	private final Tab bgbVeteranTab;
 
+	private final Tab bgbVeteranTab;
 	private int raceCost = 0;
 	private int cultureCost = 0;
 	private int professionCost = 0;
+
 	private int bgbVeteranCost = 0;
 
 	private final List<Tuple5<String, String, Predicate<JSONObject>, Consumer<JSONObject>, BiConsumer<JSONObject, JSONObject>>> specialCases = new ArrayList<>(
@@ -413,11 +422,57 @@ public class RKPSelectors extends TabController {
 		changedBgbVeteran = false;
 		items.add(7, bgbVeteranProfessionLabel);
 
+		final TextField searchField = new TextField();
+		searchField.setMaxWidth(Double.POSITIVE_INFINITY);
+		searchField.textProperty().addListener((_, _, newV) -> {
+			if (raceTab.isSelected()) {
+				raceSelector.setFilter(newV);
+			} else if (cultureTab.isSelected()) {
+				cultureSelector.setFilter(newV);
+			} else if (professionTab.isSelected()) {
+				professionSelector.setFilter(newV);
+			} else if (bgbVeteranTab.isSelected()) {
+				bgbVeteranSelector.setFilter(newV);
+			}
+		});
+
+		final ToggleButton sortButton = new ToggleButton("\uE93B");
+		sortButton.setFont(new Font("Material Symbols Outlined", 20.0));
+		sortButton.setStyle("-fx-padding: 0 4 -6 4;");
+		sortButton.setOnAction(_ -> {
+			sorted = sortButton.isSelected();
+			raceSelector.refreshList();
+			cultureSelector.refreshList();
+			professionSelector.refreshList();
+			bgbVeteranSelector.refreshList();
+		});
+
+		final HBox searchSortBox = new HBox(2);
+		searchSortBox.setAlignment(Pos.BOTTOM_LEFT);
+		searchSortBox.setMaxHeight(Double.POSITIVE_INFINITY);
+		searchSortBox.getChildren().addAll(searchField, sortButton);
+		HBox.setHgrow(searchField, Priority.ALWAYS);
+		items.add(11, searchSortBox);
+		VBox.setVgrow(searchSortBox, Priority.ALWAYS);
+
 		raceTab.setDisable(false);
 		cultureTab.setDisable(false);
 		professionTab.setDisable(false);
 		bgbVeteranTab.setDisable(false);
-		raceTab.getTabPane().getSelectionModel().select(raceTab);
+
+		final SingleSelectionModel<Tab> selectionModel = raceTab.getTabPane().getSelectionModel();
+		selectionModel.select(raceTab);
+		selectionModel.selectedItemProperty().addListener((_, _, selectedTab) -> {
+			if (selectedTab == raceTab) {
+				searchField.setText(raceSelector.getFilter());
+			} else if (selectedTab == cultureTab) {
+				searchField.setText(cultureSelector.getFilter());
+			} else if (selectedTab == professionTab) {
+				searchField.setText(professionSelector.getFilter());
+			} else if (selectedTab == bgbVeteranTab) {
+				searchField.setText(bgbVeteranSelector.getFilter());
+			}
+		});
 
 		updateCanContinue();
 	}
@@ -1011,7 +1066,7 @@ public class RKPSelectors extends TabController {
 		bgbVeteranTab.setDisable(true);
 
 		final ObservableList<Node> items = leftBox.getChildren();
-		items.remove(0, 11);
+		items.remove(0, 12);
 
 		final JSONObject hero = generationState.getObj("Held");
 		final JSONObject biography = hero.getObj("Biografie");

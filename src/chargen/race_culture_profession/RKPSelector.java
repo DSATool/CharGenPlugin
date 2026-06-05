@@ -25,8 +25,10 @@ import dsatool.util.ErrorLogger;
 import dsatool.util.Tuple;
 import dsatool.util.Tuple3;
 import dsatool.util.Util;
+import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -58,6 +60,10 @@ public class RKPSelector {
 	private Runnable updateValue;
 	private JSONObject data;
 	private Function<Tuple3<String, JSONObject, RKP>, RKP> itemConstructor;
+
+	private SortedList<TreeItem<RKP>> rootSorter = null;
+
+	private String filterString = "";
 
 	public RKPSelector(final Runnable updateValue, final JSONObject data, final Function<Tuple3<String, JSONObject, RKP>, RKP> itemConstructor) {
 		final FXMLLoader fxmlLoader = new FXMLLoader();
@@ -130,15 +136,16 @@ public class RKPSelector {
 		refreshList();
 	}
 
-	private TreeItem<RKP> addItem(final TreeItem<RKP> parent, final RKP item, final RKP selected) {
+	private TreeItem<RKP> addItem(final TreeItem<RKP> parent, final RKP item, final RKP selected, final boolean mustExist) {
 		final JSONObject actual = item.data;
 		TreeItem<RKP> toSelect = null;
 		if (!actual.getBoolOrDefault("kombinierbar", false)) {
 			final TreeItem<RKP> treeItem = new TreeItem<>(item);
-			if (selected != null && selected.data.equals(item.data)) {
+			if (selected != null && selected.data == actual) {
 				toSelect = treeItem;
 			}
-			parent.getChildren().add(treeItem);
+			final boolean exists = mustExist || toSelect != null || filterString.isBlank()
+					|| item.toString().toLowerCase().contains(filterString.toLowerCase());
 			if (actual.containsKey("Varianten")) {
 				final JSONObject variants = actual.getObj("Varianten");
 				for (final String variantName : variants.keySet()) {
@@ -146,11 +153,21 @@ public class RKPSelector {
 					if (!variant.getBoolOrDefault("Generierung", true)) {
 						continue;
 					}
-					final TreeItem<RKP> newSelection = addItem(treeItem, itemConstructor.apply(new Tuple3<>(variantName, variant, item)), selected);
+					final TreeItem<RKP> newSelection = addItem(treeItem, itemConstructor.apply(new Tuple3<>(variantName, variant, item)), selected, exists);
 					if (newSelection != null) {
 						toSelect = newSelection;
 					}
 				}
+			}
+			if (exists || !treeItem.getChildren().isEmpty()) {
+				parent.getChildren().add(treeItem);
+				if (!exists) {
+					treeItem.setExpanded(true);
+				}
+			}
+			if (RKPSelectors.sorted) {
+				Bindings.bindContent(treeItem.getChildren(),
+						new SortedList<>(treeItem.getChildren(), (l, r) -> l.getValue().toString().compareTo(r.getValue().toString())));
 			}
 		}
 		return toSelect;
@@ -175,11 +192,21 @@ public class RKPSelector {
 		return currentVariants;
 	}
 
+	public String getFilter() {
+		return filterString;
+	}
+
 	public void refreshList() {
 		final TreeItem<RKP> selectedItem = tree.getSelectionModel().getSelectedItem();
 		final RKP selected = selectedItem != null ? selectedItem.getValue() : null;
 		TreeItem<RKP> toSelect = null;
+
+		if (rootSorter != null) {
+			Bindings.unbindContent(root.getChildren(), rootSorter);
+		}
+
 		root.getChildren().clear();
+
 		root.setValue(null);
 		if (data != null) {
 			for (final String itemName : data.keySet()) {
@@ -187,12 +214,20 @@ public class RKPSelector {
 				if (!item.getBoolOrDefault("Generierung", true)) {
 					continue;
 				}
-				final TreeItem<RKP> newSelection = addItem(root, itemConstructor.apply(new Tuple3<>(itemName, item, null)), selected);
+				final TreeItem<RKP> newSelection = addItem(root, itemConstructor.apply(new Tuple3<>(itemName, item, null)), selected, false);
 				if (newSelection != null) {
 					toSelect = newSelection;
 				}
 			}
 		}
+
+		if (RKPSelectors.sorted) {
+			rootSorter = new SortedList<>(root.getChildren(), (l, r) -> l.getValue().toString().compareTo(r.getValue().toString()));
+			Bindings.bindContent(root.getChildren(), rootSorter);
+		} else {
+			rootSorter = null;
+		}
+
 		tree.getSelectionModel().clearSelection();
 		tree.getSelectionModel().select(toSelect);
 		updateSelection(toSelect, false);
@@ -248,21 +283,39 @@ public class RKPSelector {
 		refreshList();
 	}
 
+	public void setFilter(final String filterString) {
+		this.filterString = filterString;
+		refreshList();
+	}
+
 	public void setRoot(final String name, final JSONObject data) {
 		final TreeItem<RKP> selectedItem = tree.getSelectionModel().getSelectedItem();
 		final RKP selected = selectedItem != null ? selectedItem.getValue() : null;
 		TreeItem<RKP> toSelect = root;
+
+		if (rootSorter != null) {
+			Bindings.unbindContent(root.getChildren(), rootSorter);
+		}
+
 		root.getChildren().clear();
 		if (data != null) {
 			final RKP rootItem = itemConstructor.apply(new Tuple3<>(name, data, null));
 			root.setValue(rootItem);
 			for (final String itemName : data.getObj("Varianten").keySet()) {
 				final JSONObject item = data.getObj("Varianten").getObj(itemName);
-				final TreeItem<RKP> newSelection = addItem(root, itemConstructor.apply(new Tuple3<>(itemName, item, rootItem)), selected);
+				final TreeItem<RKP> newSelection = addItem(root, itemConstructor.apply(new Tuple3<>(itemName, item, rootItem)), selected, false);
 				if (newSelection != null) {
 					toSelect = newSelection;
 				}
 			}
+
+			if (RKPSelectors.sorted) {
+				rootSorter = new SortedList<>(root.getChildren(), (l, r) -> l.getValue().toString().compareTo(r.getValue().toString()));
+				Bindings.bindContent(root.getChildren(), rootSorter);
+			} else {
+				rootSorter = null;
+			}
+
 			tree.getSelectionModel().select(toSelect);
 			updateSelection(toSelect, false);
 		} else {
@@ -285,7 +338,10 @@ public class RKPSelector {
 			final RKP value = selected.getValue();
 			final List<RKP> actualVariants = value.getVariants();
 			currentVariants = new ArrayList<>(actualVariants.size());
-			for (final RKP variant : value.getVariants()) {
+			if (RKPSelectors.sorted) {
+				actualVariants.sort((l, r) -> l.toString().compareTo(r.toString()));
+			}
+			for (final RKP variant : actualVariants) {
 				final CheckBox variantCheckbox = new CheckBox(variant.name + " (" + Util.getSignedIntegerString(variant.getCost(0)) + ")");
 				Util.addReference(variantCheckbox, variant.data, 60, variantCheckbox.widthProperty());
 				variantCheckbox.selectedProperty().addListener((_, _, newV) -> {

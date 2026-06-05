@@ -88,6 +88,10 @@ public class BGBVeteranSelector {
 		return selector.getCurrentVariants();
 	}
 
+	public String getFilter() {
+		return selector.getFilter();
+	}
+
 	public BGBVeteran getType() {
 		if (bgbChoice.isSelected()) return BGBVeteran.BGB;
 		if (veteranChoice.isSelected()) return BGBVeteran.VETERAN;
@@ -95,7 +99,11 @@ public class BGBVeteranSelector {
 	}
 
 	public void refreshList() {
-		selector.refreshList();
+		if (veteranChoice.isSelected()) {
+			setVeteran();
+		} else {
+			selector.refreshList();
+		}
 	}
 
 	public void select(String name, JSONArray modifications) {
@@ -117,6 +125,13 @@ public class BGBVeteranSelector {
 		updateSuggestedPossible();
 		if (update) {
 			updateValue.run();
+		}
+	}
+
+	public void setFilter(final String filterString) {
+		selector.setFilter(filterString);
+		if (veteranChoice.isSelected()) {
+			setVeteran();
 		}
 	}
 
