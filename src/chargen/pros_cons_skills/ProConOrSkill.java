@@ -68,6 +68,19 @@ public class ProConOrSkill extends ProOrCon {
 	}
 
 	@Override
+	public String getInvalidReason(final boolean includeManualMods) {
+		String reason = super.getInvalidReason(includeManualMods);
+		if (isInvalid) {
+			if (reason.isEmpty()) {
+				reason = "Ungeeignet für Rasse/Kultur/Profession";
+			} else {
+				reason = "Ungeeignet für Rasse/Kultur/Profession\n" + reason;
+			}
+		}
+		return reason;
+	}
+
+	@Override
 	public int getMaxValue() {
 		return Math.max(getValue(), super.getMaxValue());
 	}
