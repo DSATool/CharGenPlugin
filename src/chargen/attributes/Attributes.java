@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import chargen.ui.TabController;
+import dsatool.gui.ThemedAlert;
 import dsatool.resources.ResourceManager;
 import dsatool.resources.Settings;
 import dsatool.ui.ReactiveSpinner;
@@ -29,6 +30,9 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -149,12 +153,21 @@ public class Attributes extends TabController {
 		updateInfo();
 
 		final int soMin = getSOMin();
-		final int soMax = getSOMax();
+		int soMax = getSOMax();
 
 		grid.add(new Label("Sozialstatus"), 0, i);
 		grid.add(new Label(""), 1, i);
 		grid.add(new Label(Integer.toString(soMin)), 2, i);
 		grid.add(new Label(Integer.toString(soMax)), 3, i);
+		if (soMin > soMax) {
+			final Alert alert = new ThemedAlert(AlertType.WARNING);
+			alert.setTitle("Inkompatible Voraussetzungen");
+			alert.setHeaderText("Sozialstatus-Minimum liegt über dem Maximum");
+			alert.setContentText("Sozialstatus wurde trotz der Obergrenze von " + soMax + " auf das Minimum von " + soMin + " gesetzt.");
+			alert.getButtonTypes().setAll(ButtonType.OK);
+			alert.show();
+			soMax = soMin;
+		}
 		final ReactiveSpinner<Integer> soSpinner = new ReactiveSpinner<>(soMin, soMax);
 		final JSONObject so = hero.getObj("Basiswerte").getObj("Sozialstatus");
 		final int currentSO = Math.min(so.getIntOrDefault("Wert", soMin), soMax);
