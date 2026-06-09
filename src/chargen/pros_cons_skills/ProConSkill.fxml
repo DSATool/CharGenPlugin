@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.VBox?>
 
 <VBox xmlns:fx="http://javafx.com/fxml/1" fx:id="pane" spacing="5">
-   <ScrollPane fx:id="possiblePane" hbarPolicy="NEVER" vbarPolicy="ALWAYS" fitToWidth="true" prefHeight="200" VBox.vgrow="ALWAYS" />
+   <ScrollPane fx:id="possiblePane" hbarPolicy="NEVER" vbarPolicy="ALWAYS" fitToWidth="true" prefHeight="200" VBox.vgrow="ALWAYS" style="-fx-border-color: -fx-color-border; -fx-border-width: 0 0 1 0;"/>
    <ScrollPane fx:id="chosenPane" hbarPolicy="NEVER" vbarPolicy="ALWAYS" fitToWidth="true" prefHeight="200" VBox.vgrow="ALWAYS" >
       <TableView fx:id="chosenTable" editable="true" fixedCellSize="28" >
          <styleClass>

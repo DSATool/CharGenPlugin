@@ -87,7 +87,7 @@
       <fx:define>
          <ToggleGroup fx:id="gender"/>
       </fx:define>
-      <RadioButton text="männlich" fx:id="male" toggleGroup="$gender" GridPane.rowIndex="4" GridPane.columnIndex="1" GridPane.columnSpan="2"  />
-      <RadioButton text="weiblich" fx:id="female" toggleGroup="$gender" GridPane.rowIndex="4" GridPane.columnIndex="4" GridPane.columnSpan="2"  />
+      <RadioButton text="männlich" fx:id="male" toggleGroup="$gender" GridPane.rowIndex="4" GridPane.columnIndex="1" GridPane.columnSpan="2" />
+      <RadioButton text="weiblich" fx:id="female" toggleGroup="$gender" GridPane.rowIndex="4" GridPane.columnIndex="4" GridPane.columnSpan="2" />
    </children>
 </GridPane>

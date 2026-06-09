@@ -118,6 +118,7 @@ public class SkillSelector extends ProConSkillSelector {
 		chosenNameColumn.prefWidthProperty().bind(width);
 
 		chosenPane.setPrefHeight(50);
+		chosenPane.setStyle("-fx-border-color: -fx-color-border; -fx-border-width: 0 0 1 0;");
 
 		final FXMLLoader fxmlLoader = new FXMLLoader();
 
