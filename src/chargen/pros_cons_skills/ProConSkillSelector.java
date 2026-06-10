@@ -301,9 +301,28 @@ public abstract class ProConSkillSelector {
 					final JSONObject actual = current.getObj(i);
 					final JSONObject previous = actual.clone(null);
 					final boolean isFixed = !actual.containsKey("temporary:Chosen");
+					boolean isInvalid = false;
+					for (final String currentType : new String[] { "Rasse", "Kultur", "Profession" }) {
+						final JSONObject currentInvalid = generationState.getObj(currentType).getObj("Ungeeignete " + type);
+						if (currentInvalid.containsKey(name)) {
+							final JSONArray invalid = currentInvalid.getArr(name);
+							for (int j = 0; j < invalid.size(); ++j) {
+								final JSONObject actualInvalid = invalid.getObj(j);
+								if (actualInvalid.containsKey("Auswahl") && actualInvalid.getString("Auswahl").equals(actual.getString("Auswahl"))) {
+									isInvalid = true;
+								}
+								if (actualInvalid.containsKey("Freitext") && actualInvalid.getString("Freitext").equals(actual.getString("Freitext"))) {
+									isInvalid = true;
+								}
+								if (!actualInvalid.containsKey("Auswahl") && !actualInvalid.containsKey("Freitext")) {
+									isInvalid = true;
+								}
+							}
+						}
+					}
 					items.add(new ProConOrSkill(name, hero, proOrCon, actual, isFixed,
 							actual.containsKey("Auswahl") && !actual.containsKey("temporary:SetChoice"),
-							actual.containsKey("Freitext") && !actual.containsKey("temporary:SetText"), isSkills && !isFixed, false, false, false));
+							actual.containsKey("Freitext") && !actual.containsKey("temporary:SetText"), isSkills && !isFixed, false, isInvalid, false));
 
 					if (!Objects.equals(actual.getString("Auswahl"), previous.getString("Auswahl"))
 							|| !Objects.equals(actual.getString("Freitext"), previous.getString("Freitext"))) {
@@ -313,7 +332,12 @@ public abstract class ProConSkillSelector {
 			} else {
 				final JSONObject actual = currentProsOrCons.getObj(name);
 				final boolean isFixed = !actual.containsKey("temporary:Chosen");
-				items.add(new ProConOrSkill(name, hero, proOrCon, actual, isFixed, false, false, isSkills && !isFixed, false, false, false));
+				boolean isInvalid = false;
+				for (final String currentType : new String[] { "Rasse", "Kultur", "Profession" }) {
+					final JSONObject currentInvalid = generationState.getObj(currentType).getObj("Ungeeignete " + type);
+					isInvalid |= currentInvalid.keySet().contains(name);
+				}
+				items.add(new ProConOrSkill(name, hero, proOrCon, actual, isFixed, false, false, isSkills && !isFixed, false, isInvalid, false));
 			}
 		}
 
